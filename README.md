@@ -4,6 +4,8 @@ Flow is an affiliate-selling and marketing automation platform recovered from th
 
 The repository is a recovery baseline and engineering source of truth. It preserves the work without pretending every historical service is currently production-ready.
 
+For the evidence-based assessment of what currently works, how the code is organized, deployment blockers, and the stabilization sequence, read [Flow: current state and structure](docs/CURRENT_STATE_AND_STRUCTURE.md).
+
 ## Current surfaces
 
 - `client/` — primary Next.js 15 / React 19 application.
@@ -54,4 +56,3 @@ The imported deployment workflows are manual-only until the destination Firebase
 The active code is kept at the repository root. Historical variants are stored under `legacy/` with their provenance and dates, instead of silently overwriting newer files. Dependencies, build output, Firebase caches, raw archives, shell history, nested Git metadata, and credential files were intentionally excluded.
 
 This repository does not currently include a license file. Do not assume permission to redistribute third-party or project assets beyond the repository owner's intended use.
-
