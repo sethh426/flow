@@ -7,6 +7,7 @@ Validation performed on 2026-08-30 after consolidation and credential scrubbing.
 - Root `package-lock.json`: `npm ci --ignore-scripts --dry-run` completed successfully.
 - Main client: `npm ci` completed and installed 991 packages.
 - Main client: `npm run build` completed successfully with Next.js 15.5.3 and generated/exported all 46 static routes.
+- Main client: missing Firebase client configuration now disables Auth/Firestore initialization instead of failing prerender with `auth/invalid-api-key`; the credential-free build was repeated successfully.
 - Early-adopter site: `npm ci` completed and `npm run build` succeeded.
 - Secret-pattern check: `scripts/security/sanitize-secrets.ps1 -Check` passed.
 - Known API-key, private-key, GitHub-token, AWS-key, Slack-token, and OpenAI/Anthropic-key format scans returned no unsanitized matches.

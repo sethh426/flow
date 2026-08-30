@@ -46,6 +46,14 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
+const requireFirebase = () => {
+  if (!auth || !db) {
+    throw new Error('Firebase authentication is not configured.');
+  }
+
+  return { auth, db };
+};
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -62,7 +70,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Fetch user data from Firestore
   const fetchUserData = async (uid: string): Promise<UserData | null> => {
     try {
-      const userDoc = await getDoc(doc(db, 'users', uid));
+      const { db: firestore } = requireFirebase();
+      const userDoc = await getDoc(doc(firestore, 'users', uid));
       if (userDoc.exists()) {
         return userDoc.data() as UserData;
       }
@@ -75,6 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Create user document in Firestore
   const createUserDocument = async (user: User, displayName?: string) => {
+    const { db: firestore } = requireFirebase();
     const userData: UserData = {
       uid: user.uid,
       email: user.email,
@@ -85,26 +95,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       createdAt: new Date(),
     };
 
-    await setDoc(doc(db, 'users', user.uid), userData);
+    await setDoc(doc(firestore, 'users', user.uid), userData);
     return userData;
   };
 
   // Sign up with email/password
   const signup = async (email: string, password: string, displayName: string) => {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const { auth: firebaseAuth } = requireFirebase();
+    const userCredential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
     await updateProfile(userCredential.user, { displayName });
     await createUserDocument(userCredential.user, displayName);
   };
 
   // Login with email/password
   const login = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password);
+    const { auth: firebaseAuth } = requireFirebase();
+    await signInWithEmailAndPassword(firebaseAuth, email, password);
   };
 
   // Login with Google
   const loginWithGoogle = async () => {
+    const { auth: firebaseAuth } = requireFirebase();
     const provider = new GoogleAuthProvider();
-    const userCredential = await signInWithPopup(auth, provider);
+    const userCredential = await signInWithPopup(firebaseAuth, provider);
     
     // Check if user document exists, if not create it
     const existingUserData = await fetchUserData(userCredential.user.uid);
@@ -115,13 +128,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Logout
   const logout = async () => {
-    await signOut(auth);
+    const { auth: firebaseAuth } = requireFirebase();
+    await signOut(firebaseAuth);
     setUserData(null);
   };
 
   // Reset password
   const resetPassword = async (email: string) => {
-    await sendPasswordResetEmail(auth, email);
+    const { auth: firebaseAuth } = requireFirebase();
+    await sendPasswordResetEmail(firebaseAuth, email);
   };
 
   // Refresh user data from Firestore
@@ -134,7 +149,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Listen to auth state changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    if (!auth) {
+      setLoading(false);
+      return;
+    }
+
+    const firebaseAuth = auth;
+    const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
       setUser(user);
       
       if (user) {

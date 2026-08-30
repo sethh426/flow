@@ -1,7 +1,7 @@
 # Flow: current state and structure
 
 - Assessment date: 2026-08-30
-- Assessed source commit: `fb8f0d0dd844ea8c70af75051f7e35ea472d4a3c` on `main`
+- Inventory baseline commit: `fb8f0d0dd844ea8c70af75051f7e35ea472d4a3c` on `main`; the report and Firebase build guard were added afterward
 - Repository: <https://github.com/sethh426/flow>
 
 ## Executive assessment
@@ -18,7 +18,7 @@ The right current label is **recovered engineering baseline with a buildable fro
 | --- | --- | --- |
 | Repository recovery | Complete | 2,001 tracked files (56.35 MiB) were consolidated; 1,057 are isolated under `legacy/`. Raw archives, dependencies, caches, credentials, and secret-bearing history were excluded. |
 | Main client install | Passing | `npm ci --prefix client` installed successfully. |
-| Main client production build | Passing with gates bypassed | Next.js 15.5.3 generated/exported 46 build routes. Both Next configurations disable build-time TypeScript and ESLint enforcement. |
+| Main client production build | Passing with gates bypassed | Next.js 15.5.3 generated/exported 46 build routes with Firebase variables intentionally absent. Both Next configurations disable build-time TypeScript and ESLint enforcement. |
 | Client type check | Failing | 158 errors in 38 files. Main clusters are Genkit drift, missing or relocated UI modules, incomplete domain types, and historical test dependencies. |
 | Client lint | Failing | 1,740 findings: 1,026 errors and 714 warnings. |
 | Automated tests | Present, not established as green | Eight Playwright specifications cover major UI areas, but the recovered baseline does not have a recorded passing end-to-end run. The root test script is a placeholder that exits with failure. |
@@ -111,7 +111,7 @@ Two Next.js configuration files coexist:
 
 The successful recovery build behaved as a static export, and root `firebase.json` serves `client/out` while rewriting `/api/**` to a Firebase function. The repository has no checked-in `client/src/app/api` routes. One configuration must become canonical so local development, CI, Firebase Hosting, and any server deployment do not make different assumptions.
 
-Both configurations currently set `ignoreDuringBuilds`/`ignoreBuildErrors`, which is why the production build can pass while the standalone quality checks fail. Static generation also logs a handled invalid relative URL for `/api/intelligence/predict-content` when no browser origin exists.
+Both configurations currently set `ignoreDuringBuilds`/`ignoreBuildErrors`, which is why the production build can pass while the standalone quality checks fail. Firebase Auth and Firestore now remain disabled when their public configuration is absent, so CI and fresh clones can render authentication pages without an invalid placeholder key. Static generation still logs a handled invalid relative URL for `/api/intelligence/predict-content` when no browser origin exists.
 
 ## Backend and automation inventory
 
@@ -179,7 +179,7 @@ See [SECURITY.md](../SECURITY.md) for the repository rules. This recovery review
 
 What is proven:
 
-- the committed main client installs and builds on Windows and in GitHub Actions;
+- the committed main client installs and builds on Windows and in GitHub Actions without requiring Firebase credentials at build time;
 - the early-adopter site installs and builds locally;
 - the portable committed-file secret scan passes;
 - JSON/YAML recovery validation passed for the documented files.
