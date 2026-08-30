@@ -1,9 +1,13 @@
 param(
-  [string]$Root = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path,
+  [string]$Root,
   [switch]$Check
 )
 
 $ErrorActionPreference = 'Stop'
+
+if ([string]::IsNullOrWhiteSpace($Root)) {
+  $Root = Join-Path $PSScriptRoot '../..'
+}
 
 $excludedDirectories = @(
   '.git', 'node_modules', '.next', 'out', 'dist', 'build', 'target',
@@ -56,7 +60,9 @@ if ((Test-Path -LiteralPath $gitDirectory) -and (Get-Command git -ErrorAction Si
 }
 
 $files = @($files | Where-Object {
-  $relative = $_.FullName.Substring($rootPath.Length).TrimStart('\')
+  $relative = $_.FullName.Substring($rootPath.Length).TrimStart(
+    [char[]]@([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
+  )
   $segments = $relative -split '[\\/]'
   -not ($segments | Where-Object { $excludedDirectories -contains $_ }) -and
   -not ($binaryExtensions -contains $_.Extension.ToLowerInvariant())
