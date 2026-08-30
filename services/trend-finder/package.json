@@ -1,0 +1,12 @@
+{
+  "name": "trend-finder",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": { "start": "node index.js" },
+  "dependencies": {
+    "@google-cloud/aiplatform": "^1.18.0",
+    "express": "^4.18.2",
+    "@google-cloud/secret-manager": "^4.7.0"
+  }
+}

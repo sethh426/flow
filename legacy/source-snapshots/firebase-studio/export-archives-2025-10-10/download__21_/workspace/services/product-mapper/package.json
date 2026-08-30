@@ -1,0 +1,21 @@
+
+{
+  "name": "product-mapper",
+  "version": "1.0.0",
+  "description": "A microservice to scrape product data from affiliate sites.",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx @google-cloud/functions-framework --target=handler"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.3.0",
+    "@google-cloud/vertexai": "^1.2.0",
+    "firebase-admin": "^12.1.0",
+    "playwright-core": "^1.44.0",
+    "playwright-extra": "^4.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  },
+  "engines": {
+    "node": "18"
+  }
+}

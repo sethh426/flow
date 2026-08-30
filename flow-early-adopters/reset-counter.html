@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Reset Waitlist Counter</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="public/config.js"></script>
+</head>
+<body>
+  <h1>Reset Waitlist Counter</h1>
+  <button onclick="resetCounter()">Reset Counter to 0</button>
+  <p id="status"></p>
+
+  <script>
+    const firebaseConfig = window.FLOW_PUBLIC_CONFIG?.firebase;
+    const db = firebaseConfig?.apiKey && firebaseConfig?.appId
+      ? (firebase.initializeApp(firebaseConfig), firebase.firestore())
+      : null;
+
+    async function resetCounter() {
+      if (!db) {
+        document.getElementById('status').textContent = 'Firebase configuration is missing.';
+        document.getElementById('status').style.color = 'red';
+        return;
+      }
+      try {
+        await db.collection('meta').doc('waitlist').set({
+          count: 0,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        document.getElementById('status').textContent = 'Counter reset to 0!';
+        document.getElementById('status').style.color = 'green';
+      } catch (error) {
+        document.getElementById('status').textContent = 'Error: ' + error.message;
+        document.getElementById('status').style.color = 'red';
+      }
+    }
+  </script>
+</body>
+</html>

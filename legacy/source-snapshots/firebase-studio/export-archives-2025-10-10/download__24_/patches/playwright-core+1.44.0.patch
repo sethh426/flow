@@ -1,0 +1,97 @@
+diff --git a/node_modules/playwright-core/lib/server/bidi/bidiOverCdp.js b/node_modules/playwright-core/lib/server/bidi/bidiOverCdp.js
+index 7380a649a37c44e94b29f0761e6d427d14392265..006dd00c283f6f1c7d23f39a4891b9b9a674175b 100644
+--- a/node_modules/playwright-core/lib/server/bidi/bidiOverCdp.js
++++ b/node_modules/playwright-core/lib/server/bidi/bidiOverCdp.js
+@@ -31,7 +31,7 @@ const BidiOverCdp_getRealms = {
+   __proto__: null,
+   "method": "script.getRealms",
+   "params": {}
+-};
+-const { BidiMapper } = require('chromium-bidi/lib/cjs/bidiMapper/BidiMapper');
+-const { BidiServer } = require('chromium-bidi/lib/cjs/bidiMapper/BidiServer');
+-const { MapperServer } = require('chromium-bidi/lib/cjs/bidiMapper/MapperServer');
++};const {
++  BidiMapper
++} = require('chromium-bidi/lib/cjs/bidiMapper/BidiMapper.js');
++const {
++  BidiServer
++} = require('chromium-bidi/lib/cjs/bidiMapper/BidiServer.js');
++const {
++  MapperServer
++} = require('chromium-bidi/lib/cjs/bidiMapper/MapperServer.js');
+ const {
+   ITransport
+ } = require('chromium-bidi/lib/cjs/utils/transport.js');
+diff --git a/node_modules/playwright-core/lib/server/chromium/chromium.js b/node_modules/playwright-core/lib/server/chromium/chromium.js
+index 98de0d738f6d1ad6631b67f10b7f8fbf4c643eb6..888a75e20f1882a178e24dd6e06b3bb8891d4e08 100644
+--- a/node_modules/playwright-core/lib/server/chromium/chromium.js
++++ b/node_modules/playwright-core/lib/server/chromium/chromium.js
+@@ -51,7 +51,9 @@ const {
+   CDPSession
+ } = require('../cdp/cdpSession');
+ const {
+-  BidiOverCdp
++  BidiOverCdp,
++  BidiOverCdp_getRealms,
++  BidiOverCdp_send
+ } = require('../bidi/bidiOverCdp');
+ const {
+   kBrowserCloseMessageId
+diff --git a/node_modules/playwright-core/lib/utils/stackTrace.js b/node_modules/playwright-core/lib/utils/stackTrace.js
+index 791a8c081e6284e3d1c47a36c567840177dfa811..fe938cc274cb2fe5333f2070d6a978d3845b59a4 100644
+--- a/node_modules/playwright-core/lib/utils/stackTrace.js
++++ b/node_modules/playwright-core/lib/utils/stackTrace.js
+@@ -37,7 +37,7 @@ function captureRawStack() {
+ }
+ function getCallerFilePath(ignorePrefix) {
+   const error = new Error();
+-  const stackFrames = (error.stack || '').split('\n').slice(1);
++  const stackFrames = (error.stack || '').split('\n');
+   // Find first stack frame that is not part of our code.
+   for (const frame of stackFrames) {
+     if (frame.includes('node_modules')) continue;
+diff --git a/node_modules/playwright-core/lib/utils/zones.js b/node_modules/playwright-core/lib/utils/zones.js
+index c8d891b9795029a27c0042f84b55e3478950c406..50543e45903e680a65fa6310f84803964ff02573 100644
+--- a/node_modules/playwright-core/lib/utils/zones.js
++++ b/node_modules/playwright-core/lib/utils/zones.js
+@@ -21,7 +21,7 @@ let _currentZone = null;
+ function runInZone(zone, func, ...args) {
+   const previousZone = _currentZone;
+   _currentZone = zone;
+-  try {
+-    return func(...args);
+-  } finally {
+-    _currentZone = previousZone;
+-  }
++  return func(...args);
++  // try {
++  // } finally {
++  //   _currentZone = previousZone;
++  // }
+ }
+ function currentZone() {
+   return _currentZone;
+diff --git a/node_modules/playwright-core/lib/wire/transport.js b/node_modules/playwright-core/lib/wire/transport.js
+index b2886a4e32d56a02b11545465c4046d1fa08d27a..d9bbf306a46e91122a61f221af094ff366d3a681 100644
+--- a/node_modules/playwright-core/lib/wire/transport.js
++++ b/node_modules/playwright-core/lib/wire/transport.js
+@@ -19,10 +19,10 @@ class Transport {
+     this._data = Buffer.from([]);
+     this._waitForNextTask = (0, _utils.makeWaitForNextTask)();
+     this._closed = false;
+-    this._ws.on('message', data => this._dispatch(data));
+-    this._ws.on('close', () => {
+-      this._closed = true;
+-      if (this.onclose) this.onclose();
+-    });
+-    this._ws.on('error', error => {
+-      if (!this._closed) this.onerror(error);
++    this._ws.on('message', data => {
++      return this._dispatch(data);
++    });
++    this._ws.on('close', () => (this._closed = true, this.onclose && this.onclose()));
++    this._ws.on('error', error => {
++      return !this._closed && this.onerror(error);
+     });
+   }
+   send(message) {

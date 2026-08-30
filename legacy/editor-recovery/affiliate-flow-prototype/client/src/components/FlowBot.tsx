@@ -1,0 +1,218 @@
+
+'use client';
+
+import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
+import { Button } from './ui/button';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+} from './ui/sheet';
+import { Input } from './ui/input';
+import { ScrollArea } from './ui/scroll-area';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { Bot, Loader2, Send, Sparkles, X, Home, LayoutGrid, Clock, Package, TrendingUp, Rocket, Users, Briefcase, FileText, BarChart3, Plug, FolderTree, HelpCircle, ShieldCheck } from 'lucide-react';
+import { askFlow, type FlowBotHistory } from '@/ai/flows/flow-bot-flow';
+import { cn } from '@/lib/utils';
+import Link from 'next/link';
+
+const navItems = [
+  { href: '/flow-finder', label: 'Flow-Finder', icon: TrendingUp },
+  { href: '/flow-a-gram', label: 'Flow-a-Gram', icon: FileText },
+  { href: '/flowtime', label: 'FlowTime', icon: Clock },
+  { href: '/workflows', label: 'Workflow Builder', icon: Rocket },
+  { href: '/project-hub', label: 'Projects', icon: Package },
+  { href: '/products', label: 'Products', icon: LayoutGrid },
+  { href: '/analysis', label: 'AI Project Launchpad', icon: Rocket },
+  { href: '/audience', label: 'AI Audience Finder', icon: Users },
+  { href: '/brand-ambassador', label: 'AI Brand Ambassador', icon: Briefcase },
+  { href: '/usage', label: 'Usage Analytics', icon: BarChart3 },
+  { href: '/connections', label: 'Connections', icon: Plug },
+  { href: '/structure', label: 'Code Structure', icon: FolderTree },
+  { href: '/about', label: 'About & FAQ', icon: HelpCircle },
+];
+
+
+export function FlowBot() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
+  const [message, setMessage] = useState('');
+  const [history, setHistory] = useState<FlowBotHistory[]>([]);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Scroll to the bottom whenever the history changes
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+    }
+  }, [history]);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!message.trim() || isThinking) return;
+
+    const userMessage: FlowBotHistory = { role: 'user', text: message };
+    const newHistory = [...history, userMessage];
+    setHistory(newHistory);
+    setMessage('');
+    setIsThinking(true);
+
+    try {
+      const stream = await askFlow({
+        question: message,
+        history: history, // Send history *before* the current message
+      });
+
+      let responseText = '';
+      const reader = stream.getReader();
+      const decoder = new TextDecoder();
+
+      // Add a placeholder for the model's response
+      setHistory((prev) => [...prev, { role: 'model', text: '...' }]);
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        responseText += decoder.decode(value, { stream: true });
+        // Update the last message in history (which is the model's)
+        setHistory((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = { role: 'model', text: responseText };
+          return updated;
+        });
+      }
+    } catch (error) {
+      console.error('Error asking Flow:', error);
+      const errorMessage: FlowBotHistory = {
+        role: 'model',
+        text: "I'm sorry, I seem to be having trouble connecting. Please try again in a moment.",
+      };
+      setHistory((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsThinking(false);
+    }
+  };
+
+  return (
+    <>
+      {/* Floating Action Button */}
+      <div className="fixed bottom-6 right-6 z-[9999]">
+        <Button
+          size="icon"
+          className="rounded-full w-16 h-16 shadow-2xl p-0"
+          onClick={() => setIsOpen(true)}
+          aria-label="Open Flow Assistant"
+        >
+          <Avatar className="w-full h-full">
+            <AvatarImage src="/flow-avatar.png" alt="Flow Assistant" />
+            <AvatarFallback>
+              <Sparkles />
+            </AvatarFallback>
+          </Avatar>
+        </Button>
+      </div>
+
+      {/* Chat Sheet */}
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <SheetContent className="flex flex-col">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <Avatar className="w-8 h-8">
+                <AvatarImage src="/flow-avatar.png" alt="Flow" />
+                <AvatarFallback>
+                  <Bot />
+                </AvatarFallback>
+              </Avatar>
+              Flow Assistant
+            </SheetTitle>
+            <SheetDescription>
+              Your guide to AffiliateFlow. Ask me anything or use the menu below.
+            </SheetDescription>
+          </SheetHeader>
+          <ScrollArea className="flex-grow pr-4" ref={scrollAreaRef}>
+            <div className="space-y-4">
+              {history.length === 0 && (
+                 <div className="p-4 text-center text-muted-foreground text-sm">
+                    <p>Welcome! I'm Flow. How can I help you get started?</p>
+                </div>
+              )}
+              {history.map((entry, index) => (
+                <div
+                  key={index}
+                  className={cn(
+                    'flex items-start gap-3',
+                    entry.role === 'user' ? 'justify-end' : 'justify-start'
+                  )}
+                >
+                  {entry.role === 'model' && (
+                    <Avatar className="w-6 h-6 border">
+                      <AvatarImage src="/flow-avatar.png" />
+                      <AvatarFallback>
+                        <Bot />
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+                  <div
+                    className={cn(
+                      'max-w-xs rounded-lg px-3 py-2 text-sm',
+                      entry.role === 'user'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted'
+                    )}
+                  >
+                    {entry.text}
+                  </div>
+                </div>
+              ))}
+              {isThinking && history[history.length - 1]?.role === 'user' && (
+                <div className="flex items-start gap-3 justify-start">
+                   <Avatar className="w-6 h-6 border">
+                      <AvatarImage src="/flow-avatar.png" />
+                      <AvatarFallback>
+                        <Bot />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="bg-muted rounded-lg px-3 py-2 text-sm">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                    </div>
+                </div>
+              )}
+            </div>
+             <div className="mt-6">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase mb-2">Application Menu</h3>
+                <div className="grid grid-cols-2 gap-2">
+                    {navItems.map((item) => (
+                        <Button key={item.href} variant="ghost" asChild className="justify-start" onClick={() => setIsOpen(false)}>
+                             <Link href={item.href}>
+                                <item.icon className="mr-2 h-4 w-4" />
+                                {item.label}
+                            </Link>
+                        </Button>
+                    ))}
+                </div>
+            </div>
+          </ScrollArea>
+          <SheetFooter>
+            <form onSubmit={handleSubmit} className="flex w-full items-center gap-2">
+              <Input
+                type="text"
+                placeholder="e.g., How do I find trends?"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                disabled={isThinking}
+              />
+              <Button type="submit" disabled={isThinking || !message.trim()}>
+                <Send className="h-4 w-4" />
+              </Button>
+            </form>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+    </>
+  );
+}

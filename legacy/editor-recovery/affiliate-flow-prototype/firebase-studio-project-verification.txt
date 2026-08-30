@@ -1,0 +1,13 @@
+Firebase Studio Project Verification
+=====================================
+
+Project: AffiliateFlow
+Project ID: affiliateflow-abzfy
+Project Number: 292572827197
+
+This file verifies that you are in the correct Firebase project directory.
+
+Firebase Studio URL: https://studio.firebase.google.com/studio-9029318886
+Firebase Console URL: https://console.firebase.google.com/project/affiliateflow-abzfy
+
+Last Updated: October 6, 2025

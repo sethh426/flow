@@ -1,0 +1,10 @@
+# Node dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Service account keys and other secrets
+*.json
+!/package.json
+!/package-lock.json

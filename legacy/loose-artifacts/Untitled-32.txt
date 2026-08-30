@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# This script scaffolds a Node.js Express service in Google Cloud Shell.
+
+echo "▶️ Starting service scaffolding..."
+
+# ─── 1. Set variables ───────────────────────────────────────────────────────
+PROJECT_ID="appy-32f2xp"
+REGION="us-central1"
+SERVICE_ACCOUNT="affiliateflow-scraper@${PROJECT_ID}.iam.gserviceaccount.com"
+SERVICE_NAME="product-mapper"
+WORKDIR="$HOME/affiliateflow/services/product-mapper"
+
+
+# ─── 2. Scaffold the Node.js Express stub ───────────────────────────────────
+echo "📂 Creating directory structure at $WORKDIR..."
+mkdir -p "$WORKDIR"
+cd "$WORKDIR"
+
+echo "📄 Creating package.json..."
+cat > package.json << 'EOF'
+{
+  "name": "product-mapper",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "body-parser": "^1.20.2"
+  }
+}
+EOF
+
+echo "📄 Creating index.js with Express routes..."
+cat > index.js << 'EOF'
+import express from 'express';
+import bodyParser from 'body-parser';
+
+const app = express();
+app.use(bodyParser.json());
+
+const PORT = process.env.PORT || 8080;
+
+/**
+ * Health check endpoint.
+ * @route GET /
+ * @returns {string} 200 - "OK"
+ */
+app.get('/', (req, res) => {
+  res.status(200).send('OK');
+});
+
+/**
+ * Maps an affiliate URL and query.
+ * @route POST /map
+ * @param {object} req.body - The request body.
+ * @param {string} req.body.affiliateUrl - The affiliate URL to process.
+ * @param {string} req.body.query - The query associated with the URL.
+ * @returns {object} 200 - An object echoing the input.
+ * @returns {object} 400 - An error object if inputs are missing.
+ */
+app.post('/map', (req, res) => {
+  console.log('Received /map request with body:', req.body);
+  const { affiliateUrl, query } = req.body;
+
+  if (!affiliateUrl || !query) {
+    return res.status(400).json({ error: 'Missing required fields: affiliateUrl, query' });
+  }
+
+  res.status(200).json({
+    affiliateUrl,
+    query,
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`🚀 ${process.env.K_SERVICE || 'product-mapper'} service listening on port ${PORT}`);
+});
+EOF
+
+echo "📄 Creating Dockerfile..."
+cat > Dockerfile << 'EOF'
+FROM node:18-slim
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install --only=production
+
+COPY . .
+
+EXPOSE 8080
+CMD ["npm", "start"]
+EOF
+
+# ─── 3. Install node modules ────────────────────────────────────────────────
+echo "📦 Installing Node.js dependencies..."
+rm -rf node_modules package-lock.json
+npm install
+
+echo "✅ All done! Service '$SERVICE_NAME' is scaffolded in $WORKDIR"
+
+# ─── 4. Deploy to Cloud Run ───────────────────────────────────────────────────
+echo "🚀 Deploying service '$SERVICE_NAME' to Cloud Run in region '$REGION'..."
+
+gcloud run deploy "$SERVICE_NAME" \
+  --source=. \
+  --region="$REGION" \
+  --service-account="$SERVICE_ACCOUNT" \
+  --allow-unauthenticated
+
+echo "✅ Deployment complete!"
+
+echo "🌐 Fetching service URL..."
+URL=$(gcloud run services describe "$SERVICE_NAME" --region="$REGION" --format="value(status.url)")
+echo "✅ Service is available at: $URL"
+
+# ─── 5. Test the deployed endpoint ────────────────────────────────────────────
+echo "🧪 Testing the /map endpoint..."
+curl --fail --show-error -X POST "${URL}/map" \
+  -H "Content-Type: application/json" \
+  -d '{"affiliateUrl":"https://shop.nordstrom.com/sr?sr=true&q=jeans","query":"jeans"}'
+
+echo -e "\n\n🎉 Script finished successfully!"

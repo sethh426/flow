@@ -1,0 +1,18 @@
+{
+    "claude-code.environmentVariables": [
+        
+    ],
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "claudeCode.useTerminal": true,
+    "github-actions.workflows.pinned.workflows": [
+        ".github/workflows/setup-gcp-infrastructure.yml"
+    ],
+    "chat.mcp.discovery.enabled": {
+        "claude-desktop": true,
+        "windsurf": true,
+        "cursor-global": true,
+        "cursor-workspace": true
+    },
+    "chat.agent.maxRequests": 50
+}

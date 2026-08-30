@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Get Waitlist Signups</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+        }
+        .count {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Waitlist Signups</h1>
+    <button onclick="fetchSignups()">Refresh</button>
+    <button onclick="exportToCSV()">Export to CSV</button>
+    <div id="count" class="count"></div>
+    <div id="loading" class="loading">Loading signups...</div>
+    <div id="signups"></div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        import { getFirestore, collection, getDocs, orderBy, query } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "REDACTED_SECRET",
+            authDomain: "flowearlyadopters.firebaseapp.com",
+            projectId: "flowearlyadopters",
+            storageBucket: "flowearlyadopters.firebasestorage.app",
+            messagingSenderId: "867788546820",
+            appId: "1:867788546820:web:8e3a1ab4dc2a798c3baaa3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let signupsData = [];
+
+        window.fetchSignups = async function() {
+            const loadingDiv = document.getElementById('loading');
+            const signupsDiv = document.getElementById('signups');
+            const countDiv = document.getElementById('count');
+            
+            loadingDiv.style.display = 'block';
+            signupsDiv.innerHTML = '';
+            
+            try {
+                const q = query(collection(db, 'waitlist_signups'), orderBy('timestamp', 'desc'));
+                const querySnapshot = await getDocs(q);
+                
+                signupsData = [];
+                querySnapshot.forEach((doc) => {
+                    signupsData.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+
+                countDiv.textContent = `Total Signups: ${signupsData.length}`;
+                
+                if (signupsData.length === 0) {
+                    signupsDiv.innerHTML = '<p>No signups yet.</p>';
+                } else {
+                    let tableHTML = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Email</th>
+                                    <th>Position</th>
+                                    <th>Timestamp</th>
+                                    <th>Referral Code</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    signupsData.forEach((signup, index) => {
+                        const timestamp = signup.timestamp?.toDate?.() || new Date(signup.timestamp);
+                        tableHTML += `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${signup.email}</td>
+                                <td>${signup.position || 'N/A'}</td>
+                                <td>${timestamp.toLocaleString()}</td>
+                                <td>${signup.referralCode || 'N/A'}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    tableHTML += `
+                            </tbody>
+                        </table>
+                    `;
+                    
+                    signupsDiv.innerHTML = tableHTML;
+                }
+            } catch (error) {
+                console.error('Error fetching signups:', error);
+                signupsDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        };
+
+        window.exportToCSV = function() {
+            if (signupsData.length === 0) {
+                alert('No signups to export');
+                return;
+            }
+
+            let csvContent = "Email,Position,Timestamp,Referral Code\n";
+            
+            signupsData.forEach(signup => {
+                const timestamp = signup.timestamp?.toDate?.() || new Date(signup.timestamp);
+                csvContent += `${signup.email},${signup.position || 'N/A'},${timestamp.toISOString()},${signup.referralCode || 'N/A'}\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `waitlist_signups_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        // Auto-load on page load
+        fetchSignups();
+    </script>
+</body>
+</html>

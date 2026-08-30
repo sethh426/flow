@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Get Waitlist Signups</title>
+    <script src="config.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        #loginForm {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 40px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        #loginForm h2 {
+            margin-top: 0;
+            text-align: center;
+            color: #333;
+        }
+        #loginForm input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        #loginForm button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        #loginForm button:hover {
+            background-color: #45a049;
+        }
+        .error {
+            color: red;
+            text-align: center;
+            margin-top: 10px;
+        }
+        #content {
+            display: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+        }
+        .count {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div id="loginForm">
+        <h2>Admin Login</h2>
+        <input type="text" id="username" placeholder="Username" autocomplete="off">
+        <input type="password" id="password" placeholder="Password" autocomplete="off">
+        <button onclick="login()">Login</button>
+        <div id="loginError" class="error"></div>
+    </div>
+
+    <div id="content">
+        <h1>Waitlist Signups</h1>
+        <button onclick="fetchSignups()">Refresh</button>
+        <button onclick="exportToCSV()">Export to CSV</button>
+        <button onclick="logout()" style="background-color: #f44336;">Logout</button>
+        <div id="count" class="count"></div>
+        <div id="loading" class="loading">Loading signups...</div>
+        <div id="signups"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        import { getFirestore, collection, getDocs, orderBy, query } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+
+        const firebaseConfig = window.FLOW_PUBLIC_CONFIG?.firebase;
+        const app = firebaseConfig?.apiKey && firebaseConfig?.appId ? initializeApp(firebaseConfig) : null;
+        const db = app ? getFirestore(app) : null;
+
+        let signupsData = [];
+
+        function login() {
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.textContent = 'Legacy client-side admin access is disabled. Replace this page with Firebase Authentication and server-enforced authorization.';
+        }
+
+        function logout() {
+            sessionStorage.removeItem('authenticated');
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('content').style.display = 'none';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        function checkAuth() {
+            sessionStorage.removeItem('authenticated');
+        }
+
+        // Handle Enter key on login form
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            document.getElementById('username').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') login();
+            });
+            document.getElementById('password').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') login();
+            });
+        });
+
+        window.login = login;
+        window.logout = logout;
+
+        window.fetchSignups = async function() {
+            const loadingDiv = document.getElementById('loading');
+            const signupsDiv = document.getElementById('signups');
+            const countDiv = document.getElementById('count');
+            
+            loadingDiv.style.display = 'block';
+            signupsDiv.innerHTML = '';
+            
+            try {
+                // Get all signups without ordering first
+                const querySnapshot = await getDocs(collection(db, 'waitlist_signups'));
+                console.log('Total docs found:', querySnapshot.size);
+                
+                signupsData = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    console.log('Document:', doc.id, data);
+                    signupsData.push({
+                        id: doc.id,
+                        ...data
+                    });
+                });
+
+                // Sort by timestamp manually
+                signupsData.sort((a, b) => {
+                    const timeA = a.timestamp?.toDate?.() || new Date(a.timestamp || 0);
+                    const timeB = b.timestamp?.toDate?.() || new Date(b.timestamp || 0);
+                    return timeB - timeA; // Descending order
+                });
+
+                countDiv.textContent = `Total Signups: ${signupsData.length}`;
+                
+                if (signupsData.length === 0) {
+                    signupsDiv.innerHTML = '<p>No signups yet.</p>';
+                } else {
+                    let tableHTML = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Email</th>
+                                    <th>Position</th>
+                                    <th>Timestamp</th>
+                                    <th>Referral Code</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    signupsData.forEach((signup, index) => {
+                        const timestamp = signup.timestamp?.toDate?.() || new Date(signup.timestamp);
+                        tableHTML += `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${signup.email}</td>
+                                <td>${signup.position || 'N/A'}</td>
+                                <td>${timestamp.toLocaleString()}</td>
+                                <td>${signup.referralCode || 'N/A'}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    tableHTML += `
+                            </tbody>
+                        </table>
+                    `;
+                    
+                    signupsDiv.innerHTML = tableHTML;
+                }
+            } catch (error) {
+                console.error('Error fetching signups:', error);
+                signupsDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        };
+
+        window.exportToCSV = function() {
+            if (signupsData.length === 0) {
+                alert('No signups to export');
+                return;
+            }
+
+            let csvContent = "Email,Position,Timestamp,Referral Code\n";
+            
+            signupsData.forEach(signup => {
+                const timestamp = signup.timestamp?.toDate?.() || new Date(signup.timestamp);
+                csvContent += `${signup.email},${signup.position || 'N/A'},${timestamp.toISOString()},${signup.referralCode || 'N/A'}\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `waitlist_signups_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        // Auto-load on page load
+        fetchSignups();
+    </script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+google-cloud-asset
+functions-framework
+vertexai

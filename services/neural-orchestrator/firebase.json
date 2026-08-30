@@ -1,0 +1,26 @@
+{
+  "functions": {
+    "source": ".",
+    "codebase": "neural-orchestrator",
+    "runtime": "nodejs20",
+    "ignore": [
+      "node_modules",
+      ".git",
+      "firebase-debug.log",
+      "firebase-debug.*.log",
+      "*.local",
+      ".env",
+      ".env.*",
+      "src",
+      "tsconfig.json",
+      "*.test.ts",
+      "*.spec.ts",
+      "coverage",
+      "dist/**/*.map"
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
+}

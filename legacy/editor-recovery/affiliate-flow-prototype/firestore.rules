@@ -1,0 +1,125 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isBusinessTypeValid() {
+      return request.resource.data.businessType in ['affiliate', 'ecommerce', 'consultant', 'real_estate', 'auto_dealer', 'service_provider'];
+    }
+
+    // Users collection - CRITICAL: Users can ONLY access their own document
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isOwner(userId);
+      allow delete: if false; // Prevent client-side deletion
+    }
+
+    // Businesses collection - business owners and members
+    match /businesses/{businessId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.ownerId == request.auth.uid ||
+         request.auth.uid in resource.data.members);
+      allow create: if isAuthenticated() && 
+        request.resource.data.ownerId == request.auth.uid &&
+        isBusinessTypeValid();
+      allow update: if isAuthenticated() &&
+        (resource.data.ownerId == request.auth.uid ||
+         request.auth.uid in resource.data.members);
+      allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // Products collection - WORKSPACE ISOLATION: Users can only access their own products
+    match /products/{productId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // Campaigns collection - WORKSPACE ISOLATION: Users can only access their campaigns
+    match /campaigns/{campaignId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // Content collection - AI-generated content (social posts, emails, blogs)
+    match /content/{contentId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // Links collection - Affiliate links and tracking
+    match /links/{linkId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // Analytics collection - User analytics data
+    match /analytics/{analyticsId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow delete: if false; // Preserve analytics
+    }
+
+    // Transactions collection - Flow Coins purchase/usage history (immutable)
+    match /transactions/{transactionId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if false; // Only backend can create
+      allow update: if false; // Immutable
+      allow delete: if false; // Preserve history
+    }
+
+    // Flow Coins collection - DEPRECATED: Moving to users.flowCoins field
+    match /flowCoins/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if false; // Use users collection instead
+    }
+
+    // Tournaments collection - gaming community events
+    match /tournaments/{tournamentId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && hasAnyRole(['admin', 'moderator']);
+    }
+
+    // Analytics collection - performance tracking
+    match /analytics/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if isAuthenticated(); // System writes, user reads
+    }
+
+    // AI Conversations collection - chat history
+    match /conversations/{conversationId} {
+      allow read, write: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid ||
+         request.auth.uid in resource.data.businessMembers);
+    }
+
+    // Public data that anyone can read
+    match /public/{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Admin functions
+    function hasAnyRole(roles) {
+      return isAuthenticated() &&
+        (request.auth.token.admin == true ||
+         request.auth.token.role in roles);
+    }
+  }
+}

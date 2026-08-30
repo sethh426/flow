@@ -1,0 +1,459 @@
+{
+  "info": {
+    "name": "AffiliateFlow API",
+    "description": "Complete API collection for AffiliateFlow platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "affiliateflow"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "api_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "gemini_api_key",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Checks",
+      "item": [
+        {
+          "name": "API Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_url}}/health",
+              "host": ["{{api_url}}"],
+              "path": ["health"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Orchestrator Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_url}}/api/orchestrator/health",
+              "host": ["{{api_url}}"],
+              "path": ["api", "orchestrator", "health"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Product Mapper Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_url}}/api/products/health",
+              "host": ["{{api_url}}"],
+              "path": ["api", "products", "health"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Content Generation",
+      "item": [
+        {
+          "name": "Generate Content",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prompt\": \"Create a social media post about fashion trends\",\n  \"platform\": \"instagram\",\n  \"tone\": \"casual\",\n  \"length\": \"medium\"\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/api/content/generate",
+              "host": ["{{api_url}}"],
+              "path": ["api", "content", "generate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Generate Image",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prompt\": \"Modern fashion influencer in urban setting\",\n  \"style\": \"photorealistic\",\n  \"size\": \"1024x1024\"\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/api/image/generate",
+              "host": ["{{api_url}}"],
+              "path": ["api", "image", "generate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Content History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_url}}/api/content/history?limit=10",
+              "host": ["{{api_url}}"],
+              "path": ["api", "content", "history"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Product Mapping",
+      "item": [
+        {
+          "name": "Search Products",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"summer dresses\",\n  \"retailer\": \"nordstrom\",\n  \"maxResults\": 10\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/api/products/search",
+              "host": ["{{api_url}}"],
+              "path": ["api", "products", "search"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Product Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_url}}/api/products/:productId",
+              "host": ["{{api_url}}"],
+              "path": ["api", "products", ":productId"],
+              "variable": [
+                {
+                  "key": "productId",
+                  "value": "12345"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Map Content to Products",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contentId\": \"content_123\",\n  \"products\": [\n    {\n      \"productId\": \"prod_1\",\n      \"position\": \"main\"\n    },\n    {\n      \"productId\": \"prod_2\",\n      \"position\": \"secondary\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/api/products/map",
+              "host": ["{{api_url}}"],
+              "path": ["api", "products", "map"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Trend Finder",
+      "item": [
+        {
+          "name": "Get Current Trends",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_url}}/api/trends?category=fashion&region=US",
+              "host": ["{{api_url}}"],
+              "path": ["api", "trends"],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "fashion"
+                },
+                {
+                  "key": "region",
+                  "value": "US"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Analyze Trend",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"keyword\": \"sustainable fashion\",\n  \"timeRange\": \"30d\"\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/api/trends/analyze",
+              "host": ["{{api_url}}"],
+              "path": ["api", "trends", "analyze"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Trend Suggestions",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category\": \"fashion\",\n  \"audience\": \"women_25_34\",\n  \"count\": 5\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/api/trends/suggest",
+              "host": ["{{api_url}}"],
+              "path": ["api", "trends", "suggest"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Workflows",
+      "item": [
+        {
+          "name": "List Workflows",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_url}}/api/workflows",
+              "host": ["{{api_url}}"],
+              "path": ["api", "workflows"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Workflow",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Fashion Content Pipeline\",\n  \"description\": \"Automated content generation for fashion products\",\n  \"nodes\": [\n    {\n      \"id\": \"trend-finder\",\n      \"type\": \"trend-finder\",\n      \"config\": {}\n    },\n    {\n      \"id\": \"content-gen\",\n      \"type\": \"content-generator\",\n      \"config\": {}\n    },\n    {\n      \"id\": \"product-map\",\n      \"type\": \"product-mapper\",\n      \"config\": {}\n    }\n  ],\n  \"edges\": [\n    {\n      \"source\": \"trend-finder\",\n      \"target\": \"content-gen\"\n    },\n    {\n      \"source\": \"content-gen\",\n      \"target\": \"product-map\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/api/workflows",
+              "host": ["{{api_url}}"],
+              "path": ["api", "workflows"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Workflow",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_url}}/api/workflows/:workflowId",
+              "host": ["{{api_url}}"],
+              "path": ["api", "workflows", ":workflowId"],
+              "variable": [
+                {
+                  "key": "workflowId",
+                  "value": "workflow_123"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Execute Workflow",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"input\": {\n    \"category\": \"fashion\",\n    \"keywords\": [\"summer\", \"casual\"]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/api/workflows/:workflowId/execute",
+              "host": ["{{api_url}}"],
+              "path": ["api", "workflows", ":workflowId", "execute"],
+              "variable": [
+                {
+                  "key": "workflowId",
+                  "value": "workflow_123"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Workflow",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{api_url}}/api/workflows/:workflowId",
+              "host": ["{{api_url}}"],
+              "path": ["api", "workflows", ":workflowId"],
+              "variable": [
+                {
+                  "key": "workflowId",
+                  "value": "workflow_123"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_url}}/api/analytics/dashboard",
+              "host": ["{{api_url}}"],
+              "path": ["api", "analytics", "dashboard"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Performance Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_url}}/api/analytics/performance?period=30d",
+              "host": ["{{api_url}}"],
+              "path": ["api", "analytics", "performance"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "30d"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Track Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event\": \"content_generated\",\n  \"properties\": {\n    \"platform\": \"instagram\",\n    \"contentType\": \"post\",\n    \"duration\": 1234\n  }\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/api/analytics/track",
+              "host": ["{{api_url}}"],
+              "path": ["api", "analytics", "track"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

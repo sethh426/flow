@@ -1,0 +1,13 @@
+{
+  "name": "mcp-nordstrom",
+  "version": "1.0.0",
+  "description": "Playwright MCP scraper for Nordstrom with Firestore integration.",
+  "main": "scrape.js",
+  "scripts": {
+    "start": "node scrape.js"
+  },
+  "dependencies": {
+    "playwright": "^1.44.0",
+    "firebase-admin": "^11.10.1"
+  }
+}

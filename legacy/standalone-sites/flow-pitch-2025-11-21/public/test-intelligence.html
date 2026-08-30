@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Intelligence Features Test Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.8); }
+        }
+        .test-card:hover {
+            transform: translateY(-4px);
+            transition: all 0.3s ease;
+        }
+        .loading {
+            animation: pulse-glow 2s infinite;
+        }
+        .success {
+            border-left: 4px solid #10b981;
+        }
+        .error {
+            border-left: 4px solid #ef4444;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 min-h-screen p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
+                🧠 Intelligence Features Test
+            </h1>
+            <p class="text-xl text-gray-600">Phase 2 - AI-Powered Predictions & Analytics</p>
+        </div>
+
+        <!-- Test Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Content Prediction -->
+            <div class="test-card bg-white rounded-2xl shadow-xl p-6 cursor-pointer hover:shadow-2xl" onclick="testContentPrediction()">
+                <div class="text-5xl mb-4">📊</div>
+                <h3 class="text-xl font-bold mb-2 text-blue-600">Content Prediction</h3>
+                <p class="text-sm text-gray-600 mb-4">Predict performance before publishing</p>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-500">Click to test</span>
+                    <span class="text-2xl">→</span>
+                </div>
+            </div>
+
+            <!-- Revenue Forecast -->
+            <div class="test-card bg-white rounded-2xl shadow-xl p-6 cursor-pointer hover:shadow-2xl" onclick="testRevenueForecast()">
+                <div class="text-5xl mb-4">💰</div>
+                <h3 class="text-xl font-bold mb-2 text-green-600">Revenue Forecast</h3>
+                <p class="text-sm text-gray-600 mb-4">Predict future revenue & ROI</p>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-500">Click to test</span>
+                    <span class="text-2xl">→</span>
+                </div>
+            </div>
+
+            <!-- Trend Detection -->
+            <div class="test-card bg-white rounded-2xl shadow-xl p-6 cursor-pointer hover:shadow-2xl" onclick="testTrendDetection()">
+                <div class="text-5xl mb-4">📈</div>
+                <h3 class="text-xl font-bold mb-2 text-purple-600">Trend Detection</h3>
+                <p class="text-sm text-gray-600 mb-4">Find emerging opportunities</p>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-500">Click to test</span>
+                    <span class="text-2xl">→</span>
+                </div>
+            </div>
+
+            <!-- AI Router -->
+            <div class="test-card bg-white rounded-2xl shadow-xl p-6 cursor-pointer hover:shadow-2xl" onclick="testAIRouter()">
+                <div class="text-5xl mb-4">🤖</div>
+                <h3 class="text-xl font-bold mb-2 text-orange-600">AI Router</h3>
+                <p class="text-sm text-gray-600 mb-4">Smart cost optimization</p>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-500">Click to test</span>
+                    <span class="text-2xl">→</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div id="results" class="bg-white rounded-2xl shadow-2xl p-8 hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-3xl font-bold text-gray-800">Test Results</h2>
+                <button onclick="clearResults()" class="text-sm text-gray-500 hover:text-gray-700">Clear</button>
+            </div>
+            <div id="status" class="mb-4"></div>
+            <div id="output" class="bg-gray-50 rounded-xl p-6 overflow-auto max-h-96 text-sm font-mono"></div>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = 'http://localhost:3001';
+
+        function showResults() {
+            document.getElementById('results').classList.remove('hidden');
+        }
+
+        function clearResults() {
+            document.getElementById('results').classList.add('hidden');
+            document.getElementById('output').textContent = '';
+            document.getElementById('status').innerHTML = '';
+        }
+
+        function showLoading(name) {
+            showResults();
+            const status = document.getElementById('status');
+            status.innerHTML = `
+                <div class="flex items-center gap-3 p-4 bg-blue-50 rounded-lg loading">
+                    <div class="animate-spin h-5 w-5 border-3 border-blue-600 border-t-transparent rounded-full"></div>
+                    <span class="text-blue-700 font-semibold">Testing ${name}...</span>
+                </div>
+            `;
+            document.getElementById('output').textContent = 'Processing...';
+        }
+
+        function showSuccess(name, data) {
+            const status = document.getElementById('status');
+            status.innerHTML = `
+                <div class="flex items-center gap-3 p-4 bg-green-50 border-l-4 border-green-500 rounded-lg success">
+                    <span class="text-3xl">✅</span>
+                    <div>
+                        <div class="text-green-800 font-bold">${name} - SUCCESS</div>
+                        <div class="text-green-600 text-sm">Response received in ${data.time || '<1'}s</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showError(name, error) {
+            const status = document.getElementById('status');
+            status.innerHTML = `
+                <div class="flex items-center gap-3 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg error">
+                    <span class="text-3xl">❌</span>
+                    <div>
+                        <div class="text-red-800 font-bold">${name} - FAILED</div>
+                        <div class="text-red-600 text-sm">${error}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function testAPI(endpoint, data, name) {
+            showLoading(name);
+            const startTime = Date.now();
+            
+            try {
+                const response = await fetch(`${baseUrl}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                const time = ((Date.now() - startTime) / 1000).toFixed(2);
+                
+                if (response.ok) {
+                    showSuccess(name, { ...result, time });
+                    document.getElementById('output').textContent = JSON.stringify(result, null, 2);
+                } else {
+                    showError(name, result.error || 'Unknown error');
+                    document.getElementById('output').textContent = JSON.stringify(result, null, 2);
+                }
+            } catch (error) {
+                showError(name, error.message);
+                document.getElementById('output').textContent = error.stack || error.message;
+            }
+        }
+
+        function testContentPrediction() {
+            testAPI('/api/intelligence/predict-content', {
+                userId: 'test-user',
+                content: {
+                    contentType: 'post',
+                    platform: 'instagram',
+                    content: '🌱 Sustainable fashion is the future! Check out these eco-friendly brands making a difference. #SustainableFashion #EcoFriendly',
+                    hashtags: ['#SustainableFashion', '#EcoFriendly', '#GreenLiving'],
+                    scheduledTime: new Date('2025-10-30T19:00:00').toISOString()
+                }
+            }, 'Content Prediction');
+        }
+
+        function testRevenueForecast() {
+            testAPI('/api/intelligence/forecast-revenue', {
+                userId: 'test-user',
+                action: 'forecast',
+                period: 'month'
+            }, 'Revenue Forecast');
+        }
+
+        function testTrendDetection() {
+            testAPI('/api/intelligence/detect-trends', {
+                userId: 'test-user',
+                action: 'detectEmerging',
+                niche: 'sustainable fashion',
+                limit: 5
+            }, 'Trend Detection');
+        }
+
+        function testAIRouter() {
+            testAPI('/api/intelligence/ai-router', {
+                userId: 'test-user',
+                action: 'getStats'
+            }, 'AI Router');
+        }
+    </script>
+</body>
+</html>

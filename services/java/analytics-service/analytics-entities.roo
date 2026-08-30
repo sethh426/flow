@@ -1,0 +1,39 @@
+// Spring Roo Script for Analytics Service
+// Run: roo script --file analytics-entities.roo
+
+// JPA Setup
+jpa setup --provider HIBERNATE --database H2_IN_MEMORY
+
+// Product Analytics Entity
+entity jpa --class com.affiliateflow.analytics.domain.ProductAnalytics
+field string --fieldName productId --notNull
+field string --fieldName productName
+field number --fieldName clicks --type java.lang.Long
+field number --fieldName impressions --type java.lang.Long
+field number --fieldName conversions --type java.lang.Long
+field number --fieldName revenue --type java.math.BigDecimal
+field date --fieldName recordDate --type java.time.LocalDate
+field number --fieldName ctr --type java.lang.Double
+
+// Campaign Analytics Entity
+entity jpa --class com.affiliateflow.analytics.domain.CampaignAnalytics
+field string --fieldName campaignId --notNull
+field string --fieldName campaignName
+field number --fieldName totalClicks --type java.lang.Long
+field number --fieldName totalConversions --type java.lang.Long
+field number --fieldName totalRevenue --type java.math.BigDecimal
+field date --fieldName startDate --type java.time.LocalDate
+field date --fieldName endDate --type java.time.LocalDate
+field number --fieldName roi --type java.lang.Double
+
+// Generate Repositories
+repository jpa --entity com.affiliateflow.analytics.domain.ProductAnalytics --interface com.affiliateflow.analytics.repository.ProductAnalyticsRepository
+repository jpa --entity com.affiliateflow.analytics.domain.CampaignAnalytics --interface com.affiliateflow.analytics.repository.CampaignAnalyticsRepository
+
+// Generate Services
+service --entity com.affiliateflow.analytics.domain.ProductAnalytics --interface com.affiliateflow.analytics.service.ProductAnalyticsService
+service --entity com.affiliateflow.analytics.domain.CampaignAnalytics --interface com.affiliateflow.analytics.service.CampaignAnalyticsService
+
+// Generate REST Controllers
+web mvc rest controller --entity com.affiliateflow.analytics.domain.ProductAnalytics
+web mvc rest controller --entity com.affiliateflow.analytics.domain.CampaignAnalytics

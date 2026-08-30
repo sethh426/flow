@@ -1,0 +1,3874 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0, user-scalable=yes, viewport-fit=cover, interactive-widget=resizes-visual" />
+    <meta name="theme-color" content="#04020f" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Flow - Build Your Social Empire | Early Access Waitlist</title>
+    
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX', {
+        send_page_view: true,
+        cookie_flags: 'SameSite=None;Secure'
+      });
+      
+      // Custom events helper
+      window.trackEvent = function(eventName, params) {
+        gtag('event', eventName, params);
+      };
+    </script>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Flow: AI-powered platform for affiliate marketers and creators. Automate content creation, product research, and social media management in one place." />
+    <meta name="keywords" content="affiliate marketing, creator tools, AI automation, content creation, workflow automation" />
+    <meta name="author" content="Flow" />
+    
+    <!-- Open Graph / Social Meta -->
+    <meta property="og:title" content="Flow - Build Your Social Empire" />
+    <meta property="og:description" content="Join early adopters building their digital business with AI-powered automation. Coming soon." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://flowearlyadopters.web.app" />
+    <meta property="og:image" content="https://flowearlyadopters.web.app/flow-logo.png" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Flow - Build Your Social Empire" />
+    <meta name="twitter:description" content="AI-powered tools for creators and affiliate marketers. Join the waitlist." />
+    
+    <!-- Preconnect to external resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://unpkg.com" />
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" as="style" />
+    
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    
+    <!-- Critical inline styles -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at 20% 15%, rgba(99, 102, 241, 0.38), transparent 55%),
+          radial-gradient(circle at 80% 25%, rgba(14, 165, 233, 0.28), transparent 45%),
+          #04020f;
+        color: #f8fafc;
+        scroll-behavior: auto !important;
+        overflow-anchor: none;
+        overflow-x: hidden;
+        width: 100%;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      :root {
+        /* Spacing scale - 8px base */
+        --space-1: 0.25rem;  /* 4px */
+        --space-2: 0.5rem;   /* 8px */
+        --space-3: 0.75rem;  /* 12px */
+        --space-4: 1rem;     /* 16px */
+        --space-5: 1.5rem;   /* 24px */
+        --space-6: 2rem;     /* 32px */
+        --space-8: 3rem;     /* 48px */
+        --space-10: 4rem;    /* 64px */
+        --space-12: 6rem;    /* 96px */
+        
+        /* Container widths */
+        --container-sm: 640px;
+        --container-md: 768px;
+        --container-lg: 1024px;
+        --container-xl: 1280px;
+        
+        /* Section spacing */
+        --section-spacing-mobile: clamp(3rem, 8vw, 4rem);
+        --section-spacing-tablet: clamp(4rem, 10vw, 6rem);
+        --section-spacing-desktop: clamp(5rem, 12vw, 8rem);
+      }
+      /* Section spacing utilities */
+      .section-tight { padding-block: var(--section-spacing-mobile); }
+      .section-normal { padding-block: var(--section-spacing-tablet); }
+      .section-spacious { padding-block: var(--section-spacing-desktop); }
+      
+      @media (min-width: 768px) {
+        .section-tight { padding-block: var(--section-spacing-tablet); }
+        .section-normal { padding-block: var(--section-spacing-desktop); }
+      }
+      
+      /* Responsive text sizes */
+      .text-responsive-sm { font-size: clamp(0.875rem, 2vw, 1rem); line-height: 1.5; }
+      .text-responsive-base { font-size: clamp(1rem, 2.5vw, 1.125rem); line-height: 1.6; }
+      .text-responsive-lg { font-size: clamp(1.125rem, 3vw, 1.25rem); line-height: 1.5; }
+      .text-responsive-xl { font-size: clamp(1.25rem, 4vw, 1.5rem); line-height: 1.4; }
+      
+      /* Container constraints for readability */
+      .prose-container { max-width: 65ch; margin-inline: auto; }
+      .content-container { max-width: 80ch; margin-inline: auto; }
+      
+      #root {
+        min-height: 100vh;
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 clamp(16px, 4vw, 24px);
+        width: 100%;
+        overflow-x: hidden;
+      }
+      @media (min-width: 768px) {
+        #root {
+          padding: 0 clamp(24px, 5vw, 40px);
+        }
+      }
+      @media (min-width: 1024px) {
+        #root {
+          padding: 0 clamp(32px, 6vw, 48px);
+        }
+      }
+      a {
+        color: inherit;
+      }
+      /* Loading indicator */
+      .loading-spinner {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 50px;
+        height: 50px;
+        border: 3px solid rgba(99, 102, 241, 0.3);
+        border-top-color: #6366f1;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        to { transform: translate(-50%, -50%) rotate(360deg); }
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      /* Flow Companion Gesture Animations */
+      @keyframes flow-wave {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(15deg); }
+        50% { transform: rotate(0deg); }
+        75% { transform: rotate(-15deg); }
+      }
+      @keyframes flow-bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-12px); }
+      }
+      @keyframes flow-bounce-point {
+        0%, 100% { transform: translateY(0) rotate(20deg); }
+        50% { transform: translateY(10px) rotate(20deg); }
+      }
+      @keyframes flow-sway {
+        0%, 100% { transform: translateX(0) rotate(0deg); }
+        25% { transform: translateX(-15px) rotate(-5deg); }
+        75% { transform: translateX(15px) rotate(5deg); }
+      }
+      @keyframes flow-orbit {
+        0% { transform: translate(80px, 0); }
+        25% { transform: translate(0, -80px); }
+        50% { transform: translate(-80px, 0); }
+        75% { transform: translate(0, 80px); }
+        100% { transform: translate(80px, 0); }
+      }
+      @keyframes flow-spin-celebrate {
+        0% { transform: rotate(0deg) scale(1); }
+        50% { transform: rotate(360deg) scale(1.5); }
+        100% { transform: rotate(720deg) scale(1); }
+      }
+      @keyframes flow-nod {
+        0%, 100% { transform: translateY(0); }
+        25% { transform: translateY(5px); }
+        50% { transform: translateY(-5px); }
+        75% { transform: translateY(5px); }
+      }
+      @keyframes flow-breathe {
+        0%, 100% { transform: scale(0.98) translateZ(0); }
+        50% { transform: scale(1.02) translateZ(0); }
+      }
+      @keyframes flow-subtle-glow {
+        0%, 100% { filter: drop-shadow(0 4px 10px rgba(251, 191, 36, 0.4)) brightness(1); }
+        50% { filter: drop-shadow(0 4px 12px rgba(251, 191, 36, 0.5)) brightness(1.05); }
+      }
+      @keyframes flow-excited-bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+      }
+      @keyframes flow-glow-pulse {
+        0%, 100% { filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.4)); }
+        50% { filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.6)); }
+      }
+      /* Advanced Flow Animations - Phase 1-3 */
+      @keyframes flow-particle-float {
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-100px) scale(0); opacity: 0; }
+      }
+      @keyframes flow-confetti-burst {
+        0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+        100% { transform: translate(var(--x), var(--y)) rotate(720deg); opacity: 0; }
+      }
+      @keyframes flow-emoji-pop {
+        0% { transform: translateY(0) scale(0); opacity: 0; }
+        50% { transform: translateY(-20px) scale(1.2); opacity: 1; }
+        100% { transform: translateY(-40px) scale(1); opacity: 0; }
+      }
+      @keyframes flow-emoji-micro-bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-3px); }
+      }
+      @keyframes flow-hint-bubble {
+        0% { opacity: 0; transform: translateY(10px) scale(0.9); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      @keyframes flow-proximity-glow {
+        0%, 100% { box-shadow: 0 0 8px rgba(251, 191, 36, 0.3); }
+        50% { box-shadow: 0 0 15px rgba(251, 191, 36, 0.5), 0 0 20px rgba(139, 92, 246, 0.3); }
+      }
+      /* Mobile optimizations */
+      @media (max-width: 599px) {
+        body {
+          font-size: 14px;
+        }
+        #root {
+          padding: 0 12px;
+        }
+      }
+      /* Prevent horizontal overflow */
+      img, video, svg {
+        max-width: 100%;
+        height: auto;
+      }
+      /* Touch targets */
+      button, a, input, textarea {
+        min-height: 44px;
+        -webkit-tap-highlight-color: rgba(251, 191, 36, 0.2);
+      }
+      /* Prevent text size adjustment */
+      html {
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+      }
+    </style>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+    
+    <!-- Fingerprint.js - FREE tier: 100K API calls/month for visitor identification -->
+    <script>
+      // Load Fingerprint.js from CDN
+      (function() {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js';
+        script.async = true;
+        document.head.appendChild(script);
+      })();
+    </script>
+    
+    <!-- React and MUI from CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script crossorigin src="https://unpkg.com/@mui/material@5.15.15/umd/material-ui.development.js"></script>
+    <script crossorigin src="https://unpkg.com/@mui/icons-material@5.15.15/umd/material-ui-icons.development.js"></script>
+    <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body>
+    <script>
+      // Immediately disable scrollIntoView
+      Element.prototype.scrollIntoView = function() {};
+    </script>
+    <div id="root"></div>
+
+    <!-- Optional local/deployment configuration; copy config.example.js to config.js. -->
+    <script src="config.js"></script>
+
+    <!-- Initialize Firebase -->
+    <script>
+      const flowPublicConfig = window.FLOW_PUBLIC_CONFIG || {};
+
+      if (typeof firebase !== 'undefined') {
+        const firebaseConfig = {
+          apiKey: flowPublicConfig.firebase?.apiKey || '',
+          authDomain: flowPublicConfig.firebase?.authDomain || 'flowearlyadopters.firebaseapp.com',
+          projectId: flowPublicConfig.firebase?.projectId || 'flowearlyadopters',
+          storageBucket: flowPublicConfig.firebase?.storageBucket || 'flowearlyadopters.firebasestorage.app',
+          messagingSenderId: flowPublicConfig.firebase?.messagingSenderId || '',
+          appId: flowPublicConfig.firebase?.appId || ''
+        };
+        
+        if (firebaseConfig.apiKey && firebaseConfig.appId) {
+          // Initialize Firebase only if not already initialized
+          if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+            if (window.location.hostname !== 'localhost') {
+              firebase.analytics();
+            }
+          }
+
+          window.db = firebase.firestore();
+          window.analytics = firebase.analytics();
+        } else {
+          console.warn('Flow Firebase configuration is missing; waitlist submissions will use the local fallback.');
+        }
+      }
+
+      // AI requests go through a server endpoint so provider keys never reach the browser.
+      window.generateAIMessage = async function(prompt, context = {}) {
+        const endpoint = flowPublicConfig.aiEndpoint;
+        if (!endpoint) return null;
+
+        try {
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt, context })
+          });
+          if (!response.ok) throw new Error(`AI endpoint returned ${response.status}`);
+          const data = await response.json();
+          return (data.message || data.text || '').trim() || null;
+        } catch (error) {
+          console.warn('Flow AI endpoint error:', error);
+          return null;
+        }
+      };
+    </script>
+
+    <script type="text/babel">
+      const {
+        ThemeProvider,
+        createTheme,
+        responsiveFontSizes,
+        CssBaseline,
+        Container,
+        Box,
+        Stack,
+        Typography,
+        Chip,
+        Card,
+        CardContent,
+        Button,
+        Paper,
+        Tabs,
+        Tab,
+        Grid,
+        Divider,
+        TextField,
+        InputAdornment,
+        Alert,
+        Accordion,
+        AccordionSummary,
+        AccordionDetails
+      } = MaterialUI;
+      
+      // Icons are in global MaterialUIIcons or window.MaterialUIIcons
+      const Icons = window.MaterialUIIcons || {};
+
+      const {
+        TimelineRounded = () => null,
+        AutoFixHighRounded = () => null,
+        RocketLaunchRounded = () => null,
+        LinkRounded = () => null,
+        CheckCircleRounded = () => null,
+        PlayArrowRounded = () => null,
+        EmailRounded = () => null,
+        PersonRounded = () => null,
+        GroupsRounded = () => null,
+        TrendingUpRounded = () => null,
+        StarRounded = () => null,
+        MusicNoteRounded = () => null,
+        PauseRounded = () => null,
+        SearchRounded = () => null,
+        ExpandMoreRounded = () => null,
+        CircularProgress = MaterialUI.CircularProgress
+      } = Icons;
+
+      const baseTheme = createTheme({
+        palette: {
+          mode: "dark",
+          primary: { main: "#6366f1" },
+          secondary: { main: "#fbbf24" },
+          background: {
+            default: "transparent",
+            paper: "rgba(10, 12, 24, 0.82)"
+          },
+          text: {
+            primary: "#f8fafc",
+            secondary: "#9ca3af"
+          }
+        },
+        typography: {
+          fontFamily: "Inter, sans-serif"
+        },
+        shape: {
+          borderRadius: 18
+        }
+      });
+
+      const theme = responsiveFontSizes(baseTheme);
+
+      const automationStages = [
+        {
+          label: "Find Opportunity",
+          icon: TimelineRounded,
+          headline: "We track what's trending so you don't have to.",
+          description:
+            "Flow monitors your niche across social media and finds what's getting attention.\n\n\n\nYou'll get updated reports showing what's worth creating content about.",
+          apps: [
+            "Opportunity Finder",
+            "Social Monitor",
+            "Viral Tracker",
+            "Content Scanner"
+          ],
+          deliverables: [
+            "🔥 Viral topics delivered to you daily",
+            "💰 Proven content ideas that already made sales",
+            "🎯 Hot products your audience wants to buy"
+          ],
+          timeToLive: ""
+        },
+        {
+          label: "Create Content",
+          icon: AutoFixHighRounded,
+          headline: "Get branded posts, captions, and images ready to publish.",
+          description:
+            "Based on trends, Flow creates your social posts, product descriptions, and marketing emails. Everything matches your brands style and includes your logo and affiliate links.",
+          apps: [
+            "Design Studio",
+            "AI Writer",
+            "Image Creator",
+            "Content Brain"
+          ],
+          deliverables: [
+            "✨ Scroll-stopping posts created in 1 minute",
+            "📝 Persuasive product descriptions written for you",
+            "📧 Sales emails that actually convert"
+          ],
+          timeToLive: ""
+        },
+        {
+          label: "Post & Track",
+          icon: RocketLaunchRounded,
+          headline: "Publish everywhere and see what's working.",
+          description:
+            "Flow posts your content at the best times and tracks which posts make money. You'll see exactly what's driving clicks and sales so you can do more of what works.",
+          apps: [
+            "Instagram",
+            "LinkedIn",
+            "TikTok",
+            "Email"
+          ],
+          deliverables: [
+            "🚀 Content published while you sleep",
+            "📊 See exactly which posts made you money",
+            "💸 Dashboard that shows you where to make money from your posts"
+          ],
+          timeToLive: ""
+        }
+      ];
+
+      const automationTemplates = [
+        {
+          name: "Real Estate Lead Machine",
+          useCase: "Agents & property marketers",
+          channels: ["Facebook Ads", "Instagram", "Zillow", "Email CRM"],
+          metric: "5x more qualified leads"
+        },
+        {
+          name: "Fitness & Wellness Hub",
+          useCase: "Coaches, trainers & supplement affiliates",
+          channels: ["YouTube", "TikTok", "Instagram Reels", "Email"],
+          metric: "Content for 30 days in 1 hour"
+        },
+        {
+          name: "Travel & Experience Curator",
+          useCase: "Travel bloggers & booking affiliates",
+          channels: ["Pinterest", "Instagram", "Blog", "TripAdvisor"],
+          metric: "10+ destinations covered monthly"
+        },
+        {
+          name: "Restaurant & Food Influencer",
+          useCase: "Food bloggers & local dining affiliates",
+          channels: ["Instagram", "TikTok", "Google Maps", "Yelp"],
+          metric: "Cover 30+ venues per month"
+        },
+        {
+          name: "Home & DIY Creator",
+          useCase: "Interior design & home improvement",
+          channels: ["Pinterest", "Instagram", "YouTube", "Amazon"],
+          metric: "Triple your pin engagement"
+        },
+        {
+          name: "I Have No Idea",
+          useCase: "Start your own product line",
+          channels: ["Printify", "Shopify", "Instagram", "TikTok"],
+          metric: "Brand live in under 3 hours"
+        }
+      ];
+
+      function FlowLine({ variant = "default" }) {
+        const variants = {
+          default: {
+            height: "120px",
+            gradient: "linear-gradient(180deg, rgba(139,92,246,0.6) 0%, rgba(251,191,36,0.6) 50%, rgba(139,92,246,0.6) 100%)"
+          },
+          short: {
+            height: "60px",
+            gradient: "linear-gradient(180deg, rgba(99,102,241,0.5) 0%, rgba(251,191,36,0.5) 100%)"
+          },
+          pulse: {
+            height: "100px",
+            gradient: "linear-gradient(180deg, rgba(251,191,36,0.7) 0%, rgba(139,92,246,0.7) 50%, rgba(99,102,241,0.7) 100%)"
+          }
+        };
+
+        const config = variants[variant] || variants.default;
+
+        return (
+          <Box
+            sx={{
+              width: "100%",
+              height: config.height,
+              position: "relative",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              my: { xs: 2, md: 3 }
+            }}
+          >
+            {/* Main line - animations removed */}
+            <Box
+              sx={{
+                position: "absolute",
+                width: "2px",
+                height: "100%",
+                background: config.gradient
+              }}
+            />
+            {/* Node at center */}
+            <Box
+              sx={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: "12px",
+                height: "12px",
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, #fbbf24, #8b5cf6)",
+                boxShadow: "0 0 20px rgba(251,191,36,0.6), 0 0 40px rgba(139,92,246,0.4)",
+                animation: "node-pulse 2s ease-in-out infinite",
+                "@keyframes node-pulse": {
+                  "0%, 100%": { transform: "translate(-50%, -50%) scale(1)", opacity: 1 },
+                  "50%": { transform: "translate(-50%, -50%) scale(1.3)", opacity: 0.8 }
+                }
+              }}
+            />
+          </Box>
+        );
+      }
+
+      function OpportunityFinder() {
+        const [niche, setNiche] = React.useState("");
+        const [loading, setLoading] = React.useState(false);
+        const [result, setResult] = React.useState(null);
+        const [error, setError] = React.useState("");
+        const [showExample, setShowExample] = React.useState(true);
+
+        const quickNiches = [
+          "Fitness & Wellness",
+          "Real Estate",
+          "Travel",
+          "Home Decor",
+          "Clothing",
+          "Pet Care"
+        ];
+
+        const analyzeTrend = async () => {
+          if (!niche.trim()) {
+            setError("Please enter a niche or topic");
+            return;
+          }
+
+          setError("");
+          setLoading(true);
+          setResult(null);
+          setShowExample(false);
+
+          // Mock data for demonstration
+          setTimeout(() => {
+            const mockResponses = {
+              'travel': {
+                trending: [
+                  { topic: "Digital nomad visa programs", interest: "Very High", platform: "Reddit, YouTube" },
+                  { topic: "Airline points and credit cards", interest: "High", platform: "Instagram, TikTok" },
+                  { topic: "Solo travel safety products", interest: "Growing", platform: "TikTok, Pinterest" }
+                ],
+                products: [
+                  { name: "Travel Credit Cards", earning: "$50-100 per signup", difficulty: "Easy" },
+                  { name: "Luggage (Away, Samsonite)", earning: "$15-30 per sale", difficulty: "Easy" },
+                  { name: "Travel Insurance", earning: "$20-40 per signup", difficulty: "Medium" },
+                  { name: "eSIM Cards (Airalo)", earning: "$5-10 per referral", difficulty: "Very Easy" }
+                ],
+                quickWin: "Create a 'Digital Nomad Starter Pack' guide showing exactly what you need. Include visa info, recommended credit card, insurance link, and eSIM recommendation. Share in r/digitalnomad."
+              },
+              
+              'fitness': {
+                trending: [
+                  { topic: "Cozy cardio workouts", interest: "Viral", platform: "TikTok" },
+                  { topic: "Home gym equipment", interest: "Very High", platform: "YouTube, Instagram" },
+                  { topic: "Protein coffee recipes", interest: "Growing", platform: "Instagram Reels" }
+                ],
+                products: [
+                  { name: "Walking Pad Treadmills", earning: "$16-24 per sale", difficulty: "Easy" },
+                  { name: "Resistance Bands", earning: "$2-5 per sale", difficulty: "Very Easy" },
+                  { name: "AG1 Greens Powder", earning: "$30 per subscription", difficulty: "Medium" },
+                  { name: "Fitness Tracker (Whoop)", earning: "$25 per signup", difficulty: "Easy" }
+                ],
+                quickWin: "Film a simple '5-Minute Morning Workout' video showing your equipment. Post on TikTok with #cozycardio and link to your Amazon storefront with the exact items you use."
+              },
+              
+              'real estate': {
+                trending: [
+                  { topic: "First-time homebuyer programs", interest: "Very High", platform: "Facebook Groups" },
+                  { topic: "Airbnb investment strategies", interest: "High", platform: "YouTube" },
+                  { topic: "Smart home security", interest: "Growing", platform: "Instagram, Pinterest" }
+                ],
+                products: [
+                  { name: "Mortgage Referrals", earning: "$200-500 per close", difficulty: "Hard" },
+                  { name: "Ring Security Systems", earning: "$20-35 per sale", difficulty: "Easy" },
+                  { name: "Real Estate Templates", earning: "$10-25 per sale", difficulty: "Very Easy" },
+                  { name: "Home Inspection Tools", earning: "$15-40 per sale", difficulty: "Medium" }
+                ],
+                quickWin: "Create a free 'First-Time Buyer Checklist' PDF with links to mortgage pre-approval, home inspection companies, and a Ring doorbell recommendation. Share in Facebook homebuyer groups."
+              },
+              
+              'home decor': {
+                trending: [
+                  { topic: "Thrifted home makeovers", interest: "Viral", platform: "TikTok, Pinterest" },
+                  { topic: "DIY accent walls", interest: "High", platform: "YouTube, Pinterest" },
+                  { topic: "Smart home lighting", interest: "Growing", platform: "Instagram" }
+                ],
+                products: [
+                  { name: "Wayfair Furniture", earning: "$30-100 per order", difficulty: "Easy" },
+                  { name: "Home Depot Tools", earning: "$10-30 per sale", difficulty: "Easy" },
+                  { name: "Philips Hue Lighting", earning: "$8-15 per kit", difficulty: "Easy" },
+                  { name: "Etsy Vintage Decor", earning: "$2-8 per item", difficulty: "Very Easy" }
+                ],
+                quickWin: "Post a before/after thrift flip showing a $10 item transformed. Tag the paint brand (link to Home Depot), show similar finds (Etsy link), and add it to Pinterest. Transformation posts get massive saves."
+              },
+              
+              'pet care': {
+                trending: [
+                  { topic: "Fresh dog food delivery", interest: "Very High", platform: "Instagram, TikTok" },
+                  { topic: "Pet cameras with treats", interest: "High", platform: "Amazon, TikTok" },
+                  { topic: "GPS pet trackers", interest: "Growing", platform: "Facebook Groups" }
+                ],
+                products: [
+                  { name: "Farmer's Dog Food", earning: "$20 per trial signup", difficulty: "Easy" },
+                  { name: "Chewy Auto-Ship", earning: "$15-25 per order", difficulty: "Easy" },
+                  { name: "Furbo Pet Camera", earning: "$10-20 per sale", difficulty: "Easy" },
+                  { name: "Apple AirTag Pet Bundles", earning: "$3-8 per sale", difficulty: "Very Easy" }
+                ],
+                quickWin: "Film 'What I Actually Feed My Dog' showing the fresh food routine. Include your trial link for Farmer's Dog. Post in dog mom Facebook groups and TikTok #dogmom - instant engagement."
+              },
+              
+              'clothing': {
+                trending: [
+                  { topic: "Capsule wardrobe challenges", interest: "High", platform: "Pinterest, Instagram" },
+                  { topic: "Quiet luxury basics", interest: "Growing", platform: "TikTok" },
+                  { topic: "Sustainable fashion", interest: "Very High", platform: "Instagram, YouTube" }
+                ],
+                products: [
+                  { name: "Quince Cashmere", earning: "$8-15 per item", difficulty: "Easy" },
+                  { name: "ThredUp Consignment", earning: "$5-20 per order", difficulty: "Easy" },
+                  { name: "Everlane Basics", earning: "$6-12 per sale", difficulty: "Easy" },
+                  { name: "Italic Membership", earning: "$25 per signup", difficulty: "Medium" }
+                ],
+                quickWin: "Create a '10-Piece Capsule Wardrobe' grid showing mix-and-match outfits. Link each piece (Quince, Everlane). Post on Pinterest - wardrobe content gets saved and clicked constantly."
+              },
+              
+              'fitness & wellness': {
+                trending: [
+                  { topic: "Cozy cardio workouts", interest: "Viral", platform: "TikTok" },
+                  { topic: "Walking pad treadmills", interest: "Very High", platform: "Instagram, TikTok" },
+                  { topic: "Magnesium sleep supplements", interest: "Growing", platform: "TikTok" }
+                ],
+                products: [
+                  { name: "WalkingPad Treadmills", earning: "$16-24 per sale", difficulty: "Easy" },
+                  { name: "AG1 Greens Powder", earning: "$30 per subscription", difficulty: "Medium" },
+                  { name: "Theragun Recovery Tools", earning: "$10-40 per sale", difficulty: "Easy" },
+                  { name: "Magnesium Supplements", earning: "$3-8 per bottle", difficulty: "Very Easy" }
+                ],
+                quickWin: "Film your 'Morning Routine: Walking Pad + AG1' showing your WFH wellness setup. Post on LinkedIn (professionals engage heavily) and TikTok. Link to Amazon storefront."
+              },
+              
+              'tech': {
+                trending: [
+                  { topic: "AI productivity tools", interest: "Very High", platform: "YouTube, Twitter" },
+                  { topic: "USB-C charging stations", interest: "High", platform: "Amazon" },
+                  { topic: "Budget streaming equipment", interest: "Growing", platform: "TikTok, YouTube" }
+                ],
+                products: [
+                  { name: "Notion AI", earning: "$5-10 per month recurring", difficulty: "Medium" },
+                  { name: "Anker Charging Stations", earning: "$2-4 per sale", difficulty: "Very Easy" },
+                  { name: "Elgato Stream Deck", earning: "$10-20 per sale", difficulty: "Easy" },
+                  { name: "Budget Webcams", earning: "$5-15 per sale", difficulty: "Easy" }
+                ],
+                quickWin: "Create 'My $300 Content Creator Setup' video showing budget-friendly webcam, mic, and lighting. Post on YouTube Shorts + Instagram Reels. Beginners are actively shopping for starter equipment."
+              },
+              
+              'home & garden': {
+                trending: [
+                  { topic: "Indoor gardening systems", interest: "Viral", platform: "TikTok" },
+                  { topic: "Robotic lawn mowers", interest: "High", platform: "YouTube" },
+                  { topic: "Smart sprinkler systems", interest: "Growing", platform: "Instagram" }
+                ],
+                products: [
+                  { name: "AeroGarden Systems", earning: "$6-15 per sale", difficulty: "Easy" },
+                  { name: "Robotic Lawn Mowers", earning: "$30-50 per sale", difficulty: "Medium" },
+                  { name: "Wayfair Outdoor Furniture", earning: "$40-120 per order", difficulty: "Easy" },
+                  { name: "Rachio Smart Sprinklers", earning: "$10-15 per sale", difficulty: "Easy" }
+                ],
+                quickWin: "Post 'Tiny Apartment Herb Garden' showing your AeroGarden with fresh herbs growing. TikTok #apartmentgardening has massive engagement. Link in bio to Amazon."
+              },
+              
+              'beauty': {
+                trending: [
+                  { topic: "Skin cycling routines", interest: "Very High", platform: "TikTok, Instagram" },
+                  { topic: "Korean glass skin products", interest: "High", platform: "TikTok" },
+                  { topic: "Red light therapy masks", interest: "Growing", platform: "Instagram" }
+                ],
+                products: [
+                  { name: "COSRX Snail Mucin", earning: "$1-3 per bottle", difficulty: "Very Easy" },
+                  { name: "LED Therapy Masks", earning: "$25-40 per sale", difficulty: "Medium" },
+                  { name: "The Ordinary Sets", earning: "$2-6 per order", difficulty: "Very Easy" },
+                  { name: "Sephora Products", earning: "$5-20 per order", difficulty: "Easy" }
+                ],
+                quickWin: "Create '7-Day Skin Cycling Routine' carousel showing products for each night. Instagram loves this format. Include affiliate links. Before/after photos = instant engagement."
+              },
+              
+              'food & cooking': {
+                trending: [
+                  { topic: "Air fryer recipes", interest: "Viral", platform: "TikTok, Pinterest" },
+                  { topic: "High-protein meal prep", interest: "Very High", platform: "Instagram" },
+                  { topic: "Ninja Creami ice cream", interest: "High", platform: "TikTok" }
+                ],
+                products: [
+                  { name: "Ninja Creami", earning: "$10-12 per sale", difficulty: "Easy" },
+                  { name: "Air Fryers (Cosori)", earning: "$4-6 per sale", difficulty: "Very Easy" },
+                  { name: "KitchenAid Mixers", earning: "$15-25 per sale", difficulty: "Easy" },
+                  { name: "HelloFresh Kits", earning: "$15-30 per signup", difficulty: "Easy" }
+                ],
+                quickWin: "Post '5 High-Protein Air Fryer Meals' video with quick recipes. Link to your air fryer and meal prep containers. YouTube + Pinterest combo gets massive views for recipe content."
+              }
+            };
+
+            const nicheKey = niche.toLowerCase().trim();
+            let response = mockResponses[nicheKey];
+            
+            // Check for partial matches if exact match not found
+            if (!response) {
+              for (const [key, value] of Object.entries(mockResponses)) {
+                if (nicheKey.includes(key) || key.includes(nicheKey)) {
+                  response = value;
+                  break;
+                }
+              }
+            }
+            
+            // Fallback to customized default
+            if (!response) {
+              response = {
+                trending: [
+                  { topic: `${niche} subscription boxes`, interest: "High", platform: "Instagram" },
+                  { topic: `Educational ${niche} courses`, interest: "Growing", platform: "YouTube" },
+                  { topic: `Sustainable ${niche} products`, interest: "Medium", platform: "Pinterest" }
+                ],
+                products: [
+                  { name: `Premium ${niche} Products`, earning: "$10-30 per sale", difficulty: "Easy" },
+                  { name: `${niche} Online Courses`, earning: "$30-100 per sale", difficulty: "Medium" },
+                  { name: `${niche} Software/Tools`, earning: "$15-50 per month", difficulty: "Medium" },
+                  { name: `Amazon ${niche} Bestsellers`, earning: "$5-20 per sale", difficulty: "Easy" }
+                ],
+                quickWin: `Create 'Top 5 ${niche} Products I Use Daily' comparison video with honest reviews and affiliate links. Post on YouTube and TikTok. Comparison content attracts ready-to-buy audiences.`
+              };
+            }
+            
+            setResult(response);
+            setLoading(false);
+
+            // Track demo usage
+            if (window.trackEvent) {
+              window.trackEvent('opportunity_finder_demo', {
+                event_category: 'engagement',
+                event_label: niche
+              });
+            }
+          }, 800);
+        };
+
+        const handleKeyPress = (event) => {
+          if (event.key === 'Enter' && !loading) {
+            analyzeTrend();
+          }
+        };
+
+        return (
+          <Stack spacing={{ xs: 3, md: 4 }} alignItems="center" sx={{ width: "100%" }}>
+            <Divider sx={{ borderColor: "rgba(139, 92, 246, 0.3)", width: "100%" }} />
+            
+            <Stack spacing={2} alignItems="center" textAlign="center" sx={{ width: "100%" }}>
+              <Typography
+                variant="h3"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: { xs: "1.75rem", sm: "2.25rem", md: "2.5rem" },
+                  background: 'linear-gradient(135deg, #f8fafc 0%, #fbbf24 50%, #f59e0b 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                }}
+              >
+                Try Flow's Opportunity Finder
+              </Typography>
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  maxWidth: 680,
+                  fontSize: { xs: "1rem", sm: "1.1rem" },
+                  color: "#ffffff"
+                }}
+              >
+                See what's trending in your niche right now. Get real insights powered by AI.
+              </Typography>
+            </Stack>
+
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 3, sm: 4, md: 5 },
+                borderRadius: 4,
+                border: "2px solid rgba(251, 191, 36, 0.4)",
+                background: "linear-gradient(135deg, rgba(139,92,246,0.25), rgba(99,102,241,0.20), rgba(251,191,36,0.15))",
+                boxShadow: "0 20px 60px rgba(139, 92, 246, 0.25)",
+                maxWidth: 800,
+                width: "100%",
+                position: "relative",
+                overflow: "hidden",
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: "radial-gradient(circle at 50% 0%, rgba(251,191,36,0.1), transparent 60%)",
+                  pointerEvents: "none"
+                }
+              }}
+            >
+              <Stack spacing={2.5}>
+                <Stack spacing={1.25}>
+                  <Typography variant="caption" sx={{ color: "rgba(251, 191, 36, 0.8)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px", textAlign: "center" }}>
+                    Try these popular niches:
+                  </Typography>
+                  <Box
+                    sx={{
+                      width: "100%",
+                      overflowX: "auto",
+                      WebkitOverflowScrolling: "touch",
+                      pb: 0.5
+                    }}
+                  >
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      sx={{
+                        width: "max-content",
+                        minWidth: "100%",
+                        justifyContent: { xs: "flex-start", sm: "center" }
+                      }}
+                    >
+                      {quickNiches.map((quickNiche) => (
+                        <Chip
+                          key={quickNiche}
+                          label={quickNiche}
+                          onClick={() => {
+                            setNiche(quickNiche);
+                            setError("");
+                          }}
+                          sx={{
+                            background: "rgba(99, 102, 241, 0.15)",
+                            border: "1px solid rgba(99, 102, 241, 0.3)",
+                            color: "#e2e8f0",
+                            cursor: "pointer",
+                            flexShrink: 0,
+                            "&:hover": {
+                              background: "rgba(251, 191, 36, 0.2)",
+                              border: "1px solid rgba(251, 191, 36, 0.5)"
+                            }
+                          }}
+                        />
+                      ))}
+                    </Stack>
+                  </Box>
+                </Stack>
+
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} alignItems="center">
+                  <TextField
+                    fullWidth
+                    placeholder="Enter your niche (e.g., fitness, travel)"
+                    value={niche}
+                    onChange={(e) => {
+                      setNiche(e.target.value);
+                      if (error) setError("");
+                    }}
+                    onKeyPress={handleKeyPress}
+                    disabled={loading}
+                    error={!!error}
+                    helperText={error}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        background: "rgba(15, 23, 42, 0.6)",
+                        "& fieldset": {
+                          borderColor: "rgba(99, 102, 241, 0.3)"
+                        },
+                        "&:hover fieldset": {
+                          borderColor: "rgba(251, 191, 36, 0.5)"
+                        },
+                        "&.Mui-focused fieldset": {
+                          borderColor: "rgba(251, 191, 36, 0.7)"
+                        }
+                      },
+                      "& .MuiInputBase-input": {
+                        color: "#f8fafc",
+                        textAlign: "center",
+                        "&::placeholder": {
+                          textAlign: "center",
+                          opacity: 0.7
+                        }
+                      }
+                    }}
+                  />
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    size="large"
+                    onClick={analyzeTrend}
+                    disabled={loading || !niche.trim()}
+                    startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <SearchRounded />}
+                    sx={{
+                      minWidth: { xs: "100%", sm: 160 },
+                      fontWeight: 700,
+                      whiteSpace: "nowrap"
+                    }}
+                  >
+                    {loading ? "Analyzing..." : "Find Trends"}
+                  </Button>
+                </Stack>
+
+                {result && (
+                  <Stack spacing={2} sx={{ maxWidth: 900, mx: "auto", width: "100%" }}>
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: { xs: 2, sm: 2.5 },
+                        borderRadius: 3,
+                        background: "linear-gradient(135deg, rgba(10, 12, 24, 0.95), rgba(99, 102, 241, 0.08))",
+                        border: "2px solid rgba(251, 191, 36, 0.4)",
+                        animation: "fadeIn 0.5s ease-in",
+                        boxShadow: "0 10px 40px rgba(251, 191, 36, 0.15)"
+                      }}
+                    >
+                      <Stack spacing={2.5}>
+                        <Stack direction="row" alignItems="center" spacing={1} justifyContent="center">
+                          <TrendingUpRounded sx={{ color: "#fbbf24", fontSize: { xs: 24, sm: 28 } }} />
+                          <Typography variant="h5" sx={{ fontWeight: 700, color: "#fbbf24", fontSize: { xs: "1.1rem", sm: "1.25rem" } }}>
+                            Opportunities in {niche}
+                          </Typography>
+                        </Stack>
+
+                        {/* Trending Topics */}
+                        <Box>
+                          <Typography variant="h6" sx={{ fontWeight: 700, color: "#fbbf24", mb: 1, fontSize: { xs: "0.95rem", sm: "1rem" }, textAlign: "center" }}>
+                            🔥 What's Trending
+                          </Typography>
+                          <Stack spacing={0.75}>
+                            {result.trending.map((item, idx) => (
+                              <Paper
+                                key={idx}
+                                elevation={0}
+                                sx={{
+                                  p: { xs: 1.25, sm: 1.5 },
+                                  background: "rgba(139, 92, 246, 0.1)",
+                                  border: "1px solid rgba(139, 92, 246, 0.2)",
+                                  borderRadius: 2
+                                }}
+                              >
+                                <Stack direction={{ xs: "column", sm: "row" }} spacing={1} justifyContent="space-between" alignItems={{ xs: "flex-start", sm: "center" }}>
+                                  <Typography sx={{ color: "#e2e8f0", fontWeight: 600, fontSize: { xs: "0.85rem", sm: "0.9rem" } }}>
+                                    {item.topic}
+                                  </Typography>
+                                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                                    <Chip 
+                                      label={item.interest} 
+                                      size="small" 
+                                      sx={{ 
+                                        backgroundColor: item.interest === "Viral" || item.interest === "Very High" ? "rgba(251, 191, 36, 0.2)" : "rgba(99, 102, 241, 0.2)",
+                                        color: item.interest === "Viral" || item.interest === "Very High" ? "#fbbf24" : "#a5b4fc",
+                                        fontWeight: 600,
+                                        fontSize: "0.7rem"
+                                      }} 
+                                    />
+                                    <Chip 
+                                      label={item.platform} 
+                                      size="small" 
+                                      sx={{ 
+                                        backgroundColor: "rgba(99, 102, 241, 0.15)",
+                                        color: "#cbd5e1",
+                                        fontSize: "0.7rem"
+                                      }} 
+                                    />
+                                  </Stack>
+                                </Stack>
+                              </Paper>
+                            ))}
+                          </Stack>
+                        </Box>
+
+                        {/* Products to Promote */}
+                        <Box>
+                          <Typography variant="h6" sx={{ fontWeight: 700, color: "#fbbf24", mb: 1, fontSize: { xs: "0.95rem", sm: "1rem" }, textAlign: "center" }}>
+                            💰 Products to Promote
+                          </Typography>
+                          <Stack spacing={0.75}>
+                            {result.products.map((product, idx) => (
+                              <Paper
+                                key={idx}
+                                elevation={0}
+                                sx={{
+                                  p: { xs: 1.25, sm: 1.5 },
+                                  background: "rgba(251, 191, 36, 0.08)",
+                                  border: "1px solid rgba(251, 191, 36, 0.2)",
+                                  borderRadius: 2
+                                }}
+                              >
+                                <Stack direction={{ xs: "column", sm: "row" }} spacing={{ xs: 0.75, sm: 1.5 }} alignItems={{ xs: "flex-start", sm: "center" }} justifyContent="space-between" flexWrap="wrap" useFlexGap>
+                                  <Typography sx={{ color: "#e2e8f0", fontWeight: 600, flex: "1 1 auto", fontSize: { xs: "0.85rem", sm: "0.9rem" } }}>
+                                    {product.name}
+                                  </Typography>
+                                  <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+                                    <Typography sx={{ color: "#10b981", fontWeight: 700, fontSize: { xs: "0.8rem", sm: "0.85rem" } }}>
+                                      {product.earning}
+                                    </Typography>
+                                    <Chip 
+                                      label={product.difficulty} 
+                                      size="small" 
+                                      sx={{ 
+                                        backgroundColor: product.difficulty === "Very Easy" ? "rgba(16, 185, 129, 0.2)" : product.difficulty === "Easy" ? "rgba(59, 130, 246, 0.2)" : "rgba(251, 191, 36, 0.2)",
+                                        color: product.difficulty === "Very Easy" ? "#10b981" : product.difficulty === "Easy" ? "#60a5fa" : "#fbbf24",
+                                        fontWeight: 600,
+                                        fontSize: "0.7rem"
+                                      }} 
+                                    />
+                                  </Stack>
+                                </Stack>
+                              </Paper>
+                            ))}
+                          </Stack>
+                        </Box>
+
+                        {/* Quick Win Strategy */}
+                        <Paper
+                          elevation={0}
+                          sx={{
+                            p: { xs: 1.5, sm: 2 },
+                            background: "linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(139, 92, 246, 0.15))",
+                            border: "2px solid rgba(251, 191, 36, 0.3)",
+                            borderRadius: 2
+                          }}
+                        >
+                          <Stack spacing={0.75}>
+                            <Typography variant="h6" sx={{ fontWeight: 700, color: "#fbbf24", fontSize: { xs: "0.95rem", sm: "1rem" }, textAlign: "center" }}>
+                              🎯 Your Quick Win
+                            </Typography>
+                            <Typography
+                              sx={{
+                                color: "#f8fafc",
+                                lineHeight: 1.6,
+                                fontSize: { xs: "0.85rem", sm: "0.9rem" },
+                                textAlign: "center"
+                              }}
+                            >
+                              {result.quickWin}
+                            </Typography>
+                          </Stack>
+                        </Paper>
+                      </Stack>
+                    </Paper>
+                    
+                    <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} justifyContent="center">
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<StarRounded />}
+                        onClick={() => {
+                          const text = `Flow Opportunity Finder Results for ${niche}:\n\n${result}`;
+                          navigator.clipboard.writeText(text);
+                          alert("Copied to clipboard! ✓");
+                        }}
+                        sx={{
+                          borderColor: "rgba(251, 191, 36, 0.5)",
+                          color: "#fbbf24",
+                          "&:hover": {
+                            borderColor: "rgba(251, 191, 36, 0.8)",
+                            background: "rgba(251, 191, 36, 0.1)"
+                          }
+                        }}
+                      >
+                        Copy Results
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => {
+                          setNiche("");
+                          setResult(null);
+                          setShowExample(true);
+                        }}
+                        sx={{
+                          borderColor: "rgba(99, 102, 241, 0.5)",
+                          color: "#e2e8f0",
+                          "&:hover": {
+                            borderColor: "rgba(99, 102, 241, 0.8)",
+                            background: "rgba(99, 102, 241, 0.1)"
+                          }
+                        }}
+                      >
+                        Try Another Niche
+                      </Button>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        href="#waitlist"
+                        sx={{
+                          background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
+                          color: "#0a0c18",
+                          fontWeight: 700,
+                          "&:hover": {
+                            background: "linear-gradient(135deg, #f59e0b, #d97706)"
+                          }
+                        }}
+                      >
+                        Get Full Access →
+                      </Button>
+                    </Stack>
+                  </Stack>
+                )}
+              </Stack>
+            </Paper>
+
+            <Divider sx={{ borderColor: "rgba(139, 92, 246, 0.3)", width: "100%" }} />
+          </Stack>
+        );
+      }
+
+      function OpportunityFinderShowcase({ workflowRef }) {
+        return (
+          <Box ref={workflowRef} sx={{ scrollMarginTop: { xs: 88, md: 120 }, width: "100%" }}>
+            <OpportunityFinder />
+          </Box>
+        );
+      }
+
+      function PoweredByServices() {
+        const allServices = [
+          { name: "Smart Brain", icon: "🧠", description: "Picks the best AI for each job so you get the fastest, cheapest, and best results every time" },
+          { name: "Mission Control", icon: "🎯", description: "Coordinates everything behind the scenes to make sure all your tasks run smoothly and securely" },
+          { name: "Auto-Pilot Assistant", icon: "🤖", description: "Understands what you want and automatically does multi-step tasks without you lifting a finger" },
+          { name: "Trend Scout", icon: "🔥", description: "Finds what's going viral right now so you can create content people actually want to see" },
+          { name: "Product Finder", icon: "🛍️", description: "Searches thousands of products to find the best items to promote and sell to your audience" },
+          { name: "Photo Analyzer", icon: "👁️", description: "Looks at images and tells you what's in them, reads text, and makes sure they're safe to use" },
+          { name: "Image Creator", icon: "🎨", description: "Makes professional photos and graphics for your posts, products, and ads in seconds" },
+          { name: "Task Runner", icon: "⚡", description: "Handles your daily routines like posting, emailing, and updating so you don't have to remember" },
+          { name: "Content Writer", icon: "✍️", description: "Writes captions, blog posts, and product descriptions that actually get people to buy" },
+          { name: "Money Tracker", icon: "📊", description: "Shows you exactly what's making money and what's not, so you know where to focus" },
+          { name: "Platform Connector", icon: "🔗", description: "Links all your apps together - Instagram, Shopify, TikTok, email - so everything syncs automatically" },
+          { name: "Merch Machine", icon: "👕", description: "Designs products, creates listings, and publishes them to your store - all without you designing anything" },
+          { name: "Speed Optimizer", icon: "🚦", description: "Makes sure your requests get answered by the fastest AI available so you never wait around" },
+          { name: "Data Manager", icon: "🔧", description: "Cleans up your data, organizes it, and makes sure everything is ready to use" },
+          { name: "AI Coordinator", icon: "🌐", description: "Makes different AI agents work together smoothly, like a team manager for robots" }
+        ];
+
+        const [activeTab, setActiveTab] = React.useState(0);
+
+        const getFilteredServices = () => {
+          return [allServices[activeTab]];
+        };
+
+        return (
+          <Stack spacing={{ xs: 2.5, md: 3 }} alignItems="center" sx={{ width: "100%" }}>
+            <Stack spacing={1.5} alignItems="center" textAlign="center">
+              <Typography
+                variant="h3"
+                sx={{
+                  fontWeight: 700,
+                  fontSize: { xs: "1.75rem", sm: "2.25rem", md: "2.5rem" },
+                  background: 'linear-gradient(135deg, #f8fafc 0%, #fbbf24 50%, #f59e0b 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                }}
+              >
+                Powered by 15+ AI Services
+              </Typography>
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  maxWidth: 720,
+                  fontSize: { xs: "1rem", sm: "1.1rem" },
+                  color: "#ffffff"
+                }}
+              >
+                A complete AI infrastructure working together to automate your business
+              </Typography>
+            </Stack>
+
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 3, sm: 4, md: 5 },
+                width: "100%",
+                maxWidth: 1100,
+                borderRadius: { xs: 3, md: 4 },
+                border: "1px solid rgba(99, 102, 241, 0.35)",
+                background: "linear-gradient(135deg, rgba(10,12,24,0.92), rgba(39,20,74,0.85))",
+                boxShadow: "0 24px 60px rgba(15, 23, 42, 0.5)",
+                backdropFilter: "blur(10px)",
+                overflow: "hidden"
+              }}
+            >
+              <Tabs
+                value={activeTab}
+                onChange={(e, newValue) => setActiveTab(newValue)}
+                variant="scrollable"
+                scrollButtons="auto"
+                sx={{
+                  mb: 4,
+                  borderBottom: 1,
+                  borderColor: 'rgba(251, 191, 36, 0.3)',
+                  '& .MuiTab-root': {
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    fontSize: { xs: '0.875rem', sm: '1rem' },
+                    color: 'rgba(248, 250, 252, 0.7)',
+                    '&.Mui-selected': {
+                      color: '#fbbf24'
+                    }
+                  },
+                  '& .MuiTabs-indicator': {
+                    backgroundColor: '#fbbf24',
+                    height: 3
+                  }
+                }}
+              >
+                {allServices.map((service, idx) => (
+                  <Tab key={idx} label={service.name} />
+                ))}
+              </Tabs>
+
+              <Grid container spacing={{ xs: 1, sm: 1.5 }} justifyContent="center">
+                {getFilteredServices().map((service, idx) => (
+                  <Grid item xs={12} sm={6} md={4} key={idx} display="flex" justifyContent="center">
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        height: "100%",
+                        width: "100%",
+                        maxWidth: 360,
+                        p: { xs: 2.5, sm: 3 },
+                        borderRadius: 3,
+                        border: "1px solid rgba(251, 191, 36, 0.3)",
+                        background: "linear-gradient(135deg, rgba(15,23,42,0.92), rgba(99,102,241,0.12))",
+                        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                        "&:hover": {
+                          transform: "translateY(-4px)",
+                          boxShadow: "0 14px 32px rgba(251, 191, 36, 0.25)"
+                        }
+                      }}
+                    >
+                      <Stack spacing={1.5} alignItems="center" textAlign="center" sx={{ height: "100%" }}>
+                        <Box
+                          sx={{
+                            fontSize: "2.5rem",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            filter: "drop-shadow(0 3px 8px rgba(251,191,36,0.25))"
+                          }}
+                        >
+                          {service.icon}
+                        </Box>
+                        <Typography sx={{ fontWeight: 700, fontSize: "1.15rem", color: "#fbbf24" }}>
+                          {service.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.65, fontSize: "0.95rem" }}>
+                          {service.description}
+                        </Typography>
+                      </Stack>
+                    </Paper>
+                  </Grid>
+                ))}
+              </Grid>
+            </Paper>
+
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 3, sm: 4 },
+                borderRadius: 4,
+                border: "2px solid rgba(251, 191, 36, 0.4)",
+                background: "linear-gradient(135deg, rgba(251,191,36,0.12), rgba(99,102,241,0.08))",
+                maxWidth: 800,
+                width: "100%",
+                textAlign: "center"
+              }}
+            >
+              <Stack spacing={2} alignItems="center">
+                <Typography 
+                  variant="h5" 
+                  sx={{ 
+                    fontWeight: 700,
+                    background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text'
+                  }}
+                >
+                  All of this, working for you automatically
+                </Typography>
+                <Typography variant="body1" sx={{ color: "#ffffff" }}>
+                  While you focus on growing your business, our AI services handle the heavy lifting—24/7, without breaks.
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  size="large"
+                  href="#waitlist"
+                  sx={{
+                    fontWeight: 700,
+                    mt: 1
+                  }}
+                >
+                  Join the Waitlist
+                </Button>
+              </Stack>
+            </Paper>
+          </Stack>
+        );
+      }
+
+      function HeroSection() {
+        return (
+          <Stack
+            spacing={{ xs: 2, md: 2.5 }}
+            alignItems="center"
+            textAlign="center"
+            sx={{ width: "100%" }}
+          >
+            <Chip
+              label="Waitlist"
+              color="secondary"
+              sx={{ fontWeight: 600 }}
+            />
+            <Typography
+              variant="h1"
+              sx={{
+                fontWeight: 800,
+                lineHeight: 1.15,
+                maxWidth: 720,
+                fontSize: { xs: "2.3rem", sm: "3rem", md: "3.8rem" },
+                background: 'linear-gradient(135deg, #f8fafc 0%, #fbbf24 50%, #f59e0b 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                textShadow: '0 0 80px rgba(251, 191, 36, 0.3)',
+                letterSpacing: '-0.02em'
+              }}
+            >
+              Build Your Social Empire.<br />Join the Flow.
+            </Typography>
+            <Typography
+              variant="h6"
+              sx={{ 
+                maxWidth: 680, 
+                fontSize: { xs: "1rem", sm: "1.125rem" },
+                color: "#ffffff",
+                lineHeight: 1.6
+              }}
+            >
+              Be the first to get the app that makes selling online easy.
+            </Typography>
+            <CTAButtons />
+          </Stack>
+        );
+      }
+
+      function HeroMessage() {
+        return (
+          <Stack
+            spacing={{ xs: 2.5, md: 3 }}
+            alignItems="center"
+            textAlign="center"
+            sx={{ width: "100%" }}
+          >
+            <Box 
+              sx={{ 
+                width: "100%", 
+                height: "2px", 
+                background: "linear-gradient(90deg, transparent 0%, rgba(139,92,246,0.5) 20%, rgba(251,191,36,0.6) 50%, rgba(139,92,246,0.5) 80%, transparent 100%)",
+                position: "relative",
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  width: "8px",
+                  height: "8px",
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #fbbf24, #8b5cf6)",
+                  boxShadow: "0 0 20px rgba(139,92,246,0.6)"
+                }
+              }} 
+            />
+            <Typography
+              variant="h2"
+              sx={{
+                fontWeight: 800,
+                lineHeight: 1.15,
+                maxWidth: 720,
+                fontSize: { xs: "2.3rem", sm: "3rem", md: "3.5rem" },
+                background: 'linear-gradient(135deg, #f8fafc 0%, #fbbf24 50%, #f59e0b 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                textShadow: '0 0 80px rgba(251, 191, 36, 0.3)',
+                letterSpacing: '-0.02em'
+              }}
+            >
+              Build Your Social Empire.<br />Join the Flow.
+            </Typography>
+            <Typography
+              variant="h6"
+              sx={{ 
+                maxWidth: 680, 
+                fontSize: { xs: "1rem", sm: "1.125rem" },
+                color: "#ffffff"
+              }}
+            >
+              Be the first to get the app that makes selling online easy.
+            </Typography>
+          </Stack>
+        );
+      }
+
+      function CTAButtons() {
+        return (
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={{ xs: 1.5, sm: 2 }}
+            alignItems="center"
+            justifyContent="center"
+            sx={{ width: "100%", maxWidth: { xs: "100%", sm: "600px" }, mx: "auto" }}
+          >
+            <Button
+              variant="contained"
+              size="large"
+              href="#waitlist"
+              aria-label="Jump to waitlist signup form"
+              sx={{
+                fontWeight: 700,
+                width: { xs: "100%", sm: "auto" },
+                minWidth: { sm: "200px" },
+                py: { xs: 1.8, sm: 2 },
+                px: { xs: 4, sm: 5 },
+                fontSize: { xs: "1rem", sm: "1.1rem" },
+                background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
+                color: "#0f172a",
+                borderRadius: "12px",
+                boxShadow: "0 4px 24px rgba(251, 191, 36, 0.4), 0 0 0 1px rgba(251, 191, 36, 0.1)",
+                textTransform: "none",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                "&:hover": {
+                  background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+                  boxShadow: "0 8px 32px rgba(251, 191, 36, 0.6), 0 0 0 2px rgba(251, 191, 36, 0.3)",
+                  transform: "translateY(-3px)"
+                },
+                "&:active": {
+                  transform: "translateY(-1px)"
+                }
+              }}
+            >
+              Join the Waitlist
+            </Button>
+            <Button
+              variant="outlined"
+              size="large"
+              href="#workflow"
+              endIcon={<PlayArrowRounded />}
+              aria-label="Jump to workflow demonstration"
+              sx={{
+                fontWeight: 600,
+                width: { xs: "100%", sm: "auto" },
+                minWidth: { sm: "200px" },
+                py: { xs: 1.8, sm: 2 },
+                px: { xs: 4, sm: 5 },
+                fontSize: { xs: "1rem", sm: "1.1rem" },
+                color: "#fbbf24",
+                borderRadius: "12px",
+                border: "2px solid rgba(251, 191, 36, 0.5)",
+                backgroundColor: "rgba(251, 191, 36, 0.05)",
+                backdropFilter: "blur(8px)",
+                textTransform: "none",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                "&:hover": {
+                  border: "2px solid rgba(251, 191, 36, 0.8)",
+                  backgroundColor: "rgba(251, 191, 36, 0.1)",
+                  boxShadow: "0 4px 24px rgba(251, 191, 36, 0.3)",
+                  transform: "translateY(-3px)"
+                },
+                "&:active": {
+                  transform: "translateY(-1px)"
+                }
+              }}
+            >
+              Try It Now
+            </Button>
+          </Stack>
+        );
+      }
+
+      function StageDetails({ stage }) {
+        return (
+          <Stack spacing={{ xs: 2, sm: 2.5, md: 3 }}>
+            <Stack spacing={0.75} alignItems="center" textAlign="center">
+              <Typography
+                variant="h4"
+                sx={{ fontWeight: 700, fontSize: { xs: "1.15rem", sm: "1.5rem", md: "1.75rem" } }}
+              >
+                {stage.headline}
+              </Typography>
+              <Typography variant="body1" sx={{ color: "#ffffff", fontSize: { xs: "0.9rem", sm: "0.95rem", md: "1rem" } }}>
+                {stage.description}
+              </Typography>
+            </Stack>
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap justifyContent="center">
+              {stage.apps.map((app) => (
+                <Chip
+                  key={app}
+                  label={app}
+                  variant="filled"
+                  color="secondary"
+                  sx={{ 
+                    fontWeight: 600,
+                    fontSize: { xs: "0.8rem", sm: "0.85rem" },
+                    py: { xs: 1.75, sm: 2 },
+                    px: { xs: 1.5, sm: 1.75 },
+                    background: "linear-gradient(135deg, rgba(251,191,36,0.25), rgba(245,158,11,0.25))",
+                    border: "2px solid rgba(251,191,36,0.6)",
+                    backdropFilter: "blur(8px)",
+                    color: "#fbbf24",
+                    "&:hover": {
+                      background: "linear-gradient(135deg, rgba(251,191,36,0.35), rgba(245,158,11,0.35))",
+                      border: "2px solid rgba(251,191,36,0.8)"
+                    }
+                  }}
+                />
+              ))}
+            </Stack>
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 1.5, sm: 2, md: 2.5 },
+                borderRadius: 3,
+                border: "1px solid rgba(148, 163, 184, 0.2)",
+                background: "rgba(12, 16, 32, 0.85)"
+              }}
+            >
+              <Stack spacing={{ xs: 1.5, sm: 2, md: 2 }} alignItems="center">
+                <Typography
+                  variant="h5"
+                  sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1.2rem", md: "1.4rem" }, textAlign: "center" }}
+                >
+                  Flow does this for you
+                </Typography>
+                <Stack spacing={{ xs: 0.75, sm: 1 }} sx={{ width: "100%", alignItems: "center" }}>
+                  {stage.deliverables.map((item) => (
+                    <Stack key={item} direction="row" spacing={1} alignItems="flex-start" justifyContent="center" sx={{ textAlign: "center", maxWidth: { xs: "100%", sm: "90%" } }}>
+                      <CheckCircleRounded sx={{ color: "primary.main", mt: 0.25, fontSize: { xs: "1.25rem", sm: "1.4rem" } }} />
+                      <Typography 
+                        variant="body1" 
+                        sx={{ 
+                          fontSize: { xs: "0.85rem", sm: "0.95rem", md: "1.05rem" },
+                          fontWeight: 600,
+                          color: "text.primary",
+                          lineHeight: 1.5
+                        }}
+                      >
+                        {item}
+                      </Typography>
+                    </Stack>
+                  ))}
+                </Stack>
+              </Stack>
+            </Paper>
+            <Typography variant="caption" color="text.secondary">
+              {stage.timeToLive}
+            </Typography>
+          </Stack>
+        );
+      }
+
+      function WorkflowBuilder() {
+        const [activeStage, setActiveStage] = React.useState(0);
+        const currentStage = automationStages[activeStage];
+
+        return (
+          <Stack spacing={{ xs: 1.75, md: 2.5 }} alignItems="center" sx={{ width: "100%" }}>
+            <Divider sx={{ borderColor: "rgba(139, 92, 246, 0.3)" }} />
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 2, sm: 2.5, md: 4 },
+                borderRadius: 4,
+                border: "1px solid rgba(99, 102, 241, 0.35)",
+                background: "linear-gradient(135deg, rgba(99,102,241,0.18), rgba(15,23,42,0.85))",
+                boxShadow: "0 25px 60px rgba(15, 23, 42, 0.45)"
+              }}
+            >
+              <Stack spacing={{ xs: 1.75, sm: 2, md: 2.5 }}>
+                <Stack spacing={0.5} alignItems="center" textAlign="center">
+                  <Typography
+                    variant="h3"
+                    sx={{ fontWeight: 700, fontSize: { xs: "1.5rem", sm: "2rem", md: "2.5rem" } }}
+                  >
+                    Simple Automation Steps
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: "rgba(251, 191, 36, 0.8)",
+                      fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                      fontStyle: "italic",
+                      mt: 0.25
+                    }}
+                  >
+                    Click each step to see how it works
+                  </Typography>
+                </Stack>
+
+                <Box
+                  sx={{
+                    width: "100%",
+                    borderRadius: { xs: 2, sm: 999 },
+                    p: { xs: 0, sm: 1 },
+                    position: "relative"
+                  }}
+                >
+                  <Tabs
+                    value={activeStage}
+                    onChange={(event, value) => setActiveStage(value)}
+                    variant="scrollable"
+                    scrollButtons="auto"
+                    allowScrollButtonsMobile
+                    sx={{
+                      minHeight: "unset",
+                      "& .MuiTabs-flexContainer": {
+                        flexDirection: { xs: "column", sm: "row" },
+                        gap: { xs: 0.5, sm: 0 },
+                        justifyContent: "center"
+                      },
+                      "& .MuiTab-root": {
+                        fontWeight: 600,
+                        minHeight: { xs: 44, sm: 48 },
+                        width: { xs: "100%", sm: "auto" },
+                        fontSize: { xs: "0.85rem", sm: "0.9rem" },
+                        py: { xs: 1, sm: 1.5 },
+                        px: { xs: 2, sm: 2.5 },
+                        borderRadius: { xs: 2, sm: 12 },
+                        mx: { xs: 0, sm: 0.5 },
+                        mb: { xs: 0.5, sm: 0 },
+                        transition: "all 0.2s ease",
+                        background: {
+                          xs: "rgba(15, 23, 42, 0.9)",
+                          sm: "transparent"
+                        },
+                        border: { xs: "1.5px solid rgba(99, 102, 241, 0.4)", sm: "1px solid transparent" },
+                        color: "#cbd5e1",
+                        boxShadow: "none",
+                        "&:hover": {
+                          background: "rgba(99, 102, 241, 0.15)",
+                          borderColor: "rgba(99, 102, 241, 0.5)"
+                        },
+                        "&.Mui-selected": {
+                          background: {
+                            xs: "linear-gradient(135deg, rgba(251,191,36,0.2), rgba(245,158,11,0.2))",
+                            sm: "linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.15))"
+                          },
+                          borderColor: { xs: "rgba(251, 191, 36, 0.6)", sm: "rgba(168, 85, 247, 0.5)" },
+                          color: { xs: "#fbbf24", sm: "#fef9c3" },
+                          fontWeight: 700,
+                          boxShadow: "none"
+                        }
+                      },
+                      "& .MuiTabs-indicator": {
+                        height: 2,
+                        borderRadius: 2,
+                        background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
+                        display: { xs: "none", sm: "block" }
+                      }
+                    }}
+                  >
+                    {automationStages.map((stage, index) => (
+                      <Tab
+                        key={stage.label}
+                        icon={React.createElement(stage.icon, { fontSize: "small" })}
+                        iconPosition="start"
+                        label={stage.label}
+                        value={index}
+                      />
+                    ))}
+                  </Tabs>
+                </Box>
+
+                <StageDetails stage={currentStage} />
+              </Stack>
+            </Paper>
+          </Stack>
+        );
+      }
+
+      function WaitlistSignup() {
+        const [formData, setFormData] = React.useState({ name: "", email: "", useCase: "" });
+        const [errors, setErrors] = React.useState({});
+        const [loading, setLoading] = React.useState(false);
+        const [submitted, setSubmitted] = React.useState(false);
+        const [waitlistCount, setWaitlistCount] = React.useState(0);
+        const [userPosition, setUserPosition] = React.useState(null);
+
+        // Load waitlist count on mount and set up real-time listener
+        React.useEffect(() => {
+          if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+            const db = firebase.firestore();
+            
+            // Set up real-time listener
+            const unsubscribe = db.collection('meta').doc('waitlist')
+              .onSnapshot((doc) => {
+                if (doc.exists) {
+                  setWaitlistCount(doc.data().count || 0);
+                }
+              }, (error) => {
+                console.error('Failed to load waitlist count:', error);
+              });
+            
+            // Cleanup listener on unmount
+            return () => unsubscribe();
+          }
+        }, []);
+
+        const validateEmail = (email) => {
+          const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          return re.test(email);
+        };
+
+        const handleChange = (field) => (event) => {
+          setFormData({ ...formData, [field]: event.target.value });
+          if (errors[field]) {
+            setErrors({ ...errors, [field]: "" });
+          }
+        };
+
+        const handleSubmit = async (event) => {
+          event.preventDefault();
+          const newErrors = {};
+
+          if (!formData.name.trim()) {
+            newErrors.name = "Name is required";
+          }
+          if (!formData.email.trim()) {
+            newErrors.email = "Email is required";
+          } else if (!validateEmail(formData.email)) {
+            newErrors.email = "Please enter a valid email";
+          }
+          if (!formData.useCase.trim()) {
+            newErrors.useCase = "Please tell us how you'd use Flow";
+          }
+
+          if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+          }
+
+          setLoading(true);
+          
+          try {
+            // Firebase integration
+            if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+              const db = firebase.firestore();
+              
+              console.log('Checking for duplicate email...');
+              // Check for duplicate email
+              const existingSignup = await db.collection('waitlist_signups')
+                .where('email', '==', formData.email.toLowerCase())
+                .limit(1)
+                .get();
+
+              if (!existingSignup.empty) {
+                setErrors({ email: 'This email is already on the waitlist' });
+                setLoading(false);
+                return;
+              }
+
+              console.log('Adding signup to Firestore...');
+              // Add new signup
+              const signupData = {
+                name: formData.name.trim(),
+                email: formData.email.toLowerCase().trim(),
+                useCase: formData.useCase.trim(),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                userAgent: navigator.userAgent,
+                screenResolution: `${screen.width}x${screen.height}`,
+                referrer: document.referrer || 'direct',
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                language: navigator.language
+              };
+
+              const docRef = await db.collection('waitlist_signups').add(signupData);
+              console.log('Firestore document created:', docRef.id);
+              
+              // Email notifications disabled - view signups in Firebase Console
+              // https://console.firebase.google.com/project/flowearlyadopters/firestore
+
+              console.log('Updating counter...');
+              // Increment counter
+              const counterDoc = await db.collection('meta').doc('waitlist').get();
+              const position = counterDoc.exists ? (counterDoc.data().count || 0) + 1 : 1;
+
+              await db.collection('meta').doc('waitlist').set({
+                count: firebase.firestore.FieldValue.increment(1),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+              }, { merge: true });
+
+              console.log('Signup complete! Position:', position);
+              setUserPosition(position);
+              
+              // Track analytics
+              if (typeof gtag !== 'undefined') {
+                gtag('event', 'waitlist_signup', {
+                  event_category: 'engagement',
+                  event_label: formData.name,
+                  value: position
+                });
+              }
+            } else {
+              console.error('Firebase not initialized!');
+              setErrors({ general: 'System not ready. Please refresh and try again.' });
+              setLoading(false);
+              return;
+            }
+
+            setSubmitted(true);
+          } catch (error) {
+            console.error('Waitlist signup error:', error);
+            console.error('Error code:', error.code);
+            console.error('Error message:', error.message);
+            setErrors({ general: error.message || 'Something went wrong. Please try again.' });
+          } finally {
+            setLoading(false);
+          }
+        };
+
+        if (submitted) {
+          return (
+            <Paper
+              id="waitlist"
+              role="region"
+              aria-label="Waitlist signup success"
+              elevation={0}
+              sx={{
+                p: { xs: 3, sm: 4, md: 6 },
+                borderRadius: { xs: 3, md: 4 },
+                border: "2px solid rgba(251, 191, 36, 0.4)",
+                background: "linear-gradient(135deg, rgba(251,191,36,0.08), rgba(15,23,42,0.85))",
+                textAlign: "center"
+              }}
+            >
+              <div role="status" aria-live="polite" aria-atomic="true">
+              <Stack spacing={3} alignItems="center">
+                <Box
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: "50%",
+                    background: "rgba(251, 191, 36, 0.2)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}
+                >
+                  <CheckCircleRounded sx={{ fontSize: 48, color: "secondary.main" }} />
+                </Box>
+                <Stack spacing={1}>
+                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                    You're on the list, {formData.name.split(' ')[0]}! 🎉
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    You're #{userPosition || waitlistCount + 1} of 500. Check your email for next steps.
+                  </Typography>
+                </Stack>
+                <Paper
+                  sx={{
+                    p: 3,
+                    background: "rgba(10, 12, 24, 0.6)",
+                    border: "1px solid rgba(148,163,184,0.2)",
+                    width: "100%",
+                    maxWidth: 480
+                  }}
+                >
+                  <Stack spacing={2}>
+                    <Typography variant="subtitle2" color="secondary">
+                      What happens next?
+                    </Typography>
+                    <Stack spacing={1.5}>
+                      <Stack direction="row" spacing={1.5} alignItems="flex-start">
+                        <EmailRounded sx={{ color: "primary.main", mt: 0.3 }} />
+                        <Typography variant="body2">
+                          Confirmation email sent to {formData.email}
+                        </Typography>
+                      </Stack>
+                      <Stack direction="row" spacing={1.5} alignItems="flex-start">
+                        <StarRounded sx={{ color: "primary.main", mt: 0.3 }} />
+                        <Typography variant="body2">
+                          Exclusive early access content arriving weekly
+                        </Typography>
+                      </Stack>
+                      <Stack direction="row" spacing={1.5} alignItems="flex-start">
+                        <RocketLaunchRounded sx={{ color: "primary.main", mt: 0.3 }} />
+                        <Typography variant="body2">
+                          Launch invitation in late February 2026
+                        </Typography>
+                      </Stack>
+                    </Stack>
+                  </Stack>
+                </Paper>
+                <Typography variant="caption" color="text.secondary">
+                  Want to move up? Share Flow with friends to skip the line.
+                </Typography>
+              </Stack>
+              </div>
+            </Paper>
+          );
+        }
+
+        return (
+          <Paper
+            id="waitlist"
+            elevation={0}
+            sx={{
+              p: { xs: 2.5, sm: 3, md: 5 },
+              borderRadius: { xs: 3, md: 4 },
+              border: "1px solid rgba(251, 191, 36, 0.35)",
+              background: "linear-gradient(135deg, rgba(251,191,36,0.12), rgba(15,23,42,0.85))",
+              boxShadow: "0 25px 60px rgba(15, 23, 42, 0.45)",
+              maxWidth: 720,
+              mx: "auto"
+            }}
+          >
+            <Stack spacing={2.5}>
+              <Stack spacing={2}>
+                <Typography
+                  variant="h3"
+                  textAlign="center"
+                  sx={{ 
+                    fontWeight: 700, 
+                    fontSize: { xs: "1.9rem", sm: "2.4rem", md: "2.8rem" },
+                    background: 'linear-gradient(135deg, #f8fafc 0%, #fbbf24 50%, #f59e0b 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text'
+                  }}
+                >
+                  Join the Flow Waitlist
+                </Typography>
+                <Typography 
+                  variant="body1" 
+                  color="text.secondary" 
+                  textAlign="center" 
+                  sx={{ 
+                    mx: "auto", 
+                    maxWidth: 680,
+                    fontSize: { xs: "1rem", sm: "1.1rem" },
+                    color: "#ffffff"
+                  }}
+                >
+                  Be among the first to access Flow when we launch in Q1 2026
+                </Typography>
+                
+                {/* Live Counter Progress */}
+                <Paper
+                  sx={{
+                    p: { xs: 2, sm: 2.5, md: 3 },
+                    background: "rgba(10, 12, 24, 0.6)",
+                    border: "1px solid rgba(251,191,36,0.3)",
+                    borderRadius: { xs: 2, md: 3 }
+                  }}
+                >
+                  <Stack spacing={2}>
+                    <Stack direction="row" justifyContent="center" alignItems="baseline" spacing={0.5}>
+                      <Typography variant="h4" sx={{ fontWeight: 700, color: "secondary.main", fontSize: { xs: "2rem", md: "2.125rem" } }}>
+                        {waitlistCount}
+                      </Typography>
+                      <Typography variant="h6" color="text.secondary" sx={{ fontSize: { xs: "1.125rem", md: "1.25rem" } }}>
+                        / 500
+                      </Typography>
+                    </Stack>
+                    <Box sx={{ width: "100%", position: "relative" }}>
+                      <Box
+                        sx={{
+                          height: 12,
+                          borderRadius: 999,
+                          background: "rgba(148,163,184,0.2)",
+                          overflow: "hidden"
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            height: "100%",
+                            width: `${(waitlistCount / 500) * 100}%`,
+                            background: "linear-gradient(90deg, #fbbf24, #f59e0b)",
+                            borderRadius: 999,
+                            transition: "width 0.5s ease"
+                          }}
+                        />
+                      </Box>
+                    </Box>
+                    <Typography variant="caption" color="text.secondary" textAlign="center">
+                      {500 - waitlistCount} spots remaining for early access
+                    </Typography>
+                  </Stack>
+                </Paper>
+              </Stack>
+
+              <Box component="form" onSubmit={handleSubmit} aria-label="Waitlist signup form" noValidate>
+                <Stack spacing={{ xs: 1.75, md: 2.25 }}>
+                  <Stack spacing={1.25}>
+                    <TextField
+                      label="Your Name"
+                      value={formData.name}
+                      onChange={handleChange('name')}
+                      error={!!errors.name}
+                      helperText={errors.name}
+                      fullWidth
+                      required
+                      variant="outlined"
+                      autoFocus={false}
+                      disabled={loading}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          background: 'linear-gradient(135deg, rgba(10, 12, 24, 0.8), rgba(15, 23, 42, 0.6))',
+                          backdropFilter: 'blur(10px)',
+                          borderRadius: 2,
+                          '& fieldset': {
+                            borderColor: 'rgba(148, 163, 184, 0.2)',
+                            transition: 'all 0.3s ease'
+                          },
+                          '&:hover fieldset': {
+                            borderColor: 'rgba(251, 191, 36, 0.4)'
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: 'rgba(251, 191, 36, 0.6)',
+                            borderWidth: '2px'
+                          },
+                          '& input': {
+                            padding: '16.5px 14px'
+                          }
+                        },
+                        '& .MuiInputLabel-root': {
+                          color: 'rgba(148, 163, 184, 0.9)',
+                          '&.Mui-focused': {
+                            color: '#fbbf24'
+                          }
+                        }
+                      }}
+                    />
+                    <TextField
+                      label="Email Address"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange('email')}
+                      error={!!errors.email}
+                      helperText={errors.email}
+                      fullWidth
+                      required
+                      variant="outlined"
+                      disabled={loading}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          background: 'linear-gradient(135deg, rgba(10, 12, 24, 0.8), rgba(15, 23, 42, 0.6))',
+                          backdropFilter: 'blur(10px)',
+                          borderRadius: 2,
+                          '& fieldset': {
+                            borderColor: 'rgba(148, 163, 184, 0.2)',
+                            transition: 'all 0.3s ease'
+                          },
+                          '&:hover fieldset': {
+                            borderColor: 'rgba(251, 191, 36, 0.4)'
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: 'rgba(251, 191, 36, 0.6)',
+                            borderWidth: '2px'
+                          },
+                          '& input': {
+                            padding: '16.5px 14px'
+                          }
+                        },
+                        '& .MuiInputLabel-root': {
+                          color: 'rgba(148, 163, 184, 0.9)',
+                          '&.Mui-focused': {
+                            color: '#fbbf24'
+                          }
+                        }
+                      }}
+                    />
+                    <TextField
+                      label="How would you use Flow?"
+                      value={formData.useCase}
+                      onChange={handleChange('useCase')}
+                      error={!!errors.useCase}
+                      helperText={errors.useCase || "e.g., Growing my Instagram following, Selling digital products, etc."}
+                      fullWidth
+                      required
+                      multiline
+                      rows={3}
+                      variant="outlined"
+                      disabled={loading}
+                      placeholder="Tell us about your goals and how Flow could help..."
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          background: 'linear-gradient(135deg, rgba(10, 12, 24, 0.8), rgba(15, 23, 42, 0.6))',
+                          backdropFilter: 'blur(10px)',
+                          borderRadius: 2,
+                          '& fieldset': {
+                            borderColor: 'rgba(148, 163, 184, 0.2)',
+                            transition: 'all 0.3s ease'
+                          },
+                          '&:hover fieldset': {
+                            borderColor: 'rgba(251, 191, 36, 0.4)'
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: 'rgba(251, 191, 36, 0.6)',
+                            borderWidth: '2px'
+                          }
+                        },
+                        '& .MuiInputLabel-root': {
+                          color: 'rgba(148, 163, 184, 0.9)',
+                          '&.Mui-focused': {
+                            color: '#fbbf24'
+                          }
+                        },
+                        '& .MuiFormHelperText-root': {
+                          color: errors.useCase ? undefined : 'rgba(148, 163, 184, 0.7)'
+                        }
+                      }}
+                    />
+                  </Stack>
+                  {errors.general && (
+                    <Alert severity="error" sx={{ borderRadius: 2 }}>
+                      {errors.general}
+                    </Alert>
+                  )}
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    size="large"
+                    disabled={loading}
+                    aria-label={loading ? "Submitting waitlist signup" : "Submit waitlist signup form"}
+                    sx={{
+                      fontWeight: 700,
+                      py: { xs: 1.8, md: 2 },
+                      px: { xs: 4, md: 5 },
+                      fontSize: { xs: "1rem", md: "1.1rem" },
+                      background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                      color: '#0f172a',
+                      borderRadius: '12px',
+                      boxShadow: '0 4px 24px rgba(251, 191, 36, 0.4), 0 0 0 1px rgba(251, 191, 36, 0.1)',
+                      textTransform: 'none',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                        boxShadow: '0 8px 32px rgba(251, 191, 36, 0.6), 0 0 0 2px rgba(251, 191, 36, 0.3)',
+                        transform: 'translateY(-3px)'
+                      },
+                      '&:active': {
+                        transform: 'translateY(-1px)'
+                      },
+                      '&.Mui-disabled': {
+                        background: 'rgba(148, 163, 184, 0.2)',
+                        color: 'rgba(148, 163, 184, 0.5)',
+                        boxShadow: 'none'
+                      }
+                    }}
+                  >
+                    {loading ? "Securing your spot..." : "Join the Waitlist"}
+                  </Button>
+                  <Typography variant="caption" color="text.secondary" textAlign="center">
+                    By joining, you'll receive early access updates. Unsubscribe anytime.
+                  </Typography>
+                </Stack>
+              </Box>
+            </Stack>
+          </Paper>
+        );
+      }
+
+      function SocialProof() {
+        const benefits = [
+          {
+            icon: "flownobackground.png",
+            title: "Flow Autopilot",
+            description: "Moving Intelligence to keep you on track",
+            iconType: "image"
+          },
+          {
+            icon: "timer",
+            title: "70+ Hours Saved",
+            description: "Just a few clicks",
+            iconType: "svg"
+          },
+          {
+            icon: "sparkles",
+            title: "Pro Content",
+            description: "Think to create",
+            iconType: "svg"
+          },
+          {
+            icon: "🧠",
+            title: "Less Decisions",
+            description: "More energy",
+            iconType: "emoji"
+          }
+        ];
+
+        return (
+          <Stack spacing={{ xs: 'clamp(1.5rem, 4vw, 2rem)', sm: 'clamp(2rem, 5vw, 2.5rem)', md: 'clamp(2.5rem, 6vw, 3rem)' }} alignItems="center" sx={{ width: "100%" }}>
+            <Stack spacing={{ xs: 'clamp(0.5rem, 2vw, 0.75rem)', sm: 'clamp(0.75rem, 2.5vw, 1rem)', md: 'clamp(1rem, 3vw, 1.25rem)' }} alignItems="center" textAlign="center">
+              <Typography
+                variant="h2"
+                sx={{ 
+                  fontWeight: 800, 
+                  fontSize: { xs: "clamp(1.75rem, 8vw, 2.5rem)", sm: "clamp(2.5rem, 6vw, 3.5rem)", md: "clamp(3rem, 5vw, 4rem)" },
+                  fontFamily: "'Poppins', 'Montserrat', -apple-system, sans-serif",
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1.1,
+                  background: "linear-gradient(135deg, #f8fafc 0%, #fbbf24 50%, #f59e0b 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  textShadow: "0 0 80px rgba(251, 191, 36, 0.3)",
+                  mb: { xs: 'clamp(1.5rem, 4vw, 2rem)', sm: 'clamp(2rem, 5vw, 2.5rem)', md: 'clamp(2.5rem, 6vw, 3rem)' }
+                }}
+              >
+                Meet Flow
+              </Typography>
+              <Box
+                component="img"
+                src="flownobackground.png"
+                alt="Flow Logo"
+                sx={{
+                  width: { xs: 'min(240px, 60vw)', sm: 'min(280px, 50vw)', md: 'min(320px, 40vw)' },
+                  height: { xs: 'min(240px, 60vw)', sm: 'min(280px, 50vw)', md: 'min(320px, 40vw)' },
+                  objectFit: "cover",
+                  borderRadius: "50%",
+                  position: "relative",
+                  zIndex: 2,
+                  filter: "drop-shadow(0 0 18px rgba(147,51,234,1)) drop-shadow(0 0 30px rgba(139,92,246,0.9)) drop-shadow(0 0 60px rgba(99,102,241,0.7))",
+                  animation: "pulse-glow 3.5s ease-in-out infinite",
+                  "@keyframes pulse-glow": {
+                    "0%, 100%": {
+                      filter: "drop-shadow(0 0 18px rgba(147,51,234,1)) drop-shadow(0 0 30px rgba(139,92,246,0.9)) drop-shadow(0 0 60px rgba(99,102,241,0.7))"
+                    },
+                    "50%": {
+                      filter: "drop-shadow(0 0 30px rgba(147,51,234,1)) drop-shadow(0 0 50px rgba(139,92,246,1)) drop-shadow(0 0 100px rgba(99,102,241,0.8))"
+                    }
+                  }
+                }}
+              />
+              <Box
+                component="img"
+                src="flownobackground.png"
+                alt="Flow Logo Background"
+                sx={{
+                  width: { xs: 'min(240px, 60vw)', sm: 'min(280px, 50vw)', md: 'min(320px, 40vw)' },
+                  height: { xs: 'min(240px, 60vw)', sm: 'min(280px, 50vw)', md: 'min(320px, 40vw)' },
+                  objectFit: "cover",
+                  borderRadius: "50%",
+                  position: "fixed",
+                  top: { xs: "38%", md: "55%" },
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  zIndex: 0,
+                  opacity: 0.25,
+                  filter: "drop-shadow(0 0 18px rgba(147,51,234,1)) drop-shadow(0 0 30px rgba(139,92,246,0.9)) drop-shadow(0 0 60px rgba(99,102,241,0.7))",
+                  animation: "pulse-glow-bg 3.5s ease-in-out infinite",
+                  "@keyframes pulse-glow-bg": {
+                    "0%, 100%": {
+                      filter: "drop-shadow(0 0 18px rgba(147,51,234,1)) drop-shadow(0 0 30px rgba(139,92,246,0.9)) drop-shadow(0 0 60px rgba(99,102,241,0.7))"
+                    },
+                    "50%": {
+                      filter: "drop-shadow(0 0 30px rgba(147,51,234,1)) drop-shadow(0 0 50px rgba(139,92,246,1)) drop-shadow(0 0 100px rgba(99,102,241,0.8))"
+                    }
+                  }
+                }}
+              />
+              <Typography
+                variant="h5"
+                sx={{
+                  fontSize: { xs: "1rem", sm: "1.2rem", md: "1.5rem" },
+                  color: "#ffffff",
+                  fontWeight: 400,
+                  textAlign: "center",
+                  mt: { xs: 1.5, sm: 2, md: 2 },
+                  fontFamily: "'Poppins', 'Montserrat', -apple-system, sans-serif",
+                  letterSpacing: "0.01em"
+                }}
+              >
+                The Easiest Automation Tool to Help You Succeed
+              </Typography>
+            </Stack>
+
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 1.25, sm: 1.75, md: 2.25 },
+                borderRadius: "24px",
+                border: "3px solid rgba(139,92,246,0.5)",
+                background: "linear-gradient(135deg, rgba(139,92,246,0.18), rgba(99,102,241,0.12), rgba(251,191,36,0.08))",
+                backdropFilter: "blur(12px)",
+                boxShadow: "0 12px 50px rgba(139,92,246,0.35), 0 0 80px rgba(251,191,36,0.15)",
+                maxWidth: 1200,
+                mx: "auto",
+                position: "relative",
+                overflow: "hidden",
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: "radial-gradient(circle at 50% 0%, rgba(139,92,246,0.15), transparent 50%)",
+                  pointerEvents: "none"
+                }
+              }}
+            >
+              <Grid container spacing={{ xs: 0.75, sm: 1.25, md: 1.75 }} alignItems="flex-start">
+              {benefits.map((benefit, index) => (
+                <Grid item key={benefit.title} xs={12} sm={6} md={3}>
+                  <Stack spacing={{ xs: 0.5, sm: 0.75 }} alignItems="center" textAlign="center" sx={{ height: '100%' }}>
+                      {benefit.iconType === 'image' ? (
+                        <Box
+                          component="img"
+                          src={benefit.icon}
+                          alt="Flow"
+                          sx={{
+                            width: { xs: "3.5rem", sm: "4rem", md: "4.5rem" },
+                            height: { xs: "3.5rem", sm: "4rem", md: "4.5rem" },
+                            objectFit: "contain",
+                            filter: "drop-shadow(0 2px 8px rgba(139,92,246,0.4))"
+                          }}
+                        />
+                      ) : benefit.iconType === 'emoji' ? (
+                        <Box
+                          sx={{
+                            width: { xs: "3.5rem", sm: "4rem", md: "4.5rem" },
+                            height: { xs: "3.5rem", sm: "4rem", md: "4.5rem" },
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: { xs: "2.5rem", sm: "2.75rem", md: "3rem" },
+                            filter: "drop-shadow(0 2px 8px rgba(139,92,246,0.4))"
+                          }}
+                        >
+                          {benefit.icon}
+                        </Box>
+                      ) : (
+                        <Box
+                          sx={{
+                            width: { xs: "3.5rem", sm: "4rem", md: "4.5rem" },
+                            height: { xs: "3.5rem", sm: "4rem", md: "4.5rem" },
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center"
+                          }}
+                        >
+                          <svg
+                            width="70%"
+                            height="70%"
+                            viewBox="0 0 48 48"
+                            style={{ filter: "drop-shadow(0 2px 8px rgba(139,92,246,0.4))" }}
+                          >
+                            {benefit.icon === 'timer' && (
+                              <>
+                                <circle cx="24" cy="24" r="18" fill="none" stroke="url(#gradient1)" strokeWidth="3"/>
+                                <path d="M24 10 L24 24 L32 32" stroke="url(#gradient1)" strokeWidth="3" strokeLinecap="round" fill="none"/>
+                                <circle cx="24" cy="24" r="2" fill="url(#gradient1)"/>
+                                <path d="M20 6 L28 6" stroke="url(#gradient1)" strokeWidth="3" strokeLinecap="round"/>
+                                <defs>
+                                  <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style={{ stopColor: '#fbbf24', stopOpacity: 1 }} />
+                                    <stop offset="50%" style={{ stopColor: '#f59e0b', stopOpacity: 1 }} />
+                                    <stop offset="100%" style={{ stopColor: '#d97706', stopOpacity: 1 }} />
+                                  </linearGradient>
+                                </defs>
+                              </>
+                            )}
+                            {benefit.icon === 'sparkles' && (
+                              <>
+                                <path d="M24 4 L26 14 L36 16 L26 18 L24 28 L22 18 L12 16 L22 14 Z" fill="url(#gradient2)" stroke="url(#gradient2)" strokeWidth="1.5"/>
+                                <path d="M38 10 L39 14 L43 15 L39 16 L38 20 L37 16 L33 15 L37 14 Z" fill="#fbbf24" stroke="#fbbf24"/>
+                                <path d="M10 30 L11 34 L15 35 L11 36 L10 40 L9 36 L5 35 L9 34 Z" fill="#60a5fa" stroke="#60a5fa"/>
+                                <circle cx="40" cy="32" r="2" fill="#f472b6"/>
+                                <circle cx="8" cy="12" r="2" fill="#a78bfa"/>
+                                <defs>
+                                  <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style={{ stopColor: '#fbbf24', stopOpacity: 1 }} />
+                                    <stop offset="50%" style={{ stopColor: '#f59e0b', stopOpacity: 1 }} />
+                                    <stop offset="100%" style={{ stopColor: '#ec4899', stopOpacity: 1 }} />
+                                  </linearGradient>
+                                </defs>
+                              </>
+                            )}
+                            {benefit.icon === 'brain' && (
+                              <>
+                                <path d="M24 8 C15 8 8 15 8 24 C8 28 10 31 13 33" stroke="url(#gradient3)" strokeWidth="3" fill="none" strokeLinecap="round"/>
+                                <path d="M35 33 C38 31 40 28 40 24 C40 15 33 8 24 8" stroke="url(#gradient3)" strokeWidth="3" fill="none" strokeLinecap="round"/>
+                                <path d="M13 33 C13 36 15 38 18 39 C20 40 22 40 24 40 C26 40 28 40 30 39 C33 38 35 36 35 33" stroke="url(#gradient3)" strokeWidth="3" fill="none" strokeLinecap="round"/>
+                                <circle cx="18" cy="20" r="2.5" fill="#fbbf24"/>
+                                <circle cx="30" cy="20" r="2.5" fill="#60a5fa"/>
+                                <path d="M12 24 L16 24" stroke="#ec4899" strokeWidth="2.5" strokeLinecap="round"/>
+                                <path d="M32 24 L36 24" stroke="#ec4899" strokeWidth="2.5" strokeLinecap="round"/>
+                                <path d="M20 30 Q24 34 28 30" stroke="#a78bfa" strokeWidth="3" fill="none" strokeLinecap="round"/>
+                                <circle cx="24" cy="14" r="1.5" fill="#f472b6"/>
+                                <defs>
+                                  <linearGradient id="gradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style={{ stopColor: '#a78bfa', stopOpacity: 1 }} />
+                                    <stop offset="50%" style={{ stopColor: '#8b5cf6', stopOpacity: 1 }} />
+                                    <stop offset="100%" style={{ stopColor: '#6366f1', stopOpacity: 1 }} />
+                                  </linearGradient>
+                                </defs>
+                              </>
+                            )}
+                          </svg>
+                        </Box>
+                      )}
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          fontWeight: 700, 
+                          fontSize: { xs: "0.9rem", sm: "0.95rem", md: "1rem" },
+                          background: "linear-gradient(135deg, #fff 0%, #e0e7ff 100%)",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                          backgroundClip: "text",
+                          minHeight: { xs: "1.5rem", md: "2rem" },
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center"
+                        }}
+                      >
+                        {benefit.title}
+                      </Typography>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontSize: { xs: "0.75rem", sm: "0.8rem", md: "0.85rem" },
+                          color: "rgba(226, 232, 240, 0.75)",
+                          lineHeight: 1.5,
+                          minHeight: { xs: "2rem", md: "2.5rem" }
+                        }}
+                      >
+                        {benefit.description}
+                      </Typography>
+                  </Stack>
+                </Grid>
+              ))}
+              </Grid>
+            </Paper>
+            <Divider sx={{ borderColor: "rgba(139, 92, 246, 0.3)", my: { xs: 2, sm: 3, md: 4 } }} />
+          </Stack>
+        );
+      }
+
+      function TemplateShowcase() {
+        const [selectedNiche, setSelectedNiche] = React.useState(0);
+        const [showNicheMenu, setShowNicheMenu] = React.useState(false);
+        const currentTemplate = automationTemplates[selectedNiche];
+
+        return (
+          <Stack spacing={4} alignItems="center" sx={{ width: "100%" }}>
+            <Stack spacing={1.5} textAlign="center">
+              <Typography
+                variant="h3"
+                sx={{ 
+                  fontWeight: 700, 
+                  fontSize: { xs: "1.75rem", sm: "2.25rem", md: "2.5rem" },
+                  background: 'linear-gradient(135deg, #f8fafc 0%, #fbbf24 50%, #f59e0b 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                }}
+              >
+                Choose Your Niche
+              </Typography>
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  maxWidth: 680, 
+                  mx: "auto", 
+                  fontSize: { xs: "1rem", sm: "1.1rem" },
+                  textAlign: "center",
+                  color: "#ffffff"
+                }}
+              >
+                See how Flow automates your entire workflow.
+              </Typography>
+            </Stack>
+
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 3, sm: 4, md: 5 },
+                borderRadius: 4,
+                border: "3px solid rgba(251, 191, 36, 0.4)",
+                background: "linear-gradient(135deg, rgba(139,92,246,0.30), rgba(99,102,241,0.25), rgba(251,191,36,0.20))",
+                boxShadow: "0 20px 60px rgba(139, 92, 246, 0.3)",
+                maxWidth: 900,
+                mx: "auto"
+              }}
+            >
+              <Stack spacing={4}>
+                <Box sx={{ position: "relative" }}>
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      color: "rgba(251, 191, 36, 0.9)",
+                      fontSize: "0.85rem",
+                      fontWeight: 600,
+                      textTransform: "uppercase",
+                      letterSpacing: "1px",
+                      mb: 1.5,
+                      display: "block",
+                      textAlign: "center"
+                    }}
+                  >
+                    Select Your Industry
+                  </Typography>
+                  <Button
+                    onClick={() => setShowNicheMenu(!showNicheMenu)}
+                    sx={{
+                      width: "100%",
+                      maxWidth: 600,
+                      mx: "auto",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      p: 2,
+                      fontSize: { xs: "1rem", md: "1.1rem" },
+                      fontWeight: 600,
+                      fontFamily: "inherit",
+                      color: "#fbbf24",
+                      background: "linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(10, 12, 24, 0.95))",
+                      border: "2px solid rgba(251, 191, 36, 0.3)",
+                      borderRadius: 2,
+                      cursor: "pointer",
+                      textTransform: "none",
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        borderColor: "rgba(251, 191, 36, 0.5)",
+                        boxShadow: "0 4px 20px rgba(251, 191, 36, 0.2)",
+                        background: "linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(10, 12, 24, 0.95))"
+                      }
+                    }}
+                  >
+                    <span>{automationTemplates[selectedNiche].name}</span>
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="20" 
+                      height="20" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="#fbbf24" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                      style={{ 
+                        transform: showNicheMenu ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.3s ease'
+                      }}
+                    >
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </Button>
+                  {showNicheMenu && (
+                    <Paper
+                      elevation={8}
+                      sx={{
+                        position: "absolute",
+                        top: "100%",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        mt: 1,
+                        width: "100%",
+                        maxWidth: 600,
+                        maxHeight: 400,
+                        overflow: "auto",
+                        zIndex: 1000,
+                        background: "linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(10, 12, 24, 0.98))",
+                        border: "2px solid rgba(251, 191, 36, 0.3)",
+                        borderRadius: 2,
+                        boxShadow: "0 8px 32px rgba(251, 191, 36, 0.3)"
+                      }}
+                    >
+                      <Stack spacing={0}>
+                        {automationTemplates.map((template, index) => (
+                          <Box
+                            key={index}
+                            onClick={() => {
+                              setSelectedNiche(index);
+                              setShowNicheMenu(false);
+                            }}
+                            sx={{
+                              p: 2,
+                              cursor: "pointer",
+                              color: selectedNiche === index ? "#fbbf24" : "#cbd5e1",
+                              background: selectedNiche === index ? "rgba(251, 191, 36, 0.1)" : "transparent",
+                              fontWeight: selectedNiche === index ? 600 : 500,
+                              fontSize: { xs: "0.95rem", md: "1rem" },
+                              borderBottom: index < automationTemplates.length - 1 ? "1px solid rgba(251, 191, 36, 0.1)" : "none",
+                              transition: "all 0.2s ease",
+                              "&:hover": {
+                                background: "rgba(251, 191, 36, 0.15)",
+                                color: "#fbbf24"
+                              }
+                            }}
+                          >
+                            {template.name}
+                          </Box>
+                        ))}
+                      </Stack>
+                    </Paper>
+                  )}
+                </Box>
+
+                <Divider sx={{ borderColor: "rgba(251, 191, 36, 0.2)" }} />
+
+                <Stack spacing={1.75}>
+                  <Stack spacing={0.75} alignItems="center" textAlign="center">
+                    <Typography 
+                      variant="h4" 
+                      sx={{ 
+                        fontWeight: 700,
+                        fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
+                        background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                        backgroundClip: "text"
+                      }}
+                    >
+                      {currentTemplate.name}
+                    </Typography>
+                    <Typography 
+                      variant="subtitle1" 
+                      sx={{ 
+                        color: "#ffffff",
+                        fontSize: { xs: "0.95rem", md: "1.05rem" },
+                        fontWeight: 500,
+                        textTransform: "uppercase",
+                        letterSpacing: "1px"
+                      }}
+                    >
+                      {currentTemplate.useCase}
+                    </Typography>
+                  </Stack>
+
+                  <Typography 
+                    variant="body1" 
+                    sx={{ 
+                      color: "#ffffff",
+                      lineHeight: 1.8,
+                      fontSize: { xs: "1.05rem", md: "1.15rem" },
+                      textAlign: "center",
+                      px: { xs: 0, md: 4 }
+                    }}
+                  >
+                    {currentTemplate.highlight}
+                  </Typography>
+
+                  <Box
+                    sx={{
+                      p: { xs: 2.5, md: 3 },
+                      borderRadius: 3,
+                      background: "linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.15))",
+                      border: "2px solid rgba(251, 191, 36, 0.4)",
+                      textAlign: "center",
+                      boxShadow: "0 8px 24px rgba(251, 191, 36, 0.2)"
+                    }}
+                  >
+                    <Typography 
+                      variant="h5" 
+                      sx={{ 
+                        fontWeight: 700, 
+                        color: "#fbbf24",
+                        fontSize: { xs: "1.25rem", md: "1.5rem" }
+                      }}
+                    >
+                      ⚡ {currentTemplate.metric}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Stack>
+            </Paper>
+          </Stack>
+        );
+      }
+
+      function FAQ() {
+        const [expanded, setExpanded] = React.useState(false);
+
+        const faqs = [
+          {
+            question: "When will the app be available?",
+            answer: "Flow is currently in development and will launch in 2026. Waitlist members will get priority access and special early pricing."
+          },
+          {
+            question: "Is my data safe?",
+            answer: "Yes. We use strong encryption to protect your data and we won't sell your information to third parties. Your content and customer data belong to you."
+          },
+          {
+            question: "What makes Flow different?",
+            answer: "Flow brings together AI-powered tools for content creation, automation, and tracking in one platform. Instead of managing multiple apps, you can work from one central workspace."
+          },
+          {
+            question: "How much will it cost?",
+            answer: "We'll have three pricing tiers: Starter ($30/month), Pro ($60/month), and Business ($90/month). There will be a free trial to get started. Waitlist members get special launch pricing and early access."
+          },
+          {
+            question: "What platforms does Flow integrate with?",
+            answer: "We're building integrations for major platforms including Instagram, TikTok, YouTube, Shopify, Amazon, and popular email/marketing tools. More integrations will be added based on user feedback."
+          }
+        ];
+
+        const handleChange = (panel) => (event) => {
+          setExpanded(expanded === panel ? false : panel);
+          
+          // Track FAQ interaction
+          if (expanded !== panel && window.trackEvent) {
+            window.trackEvent('faq_expand', {
+              event_category: 'engagement',
+              event_label: panel
+            });
+          }
+        };
+
+        return (
+          <Stack spacing={3} alignItems="center" sx={{ width: "100%" }}>
+            <Stack spacing={1.25} textAlign="center">
+              <Typography
+                variant="h3"
+                sx={{ 
+                  fontWeight: 700, 
+                  fontSize: { xs: "1.75rem", sm: "2.25rem", md: "2.5rem" },
+                  background: 'linear-gradient(135deg, #f8fafc 0%, #fbbf24 50%, #f59e0b 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                }}
+              >
+                Questions? We've Got Answers
+              </Typography>
+              <Typography variant="body1" sx={{ fontSize: { xs: "1rem", sm: "1.1rem" }, color: "#ffffff" }}>
+                Everything you need to know about Flow
+              </Typography>
+            </Stack>
+
+            <Stack spacing={1.5}>
+              {faqs.map((faq, index) => {
+                const panelId = `faq-${index}`;
+                const isExpanded = expanded === panelId;
+
+                return (
+                  <Paper
+                    key={panelId}
+                    elevation={0}
+                    sx={{
+                      borderRadius: 3,
+                      border: isExpanded ? "2px solid rgba(251, 191, 36, 0.4)" : "2px solid rgba(139,92,246,0.25)",
+                      background: isExpanded ? "linear-gradient(135deg, rgba(139,92,246,0.15), rgba(99,102,241,0.1))" : "linear-gradient(135deg, rgba(139,92,246,0.08), rgba(99,102,241,0.05))",
+                      transition: "all 0.3s ease",
+                      overflow: "hidden",
+                      "&:hover": {
+                        borderColor: "rgba(251, 191, 36, 0.3)",
+                        transform: "translateY(-2px)",
+                        boxShadow: "0 8px 24px rgba(139, 92, 246, 0.2)"
+                      }
+                    }}
+                  >
+                    <Box
+                      onClick={handleChange(panelId)}
+                      sx={{
+                        p: { xs: 2.5, md: 3 },
+                        cursor: "pointer",
+                        userSelect: "none",
+                        "&:hover": {
+                          background: "rgba(99,102,241,0.05)"
+                        }
+                      }}
+                    >
+                      <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+                        <Typography
+                          variant="subtitle1"
+                          sx={{ fontWeight: 600, fontSize: { xs: "0.95rem", sm: "1.1rem" } }}
+                        >
+                          {faq.question}
+                        </Typography>
+                        <Typography
+                          sx={{
+                            color: "secondary.main",
+                            fontSize: "1.5rem",
+                            transition: "transform 0.3s ease",
+                            transform: isExpanded ? "rotate(45deg)" : "rotate(0deg)"
+                          }}
+                        >
+                          +
+                        </Typography>
+                      </Stack>
+                    </Box>
+                    {isExpanded && (
+                      <Box sx={{ px: { xs: 2.5, md: 3 }, pb: { xs: 2.5, md: 3 } }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
+                          {faq.answer}
+                        </Typography>
+                      </Box>
+                    )}
+                  </Paper>
+                );
+              })}
+            </Stack>
+
+            <Paper
+              sx={{
+                p: { xs: 2, md: 2.5 },
+                borderRadius: 3,
+                border: "2px solid rgba(251,191,36,0.4)",
+                background: "linear-gradient(135deg, rgba(251,191,36,0.12), rgba(139,92,246,0.1))",
+                textAlign: "center",
+                boxShadow: "0 8px 32px rgba(251, 191, 36, 0.15)"
+              }}
+            >
+              <Stack spacing={1.25}>
+                <Typography 
+                  variant="h5" 
+                  sx={{ 
+                    fontWeight: 700,
+                    fontSize: { xs: "1.3rem", md: "1.5rem" },
+                    background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text"
+                  }}
+                >
+                  Still have questions?
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ fontSize: { xs: "1rem", md: "1.05rem" } }}>
+                  Email us at <strong style={{ color: "#fbbf24" }}>Info@IntelliSeth.com</strong>
+                </Typography>
+              </Stack>
+            </Paper>
+          </Stack>
+        );
+      }
+
+      function Footer() {
+        return (
+          <Stack spacing={1} alignItems="center" sx={{ py: 4, color: "text.secondary" }}>
+            <Typography variant="body2">Flow Automation Suite (c) {new Date().getFullYear()}</Typography>
+            <Typography variant="caption">
+              Early access cohort gets concierge onboarding, asset migration, and live optimization.
+            </Typography>
+          </Stack>
+        );
+      }
+
+      function App() {
+        const workflowRef = React.useRef(null);
+        const scrollDepthTracked = React.useRef({ 25: false, 50: false, 75: false, 100: false });
+
+        // Track scroll depth
+        React.useEffect(() => {
+          const handleScroll = () => {
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight;
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollPercent = (scrollTop / (documentHeight - windowHeight)) * 100;
+
+            [25, 50, 75, 100].forEach(threshold => {
+              if (scrollPercent >= threshold && !scrollDepthTracked.current[threshold]) {
+                scrollDepthTracked.current[threshold] = true;
+                if (window.trackEvent) {
+                  window.trackEvent('scroll_depth', {
+                    percent: threshold,
+                    page: window.location.pathname
+                  });
+                }
+              }
+            });
+          };
+
+          window.addEventListener('scroll', handleScroll, { passive: true });
+          return () => window.removeEventListener('scroll', handleScroll);
+        }, []);
+
+        // Track page view
+        React.useEffect(() => {
+          if (window.trackEvent) {
+            window.trackEvent('page_view', {
+              page_title: document.title,
+              page_location: window.location.href
+            });
+          }
+        }, []);
+
+        // Flow companion - nonverbal floating guide with smart tracking
+        const [flowState, setFlowState] = React.useState({
+          section: 'hero',
+          gesture: 'wave',
+          active: true,
+          contextualHint: null,
+          userEngaged: false,
+          // Phase 1 - Interactive Intelligence
+          showHintBubble: false,
+          hintMessage: '',
+          emojiReaction: null,
+          proximityLevel: 0,
+          showConfetti: false,
+          // Phase 2 - Contextual Awareness
+          scrollHesitation: false,
+          formAbandoned: false,
+          returningVisitor: false,
+          visitCount: 0,
+          readingSpeed: 'normal',
+          progressPercent: 0,
+          // Phase 3 - AI-Powered Features
+          conversionProbability: 0.5,
+          nextSuggestedSection: null,
+          aiHint: null
+        });
+
+        // FlowHintBubble Component
+        const FlowHintBubble = ({ message, show }) => {
+          const [position, setPosition] = React.useState('top');
+          const [isHovered, setIsHovered] = React.useState(false);
+          const [alignment, setAlignment] = React.useState('center');
+          
+          React.useEffect(() => {
+            const checkPosition = () => {
+              const flowEl = document.querySelector('[data-flow-avatar]');
+              if (flowEl) {
+                const rect = flowEl.getBoundingClientRect();
+                const viewportWidth = window.innerWidth;
+                
+                // Check vertical position
+                setPosition(rect.top < window.innerHeight * 0.3 ? 'bottom' : 'top');
+                
+                // Check horizontal alignment to avoid overflow
+                const flowCenterX = rect.left + rect.width / 2;
+                const maxBubbleWidth = Math.min(280, viewportWidth - 60);
+                
+                if (flowCenterX - maxBubbleWidth / 2 < 30) {
+                  setAlignment('left');
+                } else if (flowCenterX + maxBubbleWidth / 2 > viewportWidth - 30) {
+                  setAlignment('right');
+                } else {
+                  setAlignment('center');
+                }
+              }
+            };
+            checkPosition();
+            window.addEventListener('scroll', checkPosition, { passive: true });
+            window.addEventListener('resize', checkPosition, { passive: true });
+            return () => {
+              window.removeEventListener('scroll', checkPosition);
+              window.removeEventListener('resize', checkPosition);
+            };
+          }, [show]);
+          
+          if (!show || !message) return null;
+          
+          const isTop = position === 'top';
+          return (
+            <Box 
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+              sx={{
+              position: 'absolute',
+              [isTop ? 'bottom' : 'top']: 'calc(100% - 2px)',
+              ...(alignment === 'center' ? {
+                left: '50%',
+                transform: `translateX(-50%) translateZ(0) scale(${isHovered ? 1.05 : 1})`
+              } : alignment === 'left' ? {
+                left: '30px',
+                transform: `translateZ(0) scale(${isHovered ? 1.05 : 1})`
+              } : {
+                right: '30px',
+                transform: `translateZ(0) scale(${isHovered ? 1.05 : 1})`
+              }),
+              transformOrigin: isTop ? 'bottom center' : 'top center',
+              background: isHovered 
+                ? 'linear-gradient(135deg, rgba(251, 191, 36, 1), rgba(245, 158, 11, 1))'
+                : 'linear-gradient(135deg, rgba(251, 191, 36, 0.98), rgba(245, 158, 11, 0.98))',
+              color: '#1a1a1a',
+              padding: { xs: '12px 16px', sm: '14px 18px' },
+              borderRadius: '12px',
+              fontSize: { xs: '13px', sm: '14px', md: '15px' },
+              fontWeight: 600,
+              maxWidth: { xs: 'min(280px, calc(100vw - 60px))', sm: '260px', md: '280px' },
+              width: 'max-content',
+              textAlign: 'center',
+              lineHeight: 1.4,
+              boxShadow: isHovered
+                ? '0 8px 24px rgba(251, 191, 36, 0.45), 0 0 16px rgba(251, 191, 36, 0.25)'
+                : '0 6px 20px rgba(251, 191, 36, 0.35)',
+              animation: 'flow-hint-bubble 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              zIndex: 10001,
+              whiteSpace: 'normal',
+              wordWrap: 'break-word',
+              backfaceVisibility: 'hidden',
+              WebkitFontSmoothing: 'antialiased',
+              willChange: 'transform, opacity',
+              cursor: 'default',
+              transition: 'all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                [isTop ? 'bottom' : 'top']: '-7px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: 0,
+                height: 0,
+                borderLeft: '7px solid transparent',
+                borderRight: '7px solid transparent',
+                [isTop ? 'borderTop' : 'borderBottom']: isHovered
+                  ? '7px solid rgba(245, 158, 11, 1)'
+                  : '7px solid rgba(245, 158, 11, 0.98)',
+                transition: 'border-color 0.25s ease'
+              }
+            }}>
+              {message}
+            </Box>
+          );
+        };
+
+        // FlowEmojiReaction Component
+        const FlowEmojiReaction = ({ emoji }) => {
+          if (!emoji) return null;
+          
+          // Check if emoji would overflow viewport
+          const [emojiPosition, setEmojiPosition] = React.useState({ top: '12%', left: '105%' });
+          
+          React.useEffect(() => {
+            const checkPosition = () => {
+              const flowEl = document.querySelector('[data-flow-avatar]');
+              if (flowEl) {
+                const rect = flowEl.getBoundingClientRect();
+                const viewportWidth = window.innerWidth;
+                const emojiSize = window.innerWidth < 600 ? 32 : 36;
+                
+                // Check if positioning to the right would overflow
+                if (rect.right + emojiSize + 10 > viewportWidth - 20) {
+                  // Position to the left instead
+                  setEmojiPosition({ 
+                    top: window.innerWidth < 600 ? '12%' : '10%',
+                    right: '105%',
+                    left: 'auto'
+                  });
+                } else {
+                  // Normal right positioning
+                  setEmojiPosition({ 
+                    top: window.innerWidth < 600 ? '12%' : '10%',
+                    left: window.innerWidth < 600 ? '105%' : '108%'
+                  });
+                }
+              }
+            };
+            
+            checkPosition();
+            window.addEventListener('resize', checkPosition, { passive: true });
+            return () => window.removeEventListener('resize', checkPosition);
+          }, [emoji]);
+          
+          return (
+            <Box sx={{
+              position: 'absolute',
+              ...emojiPosition,
+              fontSize: { xs: '32px', sm: '36px' },
+              animation: 'flow-emoji-pop 2s ease-out forwards, flow-emoji-micro-bounce 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s',
+              zIndex: 10001,
+              filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.25))',
+              backfaceVisibility: 'hidden',
+              transform: 'translateZ(0)',
+              willChange: 'transform, opacity'
+            }}>
+              {emoji}
+            </Box>
+          );
+        };
+
+        // FlowProgressArc Component
+        const FlowProgressArc = ({ percent }) => {
+          if (percent < 10) return null;
+          const radius = 68;
+          const strokeWidth = 4;
+          const circumference = 2 * Math.PI * radius;
+          const offset = circumference - (percent / 100) * circumference;
+          return (
+            <svg style={{
+              position: 'absolute',
+              top: `-${strokeWidth}px`,
+              left: `-${strokeWidth}px`,
+              width: `calc(100% + ${strokeWidth * 2}px)`,
+              height: `calc(100% + ${strokeWidth * 2}px)`,
+              transform: 'rotate(-90deg) translateZ(0)',
+              pointerEvents: 'none',
+              zIndex: 9999,
+              filter: 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.6)) drop-shadow(0 6px 20px rgba(251, 191, 36, 0.4))',
+              backfaceVisibility: 'hidden',
+              willChange: 'transform'
+            }}>
+              <circle
+                cx="50%"
+                cy="50%"
+                r={radius}
+                stroke="rgba(251, 191, 36, 0.12)"
+                strokeWidth={strokeWidth}
+                fill="none"
+              />
+              <circle
+                cx="50%"
+                cy="50%"
+                r={radius}
+                stroke="url(#progressGradient)"
+                strokeWidth={strokeWidth}
+                fill="none"
+                strokeDasharray={circumference}
+                strokeDashoffset={offset}
+                strokeLinecap="round"
+                style={{ 
+                  transition: 'stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                  willChange: 'stroke-dashoffset'
+                }}
+              />
+              <defs>
+                <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style={{ stopColor: '#fbbf24', stopOpacity: 1 }}>
+                    <animate attributeName="stop-color" values="#fbbf24;#f59e0b;#fbbf24" dur="3s" repeatCount="indefinite" />
+                  </stop>
+                  <stop offset="50%" style={{ stopColor: '#f59e0b', stopOpacity: 1 }} />
+                  <stop offset="100%" style={{ stopColor: '#ea580c', stopOpacity: 1 }}>
+                    <animate attributeName="stop-color" values="#ea580c;#fbbf24;#ea580c" dur="3s" repeatCount="indefinite" />
+                  </stop>
+                </linearGradient>
+              </defs>
+            </svg>
+          );
+        };
+
+        // FlowConfetti Component
+        const FlowConfetti = ({ trigger }) => {
+          const [particles, setParticles] = React.useState([]);
+          React.useEffect(() => {
+            if (trigger) {
+              const colors = ['#fbbf24', '#f59e0b', '#ea580c', '#8b5cf6', '#a78bfa', '#ec4899'];
+              const newParticles = Array.from({ length: 30 }, (_, i) => ({
+                id: Date.now() + i,
+                x: (Math.random() * 280 - 140) * (0.8 + Math.random() * 0.4),
+                y: (Math.random() * 280 - 140) * (0.8 + Math.random() * 0.4),
+                color: colors[Math.floor(Math.random() * colors.length)],
+                delay: Math.random() * 0.4,
+                rotation: Math.random() * 360,
+                scale: 0.7 + Math.random() * 0.6
+              }));
+              setParticles(newParticles);
+              setTimeout(() => setParticles([]), 2800);
+            }
+          }, [trigger]);
+          return (
+            <>
+              {particles.map(p => (
+                <Box key={p.id} sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  width: `${10 * p.scale}px`,
+                  height: `${10 * p.scale}px`,
+                  background: p.color,
+                  borderRadius: '50%',
+                  boxShadow: `0 2px 6px rgba(0,0,0,0.35), 0 0 ${8 * p.scale}px ${p.color}`,
+                  '--x': `${p.x}px`,
+                  '--y': `${p.y}px`,
+                  animation: `flow-confetti-burst ${1.5 + p.delay * 0.5}s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${p.delay}s forwards`,
+                  zIndex: 10002,
+                  transform: `rotate(${p.rotation}deg) translateZ(0)`,
+                  willChange: 'transform, opacity'
+                }} />
+              ))}
+            </>
+          );
+        };
+
+        React.useEffect(() => {
+          // Check for reduced motion preference
+          const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          if (prefersReducedMotion) {
+            setFlowState(prev => ({ ...prev, active: false }));
+            return;
+          }
+
+          // Phase 2: Returning Visitor Recognition
+          const visitData = localStorage.getItem('flow_visit_data');
+          const visitCount = visitData ? JSON.parse(visitData).count + 1 : 1;
+          localStorage.setItem('flow_visit_data', JSON.stringify({
+            count: visitCount,
+            lastVisit: Date.now()
+          }));
+          
+          if (visitCount > 1) {
+            setFlowState(prev => ({ 
+              ...prev, 
+              returningVisitor: true,
+              visitCount: visitCount,
+              hintMessage: visitCount === 2 ? '🎉 Welcome back!' : `✨ Visit #${visitCount}!`,
+              showHintBubble: true,
+              emojiReaction: '👋'
+            }));
+            setTimeout(() => setFlowState(prev => ({ ...prev, showHintBubble: false, emojiReaction: null })), 3500);
+          }
+
+          // Track user engagement behaviors
+          let idleTimer = null;
+          let scrollTimer = null;
+          let lastScrollY = window.scrollY;
+          let lastScrollTime = Date.now();
+          let focusedInput = null;
+
+          const trackEngagement = () => {
+            setFlowState(prev => ({ ...prev, userEngaged: true }));
+            clearTimeout(idleTimer);
+            
+            // Reset to idle after 5 seconds
+            idleTimer = setTimeout(() => {
+              setFlowState(prev => ({ ...prev, userEngaged: false }));
+            }, 5000);
+          };
+
+          // Phase 1: Smart Form Validation Hints
+          const formValidationHints = {
+            email: (value) => {
+              if (!value) return '📧 Enter your email';
+              if (!value.includes('@')) return '✏️ Add @ sign';
+              if (!value.includes('.')) return '🎯 Add .com';
+              return null;
+            }
+          };
+
+          // Phase 2: Reading Speed Detection
+          let sectionStartTime = null;
+          let wordsInSection = 0;
+          const calculateReadingSpeed = (timeSpent, words) => {
+            const wpm = words / (timeSpent / 60000); // words per minute
+            if (wpm < 150) return 'slow';
+            if (wpm < 250) return 'normal';
+            return 'fast';
+          };
+
+          // Phase 2: Scroll Hesitation Detection
+          const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+            const currentTime = Date.now();
+            const scrollDelta = Math.abs(currentScrollY - lastScrollY);
+            const timeDelta = currentTime - lastScrollTime;
+
+            // Detect hesitation (stopped scrolling for 3-5 seconds in middle of content)
+            clearTimeout(scrollTimer);
+            scrollTimer = setTimeout(() => {
+              const scrollPercent = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+              if (scrollPercent > 20 && scrollPercent < 80) {
+                setFlowState(prev => ({
+                  ...prev,
+                  scrollHesitation: true,
+                  hintMessage: '💬 Need help?',
+                  showHintBubble: true,
+                  gesture: 'wave'
+                }));
+                setTimeout(() => setFlowState(prev => ({ 
+                  ...prev, 
+                  scrollHesitation: false,
+                  showHintBubble: false
+                })), 4000);
+              }
+            }, 4000);
+
+            lastScrollY = currentScrollY;
+            lastScrollTime = currentTime;
+
+            // Phase 2: Progress Tracking
+            const progress = Math.min(100, Math.round((currentScrollY / (document.body.scrollHeight - window.innerHeight)) * 100));
+            setFlowState(prev => ({ ...prev, progressPercent: progress }));
+          };
+
+          // Phase 2: Proximity Awareness (mouse tracking on desktop)
+          const handleMouseMove = (e) => {
+            if (window.innerWidth < 768) return; // Skip on mobile
+            
+            const flowEl = document.querySelector('[data-flow-avatar]');
+            if (!flowEl) return;
+            
+            const rect = flowEl.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const distance = Math.sqrt(
+              Math.pow(e.clientX - centerX, 2) + Math.pow(e.clientY - centerY, 2)
+            );
+            
+            // Proximity levels: 0-150px = close, 150-300px = near, 300+ = far
+            let proximity = 0;
+            if (distance < 150) {
+              proximity = 3; // Very close
+              setFlowState(prev => ({
+                ...prev,
+                proximityLevel: proximity,
+                hintMessage: '😊 Hi!',
+                showHintBubble: true,
+                gesture: 'wave'
+              }));
+              setTimeout(() => setFlowState(prev => ({ ...prev, showHintBubble: false })), 1800);
+            } else if (distance < 300) {
+              proximity = 2; // Near
+            } else {
+              proximity = 0; // Far
+            }
+            
+            setFlowState(prev => ({ ...prev, proximityLevel: proximity }));
+          };
+
+          // Monitor button clicks - celebrate with confetti!
+          const handleButtonClick = (e) => {
+            if (e.target.closest('button')) {
+              trackEngagement();
+              setFlowState(prev => ({ 
+                ...prev, 
+                gesture: 'celebrate', 
+                contextualHint: 'action',
+                emojiReaction: '🎉',
+                showConfetti: true
+              }));
+              setTimeout(() => {
+                setFlowState(prev => ({ 
+                  ...prev, 
+                  gesture: prev.section === 'waitlist' ? 'excited-bounce' : 'breathe',
+                  contextualHint: null,
+                  emojiReaction: null,
+                  showConfetti: false
+                }));
+              }, 2000);
+              
+              // Track conversion probability increase on CTA clicks
+              setFlowState(prev => ({
+                ...prev,
+                conversionProbability: Math.min(1, prev.conversionProbability + 0.15)
+              }));
+            }
+          };
+
+          // Monitor form inputs - nod acknowledgment + smart validation
+          const handleFormFocus = (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+              trackEngagement();
+              focusedInput = e.target;
+              setFlowState(prev => ({ 
+                ...prev, 
+                contextualHint: 'typing', 
+                gesture: 'nod',
+                formAbandoned: false
+              }));
+            }
+          };
+
+          const handleFormInput = (e) => {
+            if (e.target.type === 'email' && formValidationHints.email) {
+              const hint = formValidationHints.email(e.target.value);
+              if (hint) {
+                setFlowState(prev => ({
+                  ...prev,
+                  hintMessage: hint,
+                  showHintBubble: true,
+                  gesture: 'nod'
+                }));
+              } else {
+                setFlowState(prev => ({
+                  ...prev,
+                  hintMessage: 'Perfect! 🎯',
+                  showHintBubble: true,
+                  gesture: 'celebrate',
+                  emojiReaction: '✅'
+                }));
+                setTimeout(() => setFlowState(prev => ({ 
+                  ...prev, 
+                  showHintBubble: false,
+                  emojiReaction: null
+                })), 1500);
+              }
+            }
+          };
+
+          const handleFormBlur = () => {
+            focusedInput = null;
+            setTimeout(() => {
+              setFlowState(prev => ({ ...prev, contextualHint: null, showHintBubble: false }));
+            }, 800);
+          };
+
+          // Phase 2: Form Abandonment Recovery
+          let abandonmentTimer = null;
+          const handleFormStart = () => {
+            abandonmentTimer = setTimeout(() => {
+              if (!document.querySelector('input:focus') && !document.querySelector('textarea:focus')) {
+                setFlowState(prev => ({
+                  ...prev,
+                  formAbandoned: true,
+                  hintMessage: '💡 Need help?',
+                  showHintBubble: true,
+                  gesture: 'wave'
+                }));
+                setTimeout(() => setFlowState(prev => ({ 
+                  ...prev, 
+                  formAbandoned: false,
+                  showHintBubble: false
+                })), 5000);
+              }
+            }, 15000); // 15 seconds of inactivity
+          };
+
+          // Attach interaction listeners
+          document.addEventListener('click', handleButtonClick);
+          document.addEventListener('focus', handleFormFocus, true);
+          document.addEventListener('blur', handleFormBlur, true);
+          document.addEventListener('input', handleFormInput, true);
+          document.addEventListener('scroll', handleScroll, { passive: true });
+          document.addEventListener('mousemove', handleMouseMove, { passive: true });
+
+          // Start abandonment timer on form interaction
+          const formInputs = document.querySelectorAll('input, textarea');
+          formInputs.forEach(input => {
+            input.addEventListener('focus', handleFormStart, { once: true });
+          });
+
+          // Intersection Observer for section tracking with Phase 3 hints
+          const sectionHints = {
+            hero: '🚀 Welcome!',
+            meetflow: '🤖 Meet Flow',
+            opportunity: '✨ Discover',
+            workflow: '🔄 How it works',
+            templates: '📋 Ready to use',
+            services: '🌐 Full ecosystem',
+            faq: '💡 Got questions?',
+            waitlist: '🎯 Join now!'
+          };
+
+          const observer = new IntersectionObserver(
+            (entries) => {
+              entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                  const section = entry.target.getAttribute('data-flow-section');
+                  if (section) {
+                    // Record section start time for reading speed calculation
+                    sectionStartTime = Date.now();
+                    wordsInSection = (entry.target.textContent || '').split(/\s+/).length;
+
+                    const sectionGestures = {
+                      hero: 'wave',
+                      meetflow: 'sway',
+                      opportunity: 'bounce',
+                      workflow: 'bounce',
+                      templates: 'sway',
+                      services: 'bounce',
+                      faq: 'nod',
+                      waitlist: 'excited-bounce'
+                    };
+                    
+                    setFlowState(prev => ({
+                      ...prev,
+                      section: section,
+                      gesture: sectionGestures[section] || 'breathe',
+                      active: true,
+                      contextualHint: section === 'waitlist' ? 'conversion' : 
+                                     section === 'opportunity' ? 'interactive' :
+                                     section === 'workflow' ? 'learning' : prev.contextualHint,
+                      aiHint: sectionHints[section] || null,
+                      hintMessage: sectionHints[section] || '',
+                      showHintBubble: true
+                    }));
+
+                    // Phase 3: Predictive Next-Step
+                    const nextSections = {
+                      hero: 'meetflow',
+                      meetflow: 'opportunity',
+                      opportunity: 'workflow',
+                      workflow: 'templates',
+                      templates: 'services',
+                      services: 'faq',
+                      faq: 'waitlist'
+                    };
+                    setFlowState(prev => ({
+                      ...prev,
+                      nextSuggestedSection: nextSections[section] || null
+                    }));
+
+                    // Hide hint after 3 seconds
+                    setTimeout(() => setFlowState(prev => ({ ...prev, showHintBubble: false })), 3000);
+
+                    // Track section views
+                    if (window.trackEvent) {
+                      window.trackEvent('flow_section_guide', {
+                        section: section,
+                        timestamp: Date.now(),
+                        conversionProbability: flowState.conversionProbability
+                      });
+                    }
+                  }
+                } else {
+                  // Calculate reading speed when leaving section
+                  if (sectionStartTime && wordsInSection > 0) {
+                    const timeSpent = Date.now() - sectionStartTime;
+                    const speed = calculateReadingSpeed(timeSpent, wordsInSection);
+                    setFlowState(prev => ({ ...prev, readingSpeed: speed }));
+                  }
+                }
+              });
+            },
+            { threshold: 0.3, rootMargin: '-10% 0px -10% 0px' }
+          );
+
+          // Observe all sections
+          const sections = document.querySelectorAll('[data-flow-section]');
+          sections.forEach(section => observer.observe(section));
+
+          // Phase 3: Time-based urgency messaging (after 2 minutes)
+          const urgencyTimer = setTimeout(() => {
+            if (flowState.section !== 'waitlist') {
+              setFlowState(prev => ({
+                ...prev,
+                hintMessage: '⚡ Limited spots!',
+                showHintBubble: true,
+                gesture: 'excited-bounce'
+              }));
+              setTimeout(() => setFlowState(prev => ({ ...prev, showHintBubble: false })), 4000);
+            }
+          }, 120000); // 2 minutes
+
+          return () => {
+            clearTimeout(idleTimer);
+            clearTimeout(scrollTimer);
+            clearTimeout(abandonmentTimer);
+            clearTimeout(urgencyTimer);
+            sections.forEach(section => observer.unobserve(section));
+            document.removeEventListener('click', handleButtonClick);
+            document.removeEventListener('focus', handleFormFocus, true);
+            document.removeEventListener('blur', handleFormBlur, true);
+            document.removeEventListener('input', handleFormInput, true);
+            document.removeEventListener('scroll', handleScroll);
+            document.removeEventListener('mousemove', handleMouseMove);
+          };
+        }, []);
+
+        return (
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <style>
+              {`
+                /* All Flow companion styles removed - purely decorative now */
+              `}
+            </style>
+            <Box
+              sx={{
+                minHeight: "100vh",
+                background:
+                  "radial-gradient(circle at 10% 20%, rgba(99,102,241,0.12), transparent 50%), radial-gradient(circle at 80% 0%, rgba(14,165,233,0.16), transparent 55%)",
+                display: "flex",
+                flexDirection: "column",
+                width: "100%",
+                overflowX: "hidden",
+                position: "relative"
+              }}
+            >
+              {/* Flow Companion - Enhanced Phase 1-3 */}
+              <Box
+                id="flowCompanion"
+                data-flow-avatar
+                data-flow-section={flowState.section}
+                data-flow-gesture={flowState.gesture}
+                data-flow-context={flowState.contextualHint}
+                onClick={() => {
+                  // Phase 1: Click-to-expand interaction
+                  if (flowState.aiHint || flowState.nextSuggestedSection) {
+                    setFlowState(prev => ({
+                      ...prev,
+                      showHintBubble: !prev.showHintBubble,
+                      hintMessage: prev.aiHint || `Next: ${prev.nextSuggestedSection}`,
+                      emojiReaction: '💡'
+                    }));
+                    setTimeout(() => setFlowState(prev => ({ 
+                      ...prev, 
+                      emojiReaction: null 
+                    })), 2000);
+                  }
+                }}
+                sx={{
+                  position: 'fixed',
+                  bottom: flowState.section === 'hero' ? { xs: 'clamp(60px, 42vh, calc(100vh - 240px))', sm: '38vh', md: '35vh' } :
+                          flowState.section === 'meetflow' ? { xs: 'clamp(60px, 38vh, calc(100vh - 240px))', sm: '33vh', md: '28vh' } :
+                          flowState.section === 'opportunity' ? { xs: 'clamp(60px, 48vh, calc(100vh - 240px))', sm: '43vh', md: '38vh' } :
+                          flowState.section === 'workflow' ? { xs: 'clamp(60px, 43vh, calc(100vh - 240px))', sm: '38vh', md: '33vh' } :
+                          flowState.section === 'templates' ? { xs: 'clamp(60px, 40vh, calc(100vh - 240px))', sm: '35vh', md: '30vh' } :
+                          flowState.section === 'services' ? { xs: 'clamp(60px, 45vh, calc(100vh - 240px))', sm: '40vh', md: '35vh' } :
+                          flowState.section === 'faq' ? { xs: 'clamp(60px, 38vh, calc(100vh - 240px))', sm: '33vh', md: '28vh' } :
+                          flowState.section === 'waitlist' ? { xs: 'clamp(60px, 25vh, calc(100vh - 240px))', sm: '22vh', md: '18vh' } :
+                          { xs: 60, sm: 50, md: 90 },
+                  right: flowState.section === 'hero' ? { xs: 'clamp(10px, 8vw, 30px)', sm: '6vw', md: '4vw' } :
+                         flowState.section === 'meetflow' ? { xs: 'clamp(10px, 12vw, 35px)', sm: '10vw', md: '8vw' } :
+                         flowState.section === 'opportunity' ? { xs: 'clamp(10px, 4vw, 20px)', sm: '3vw', md: '2vw' } :
+                         flowState.section === 'waitlist' ? { xs: 'clamp(10px, 6vw, 25px)', sm: '4vw', md: '3vw' } :
+                         { xs: 12, sm: 16, md: 20 },
+                  left: flowState.section === 'meetflow' ? { xs: 'auto', sm: 'auto', md: '12vw' } : 'auto',
+                  width: flowState.section === 'waitlist' ? 
+                         { xs: '144px', sm: '156px', md: '168px' } : 
+                         flowState.contextualHint === 'exploring' || flowState.contextualHint === 'action' ? 
+                         { xs: '132px', sm: '144px', md: '156px' } :
+                         { xs: '120px', sm: '132px', md: '144px' },
+                  height: flowState.section === 'waitlist' ? 
+                          { xs: '144px', sm: '156px', md: '168px' } : 
+                          flowState.contextualHint === 'exploring' || flowState.contextualHint === 'action' ? 
+                          { xs: '132px', sm: '144px', md: '156px' } :
+                          { xs: '120px', sm: '132px', md: '144px' },
+                  zIndex: 9998,
+                  pointerEvents: 'auto',
+                  cursor: 'pointer',
+                  filter: flowState.section === 'waitlist' ? 
+                          'drop-shadow(0 6px 16px rgba(251, 191, 36, 0.6)) drop-shadow(0 0 20px rgba(251, 191, 36, 0.4))' :
+                          flowState.contextualHint === 'action' ?
+                          'drop-shadow(0 5px 14px rgba(139, 92, 246, 0.5)) drop-shadow(0 0 18px rgba(99, 102, 241, 0.3))' :
+                          flowState.userEngaged ?
+                          'drop-shadow(0 5px 12px rgba(251, 191, 36, 0.45)) drop-shadow(0 0 16px rgba(251, 191, 36, 0.25))' :
+                          flowState.proximityLevel > 2 ?
+                          'drop-shadow(0 5px 14px rgba(251, 191, 36, 0.5)) drop-shadow(0 0 18px rgba(139, 92, 246, 0.25))' :
+                          'drop-shadow(0 4px 10px rgba(251, 191, 36, 0.4))',
+                  transition: 'width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.6s ease',
+                  willChange: flowState.active ? 'transform, filter' : 'auto',
+                  backfaceVisibility: 'hidden',
+                  WebkitFontSmoothing: 'antialiased',
+                  transform: 'translateZ(0)',
+                  background: 'transparent',
+                  overflow: 'visible',
+                  border: 'none',
+                  outline: 'none',
+                  boxShadow: 'none',
+                  animation: flowState.active ? 
+                    (flowState.gesture === 'wave' ? 'flow-wave 2s ease-in-out 1, flow-breathe 3s ease-in-out infinite 2s' :
+                     flowState.gesture === 'bounce' ? 'flow-bounce 0.8s ease-in-out infinite' :
+                     flowState.gesture === 'bounce-point' ? 'flow-bounce-point 0.8s ease-in-out infinite' :
+                     flowState.gesture === 'sway' ? 'flow-sway 4s ease-in-out infinite' :
+                     flowState.gesture === 'orbit' ? 'flow-orbit 8s linear infinite' :
+                     flowState.gesture === 'celebrate' ? 'flow-spin-celebrate 2s ease-out 1, flow-glow-pulse 2s ease-out 1' :
+                     flowState.gesture === 'nod' ? 'flow-nod 1.2s ease-in-out 2, flow-breathe 3s ease-in-out infinite 2.4s' :
+                     flowState.gesture === 'excited-bounce' ? 'flow-excited-bounce 0.4s ease-in-out infinite, flow-glow-pulse 1s ease-in-out infinite' :
+                     'flow-breathe 3s ease-in-out infinite, flow-subtle-glow 4s ease-in-out infinite') :
+                    'none',
+                  display: flowState.active ? 'block' : 'none',
+                  '&:hover': {
+                    transform: 'scale(1.08)',
+                    filter: 'drop-shadow(0 6px 18px rgba(251, 191, 36, 0.7)) drop-shadow(0 0 22px rgba(139, 92, 246, 0.4))'
+                  }
+                }}
+              >
+                {/* Phase 2: Progress Arc */}
+                <FlowProgressArc percent={flowState.progressPercent} />
+                
+                {/* Phase 1: Hint Bubble */}
+                <FlowHintBubble message={flowState.hintMessage} show={flowState.showHintBubble} />
+                
+                {/* Phase 1: Emoji Reaction */}
+                <FlowEmojiReaction emoji={flowState.emojiReaction} />
+                
+                {/* Phase 1: Confetti */}
+                <FlowConfetti trigger={flowState.showConfetti} />
+                
+                {/* Flow Avatar Image */}
+                <Box
+                  component="img"
+                  src="flownobackground.png"
+                  alt="Flow - Your AI Companion"
+                  draggable="false"
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    imageRendering: '-webkit-optimize-contrast',
+                    backfaceVisibility: 'hidden',
+                    transform: 'translateZ(0)',
+                    willChange: 'transform',
+                    userSelect: 'none',
+                    pointerEvents: 'none'
+                  }}
+                />
+              </Box>
+
+              <Box
+                sx={{
+                  position: 'fixed',
+                  bottom: 20,
+                  right: 20,
+                  zIndex: 9999,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  background: 'rgba(10, 12, 24, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: '50px',
+                  padding: '12px 20px',
+                  border: '1px solid rgba(251, 191, 36, 0.3)',
+                  boxShadow: '0 8px 32px rgba(15, 23, 42, 0.6)'
+                }}
+              >
+                <audio id="bgMusic" loop>
+                  <source src="let-it-flow.m4a" type="audio/mp4" />
+                </audio>
+                <Button
+                  onClick={() => {
+                    const audio = document.getElementById('bgMusic');
+                    const btn = document.getElementById('musicBtn');
+                    if (audio.paused) {
+                      audio.play();
+                      btn.textContent = '🔊';
+                    } else {
+                      audio.pause();
+                      btn.textContent = '🔇';
+                    }
+                  }}
+                  id="musicBtn"
+                  sx={{
+                    color: '#fbbf24',
+                    fontSize: '1.5rem',
+                    minWidth: 'auto',
+                    padding: 0,
+                    '&:hover': {
+                      background: 'transparent',
+                      color: '#f59e0b'
+                    }
+                  }}
+                >
+                  🔇
+                </Button>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: '#f8fafc',
+                    fontWeight: 600,
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  Let It Flow
+                </Typography>
+              </Box>
+
+              <Container maxWidth="lg" sx={{ 
+                py: { xs: 'clamp(2rem, 6vw, 2.5rem)', sm: 'clamp(2.5rem, 7vw, 3.5rem)', md: 'clamp(3rem, 8vw, 5rem)' }, 
+                px: { xs: 2, sm: 3, md: 4 },
+                width: "100%", 
+                position: "relative", 
+                zIndex: 1 
+              }}>
+                <Stack spacing={{ xs: 'clamp(2rem, 5vw, 3.5rem)', md: 'clamp(3.5rem, 8vw, 5.5rem)' }} alignItems="center">
+                  <Box data-flow-section="hero" sx={{ width: "100%" }}>
+                    <HeroSection />
+                  </Box>
+                  <FlowLine variant="pulse" />
+                  <Box data-flow-section="meetflow" sx={{ width: "100%" }}>
+                    <SocialProof />
+                  </Box>
+                  <FlowLine variant="default" />
+                  <Box data-flow-section="opportunity" sx={{ width: "100%" }}>
+                    <OpportunityFinderShowcase workflowRef={workflowRef} />
+                  </Box>
+                  <FlowLine variant="short" />
+                  <Box data-flow-section="workflow" sx={{ width: "100%" }}>
+                    <WorkflowBuilder />
+                  </Box>
+                  <FlowLine variant="default" />
+                  <Box data-flow-section="templates" sx={{ width: "100%" }}>
+                    <TemplateShowcase />
+                  </Box>
+                  <FlowLine variant="short" />
+                  <Box data-flow-section="services" sx={{ width: "100%" }}>
+                    <PoweredByServices />
+                  </Box>
+                  <FlowLine variant="pulse" />
+                  <Box data-flow-section="faq" sx={{ width: "100%" }}>
+                    <FAQ />
+                  </Box>
+                  <FlowLine variant="short" />
+                  <Box data-flow-section="waitlist" sx={{ width: "100%" }}>
+                    <WaitlistSignup />
+                  </Box>
+                </Stack>
+              </Container>
+              <Footer />
+            </Box>
+          </ThemeProvider>
+        );
+      }
+
+      const rootElement = document.getElementById("root");
+      const root = ReactDOM.createRoot(rootElement);
+      root.render(<App />);
+    </script>
+  </body>
+</html>

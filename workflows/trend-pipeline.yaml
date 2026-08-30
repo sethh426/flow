@@ -1,0 +1,34 @@
+# Cloud Workflows YAML for AffiliateFlow trend-product pipeline
+# This is a stub. Fill in with your real service URLs and logic.
+
+main:
+  params: [input]
+  steps:
+    - call_trend_finder:
+        call: http.post
+        args:
+          url: https://trend-finder-url/find
+          body:
+            query: ${input.query}
+        result: trendResult
+    - parallel_map:
+        parallel:
+          for: trend in ${trendResult.body.trends}
+          steps:
+            - call_product_mapper:
+                call: http.post
+                args:
+                  url: https://product-mapper-url/map
+                  body:
+                    affiliateUrl: "https://nordstrom.com" # Example
+                    query: ${trend}
+                result: productResult
+            - save_to_firestore:
+                call: http.post
+                args:
+                  url: https://firestore-save-url/save
+                  body:
+                    trend: ${trend}
+                    products: ${productResult.body.products}
+    - return:
+        return: "Pipeline complete"

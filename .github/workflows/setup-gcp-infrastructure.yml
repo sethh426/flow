@@ -1,0 +1,89 @@
+# Complete GCP Infrastructure Setup
+name: Setup GCP Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Terraform action'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+env:
+  GCP_PROJECT_ID: affiliateflow-abzfy
+  GCP_REGION: us-central1
+  TERRAFORM_VERSION: '1.5.0'
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write  # For Workload Identity Federation
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+      
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+      
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+      
+      - name: Terraform Init
+        run: |
+          cd infrastructure/terraform
+          terraform init
+      
+      - name: Terraform Validate
+        run: |
+          cd infrastructure/terraform
+          terraform validate
+      
+      - name: Terraform Plan
+        if: github.event.inputs.action == 'plan'
+        run: |
+          cd infrastructure/terraform
+          terraform plan -out=tfplan
+      
+      - name: Terraform Apply
+        if: github.event.inputs.action == 'apply'
+        run: |
+          cd infrastructure/terraform
+          terraform apply -auto-approve
+      
+      - name: Terraform Destroy
+        if: github.event.inputs.action == 'destroy'
+        run: |
+          cd infrastructure/terraform
+          terraform destroy -auto-approve
+      
+      - name: Output Infrastructure Details
+        if: github.event.inputs.action == 'apply'
+        run: |
+          cd infrastructure/terraform
+          terraform output -json > infrastructure-output.json
+          cat infrastructure-output.json
+      
+      - name: Upload Infrastructure Output
+        if: github.event.inputs.action == 'apply'
+        uses: actions/upload-artifact@v4
+        with:
+          name: infrastructure-output
+          path: infrastructure/terraform/infrastructure-output.json

@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flow Early Access</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: radial-gradient(circle at 20% 20%, #20124d 0%, #070413 60%);
+        color: #f5f5ff;
+      }
+      #root {
+        min-height: 100vh;
+      }
+    </style>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@mui/material@5/umd/material-ui.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@mui/icons-material@5/umd/material-ui-icons.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@emotion/react@11.11.1/dist/emotion-react.umd.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@emotion/styled@11.11.0/dist/emotion-styled.umd.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+      const {
+        ThemeProvider,
+        createTheme,
+        CssBaseline,
+        Container,
+        Box,
+        Stack,
+        Grid,
+        Card,
+        CardContent,
+        Typography,
+        Chip,
+        Avatar,
+        Divider,
+        LinearProgress,
+        List,
+        ListItem,
+        ListItemAvatar,
+        ListItemText,
+        Paper,
+        Button
+      } = MaterialUI;
+
+      const { useMemo } = React;
+
+      const theme = createTheme({
+        palette: {
+          mode: "dark",
+          primary: { main: "#7C5CFF" },
+          secondary: { main: "#FBAA4E" },
+          background: {
+            default: "#05020f",
+            paper: "rgba(16, 11, 33, 0.9)"
+          }
+        },
+        typography: {
+          fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        },
+        shape: { borderRadius: 16 }
+      });
+
+      const sampleTrends = [
+        {
+          id: "glowwave",
+          name: "GlowWave Creator Blitz",
+          velocity: 92,
+          momentum: "+241% weekly",
+          description: "AI beauty filters and creator collabs driving viral Reels conversions.",
+          platforms: ["TikTok", "Instagram", "YouTube Shorts"],
+          bestFor: "Beauty & Wellness brands",
+          highlight: "Avg 4.6x ROI in 14 days"
+        },
+        {
+          id: "pulsehaze",
+          name: "PulseHaze Drops",
+          velocity: 87,
+          momentum: "+188% weekly",
+          description: "Limited micro-influencer drops framed as studio-only releases.",
+          platforms: ["TikTok", "Instagram"],
+          bestFor: "DTC lifestyle",
+          highlight: "2.1M cross-network reach"
+        },
+        {
+          id: "afterglow",
+          name: "AfterGlow Soundbites",
+          velocity: 84,
+          momentum: "+165% weekly",
+          description: "Audio-first teasers that push followers to live shopping flows.",
+          platforms: ["Instagram", "X", "Threads"],
+          bestFor: "Creators & coaches",
+          highlight: "36% lift in paid community joins"
+        }
+      ];
+
+      const automationPlay = {
+        title: "GlowWave Creator Blitz Automation",
+        summary: "Signature Flow Trend Analyzer automation that brokers viral product drops through curated creators.",
+        headlineStat: "4.6x ROI",
+        liftDetail: "average return in the first 14 days",
+        steps: [
+          {
+            title: "Signal Scan",
+            description: "Tracks 50 creator cohorts and filters surging mentions mapped to your SKU library.",
+            icon: "Radar"
+          },
+          {
+            title: "Creator Co-Pilot",
+            description: "Auto-drafts outreach, briefs, and dynamic discount codes personalized to each creator.",
+            icon: "Handshake"
+          },
+          {
+            title: "Asset Sprint",
+            description: "Generates short-form scripts, carousels, and email follow-ups in your brand voice.",
+            icon: "AutoAwesome"
+          },
+          {
+            title: "Launch Orchestrator",
+            description: "Schedules posts, syncs creator timing, and routes drop-day engagement into Flow CRM.",
+            icon: "RocketLaunch"
+          }
+        ],
+        assetBundle: [
+          { label: "Social Posts", value: "9 assets" },
+          { label: "Creator Briefs", value: "4 tailored" },
+          { label: "Email Plays", value: "3-part drip" },
+          { label: "Ad Variants", value: "4 multivariate" }
+        ]
+      };
+
+      const engagementForecast = [
+        { label: "Organic reach multiplier", value: 78 },
+        { label: "Click-to-cart uplift", value: 64 },
+        { label: "Creator response rate", value: 86 },
+        { label: "Drop-day sell-through", value: 71 }
+      ];
+
+      const socialProof = [
+        {
+          initials: "RJ",
+          name: "Riya Jain",
+          role: "Founder, HaloGlow Labs",
+          quote: "Flow's Trend Analyzer spotted GlowWave ten days before our competitors. The automation play shipped in hours and funded our entire Q4 pipeline.",
+          delta: "+182% campaign revenue"
+        },
+        {
+          initials: "ML",
+          name: "Marcus Lee",
+          role: "Growth Lead, CreatorCart",
+          quote: "The creator briefs and launch sequencing feel eerily tailored. Our creator replies doubled without increasing spend.",
+          delta: "2.3x engaged creator pool"
+        }
+      ];
+
+      const GradientPaper = (props) => (
+        <Paper
+          elevation={0}
+          {...props}
+          sx={{
+            p: 3,
+            borderRadius: 3,
+            background: "linear-gradient(135deg, rgba(124, 92, 255, 0.16), rgba(32, 18, 77, 0.6))",
+            border: "1px solid rgba(124, 92, 255, 0.3)",
+            ...props.sx
+          }}
+        />
+      );
+
+      const TrendCard = ({ trend }) => (
+        <Card
+          sx={{
+            height: "100%",
+            borderRadius: 3,
+            background: "linear-gradient(160deg, rgba(31, 15, 60, 0.8), rgba(10, 5, 24, 0.92))",
+            border: "1px solid rgba(124, 92, 255, 0.35)",
+            display: "flex",
+            flexDirection: "column"
+          }}
+        >
+          <CardContent>
+            <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
+              <Stack spacing={1.5}>
+                <Chip label={trend.momentum} color="secondary" size="small" sx={{ fontWeight: 600 }} />
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  {trend.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {trend.description}
+                </Typography>
+              </Stack>
+              <Stack alignItems="flex-end" spacing={0.5}>
+                <Typography variant="h3" sx={{ fontWeight: 700, lineHeight: 1 }}>
+                  {trend.velocity}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Velocity Score
+                </Typography>
+              </Stack>
+            </Stack>
+            <Divider sx={{ my: 3, borderColor: "rgba(124, 92, 255, 0.3)" }} />
+            <Stack spacing={1.5}>
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                {trend.platforms.map((platform) => (
+                  <Chip
+                    key={platform}
+                    label={platform}
+                    variant="outlined"
+                    size="small"
+                    sx={{
+                      color: "#f5f5ff",
+                      borderColor: "rgba(245, 245, 255, 0.3)",
+                      fontWeight: 600
+                    }}
+                  />
+                ))}
+              </Stack>
+              <Typography variant="body2" color="text.secondary">
+                Best for: {trend.bestFor}
+              </Typography>
+              <Typography variant="subtitle2" color="secondary" sx={{ fontWeight: 700 }}>
+                {trend.highlight}
+              </Typography>
+            </Stack>
+          </CardContent>
+        </Card>
+      );
+
+      const StepCard = ({ step }) => {
+        const IconComponent = MaterialUIIcons[step.icon] || MaterialUIIcons.Bolt;
+        return (
+          <GradientPaper sx={{ height: "100%" }}>
+            <Stack direction="row" spacing={2}>
+              <Avatar sx={{ bgcolor: "rgba(124, 92, 255, 0.4)", color: "#fefcff" }}>
+                <IconComponent />
+              </Avatar>
+              <Stack spacing={1}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                  {step.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {step.description}
+                </Typography>
+              </Stack>
+            </Stack>
+          </GradientPaper>
+        );
+      };
+
+      const MetricsPanel = () => (
+        <GradientPaper sx={{ p: 4 }}>
+          <Stack spacing={3}>
+            <Stack spacing={1}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                Engagement Forecast
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Predictive lift estimates generated from live Trend Analyzer cohorts.
+              </Typography>
+            </Stack>
+            <Stack spacing={2.5}>
+              {engagementForecast.map((metric) => (
+                <Box key={metric.label}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {metric.label}
+                    </Typography>
+                    <Typography variant="body2" color="secondary" sx={{ fontWeight: 700 }}>
+                      {metric.value}%
+                    </Typography>
+                  </Stack>
+                  <LinearProgress
+                    variant="determinate"
+                    value={metric.value}
+                    sx={{
+                      mt: 1,
+                      height: 8,
+                      borderRadius: 999,
+                      bgcolor: "rgba(124, 92, 255, 0.15)",
+                      "& .MuiLinearProgress-bar": {
+                        borderRadius: 999,
+                        background: "linear-gradient(90deg, #7C5CFF 0%, #FFB86B 100%)"
+                      }
+                    }}
+                  />
+                </Box>
+              ))}
+            </Stack>
+          </Stack>
+        </GradientPaper>
+      );
+
+      const SocialProofPanel = () => (
+        <GradientPaper sx={{ p: 4 }}>
+          <Stack spacing={3}>
+            <Stack spacing={1}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                What founders see on Flow
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Real operators using Trend Analyzer automations in live campaigns.
+              </Typography>
+            </Stack>
+            <List disablePadding>
+              {socialProof.map((entry, index) => (
+                <React.Fragment key={entry.name}>
+                  <ListItem alignItems="flex-start" sx={{ px: 0 }}>
+                    <ListItemAvatar>
+                      <Avatar sx={{ bgcolor: "rgba(251, 170, 78, 0.28)", color: "#ffcf99", fontWeight: 700 }}>
+                        {entry.initials}
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={
+                        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                          {entry.name}
+                        </Typography>
+                      }
+                      secondary={
+                        <Stack spacing={1.5}>
+                          <Typography variant="caption" color="text.secondary">
+                            {entry.role}
+                          </Typography>
+                          <Typography variant="body2">{entry.quote}</Typography>
+                          <Chip
+                            label={entry.delta}
+                            size="small"
+                            color="secondary"
+                            sx={{ alignSelf: "flex-start", fontWeight: 600 }}
+                          />
+                        </Stack>
+                      }
+                    />
+                  </ListItem>
+                  {index < socialProof.length - 1 && (
+                    <Divider component="li" sx={{ borderColor: "rgba(124, 92, 255, 0.2)", my: 2 }} />
+                  )}
+                </React.Fragment>
+              ))}
+            </List>
+          </Stack>
+        </GradientPaper>
+      );
+
+      const AutomationTemplate = () => {
+        const primaryTrend = useMemo(() => sampleTrends[0], []);
+
+        return (
+          <Box
+            sx={{
+              py: { xs: 6, md: 10 },
+              background: "radial-gradient(circle at 10% 0%, rgba(124, 92, 255, 0.25), transparent 55%)"
+            }}
+          >
+            <Container maxWidth="lg">
+              <Stack spacing={8}>
+                <Box>
+                  <Chip
+                    label="Flow Trend Analyzer"
+                    sx={{
+                      bgcolor: "rgba(124, 92, 255, 0.2)",
+                      color: "#e9e7ff",
+                      fontWeight: 600,
+                      mb: 3
+                    }}
+                  />
+                  <Typography variant="h2" sx={{ fontWeight: 800, maxWidth: 720, lineHeight: 1.1 }}>
+                    Launch viral-ready automations the moment a trend flashes green
+                  </Typography>
+                  <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 660, mt: 2, lineHeight: 1.6 }}>
+                    Flow watches every signal, assembles the assets, and schedules the drop. You approve the vibe. The GlowWave Creator Blitz template ships with everything your brand needs to ride the wave on social in hours, not weeks.
+                  </Typography>
+                  <Stack direction={{ xs: "column", sm: "row" }} spacing={2.5} sx={{ mt: 4 }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="large"
+                      sx={{
+                        px: 4,
+                        py: 1.5,
+                        fontWeight: 700,
+                        textTransform: "none",
+                        background: "linear-gradient(90deg, #7C5CFF 0%, #9F7BFF 100%)"
+                      }}
+                    >
+                      Book my automation walkthrough
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="large"
+                      sx={{
+                        px: 4,
+                        py: 1.5,
+                        borderWidth: 2,
+                        textTransform: "none",
+                        fontWeight: 700,
+                        borderColor: "rgba(245, 245, 255, 0.35)",
+                        color: "#f5f5ff"
+                      }}
+                    >
+                      Explore other launch templates
+                    </Button>
+                  </Stack>
+                </Box>
+
+                <Grid container spacing={4}>
+                  <Grid item xs={12} md={7}>
+                    <Stack spacing={4}>
+                      <GradientPaper sx={{ p: 4 }}>
+                        <Stack spacing={2.5}>
+                          <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={2}>
+                            <Stack spacing={1.5}>
+                              <Typography variant="overline" sx={{ letterSpacing: 2 }}>
+                                Feature Template
+                              </Typography>
+                              <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                                {primaryTrend.name}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {automationPlay.summary}
+                              </Typography>
+                            </Stack>
+                            <GradientPaper
+                              sx={{
+                                px: 3,
+                                py: 2,
+                                background: "linear-gradient(135deg, rgba(251, 170, 78, 0.28), rgba(124, 92, 255, 0.18))",
+                                border: "1px solid rgba(251, 170, 78, 0.35)",
+                                textAlign: "center"
+                              }}
+                            >
+                              <Typography variant="h3" sx={{ fontWeight: 800, color: "#ffcf99" }}>
+                                {automationPlay.headlineStat}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {automationPlay.liftDetail}
+                              </Typography>
+                            </GradientPaper>
+                          </Stack>
+                          <Divider sx={{ borderColor: "rgba(124, 92, 255, 0.25)" }} />
+                          <Grid container spacing={3}>
+                            {automationPlay.steps.map((step) => (
+                              <Grid item xs={12} sm={6} key={step.title}>
+                                <StepCard step={step} />
+                              </Grid>
+                            ))}
+                          </Grid>
+                          <Divider sx={{ borderColor: "rgba(124, 92, 255, 0.25)" }} />
+                          <Stack spacing={2}>
+                            <Typography variant="subtitle2" sx={{ textTransform: "uppercase", letterSpacing: 1.2 }}>
+                              Assets ready out of the box
+                            </Typography>
+                            <Stack direction={{ xs: "column", sm: "row" }} spacing={2} flexWrap="wrap" useFlexGap>
+                              {automationPlay.assetBundle.map((asset) => (
+                                <Chip
+                                  key={asset.label}
+                                  label={asset.label + " • " + asset.value}
+                                  color="primary"
+                                  sx={{
+                                    bgcolor: "rgba(124, 92, 255, 0.2)",
+                                    fontWeight: 600
+                                  }}
+                                />
+                              ))}
+                            </Stack>
+                          </Stack>
+                        </Stack>
+                      </GradientPaper>
+
+                      <GradientPaper>
+                        <Stack spacing={3}>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                            Trending right now
+                          </Typography>
+                          <Grid container spacing={3}>
+                            {sampleTrends.map((trend) => (
+                              <Grid item xs={12} md={6} key={trend.id}>
+                                <TrendCard trend={trend} />
+                              </Grid>
+                            ))}
+                          </Grid>
+                        </Stack>
+                      </GradientPaper>
+                    </Stack>
+                  </Grid>
+
+                  <Grid item xs={12} md={5}>
+                    <Stack spacing={4}>
+                      <MetricsPanel />
+                      <SocialProofPanel />
+                    </Stack>
+                  </Grid>
+                </Grid>
+
+                <GradientPaper
+                  sx={{
+                    p: { xs: 4, md: 6 },
+                    background: "linear-gradient(135deg, rgba(124, 92, 255, 0.25), rgba(26, 20, 50, 0.85))",
+                    border: "1px solid rgba(124, 92, 255, 0.32)"
+                  }}
+                >
+                  <Grid container spacing={4} alignItems="center">
+                    <Grid item xs={12} md={8}>
+                      <Stack spacing={2}>
+                        <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                          Join the Flow early-access waitlist
+                        </Typography>
+                        <Typography variant="body1" color="text.secondary">
+                          Get priority onboarding, template drops, and direct access to our automation strategists. We approve a handful of new brands each week to keep the signal sharp.
+                        </Typography>
+                      </Stack>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <Stack spacing={2}>
+                        <GradientPaper
+                          sx={{
+                            textAlign: "center",
+                            background: "linear-gradient(135deg, rgba(251, 170, 78, 0.18), rgba(124, 92, 255, 0.12))"
+                          }}
+                        >
+                          <Typography variant="h4" sx={{ fontWeight: 800, color: "#ffcf99" }}>
+                            1,287
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            operators already on the list
+                          </Typography>
+                        </GradientPaper>
+                        <Button
+                          variant="contained"
+                          size="large"
+                          sx={{
+                            py: 1.4,
+                            fontWeight: 700,
+                            textTransform: "none",
+                            background: "linear-gradient(90deg, #7C5CFF 0%, #FBAA4E 100%)"
+                          }}
+                        >
+                          Claim my founding seat
+                        </Button>
+                      </Stack>
+                    </Grid>
+                  </Grid>
+                </GradientPaper>
+              </Stack>
+            </Container>
+          </Box>
+        );
+      };
+
+      const App = () => (
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <AutomationTemplate />
+        </ThemeProvider>
+      );
+
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<App />);
+    </script>
+  </body>
+</html>

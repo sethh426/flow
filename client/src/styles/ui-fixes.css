@@ -1,0 +1,511 @@
+/**
+ * UI/UX Perfection - Global Fixes for Border Radius and Text Cutoffs
+ * Applied to all cards, dialogs, buttons, and interactive elements
+ */
+
+/* ========== CARD FIXES ========== */
+
+/* Ensure all cards have proper padding to prevent text cutoff at corners */
+.MuiCard-root {
+  overflow: hidden !important;
+}
+
+.MuiCardContent-root {
+  padding: 20px !important;
+}
+
+.MuiCardContent-root:last-child {
+  padding-bottom: 20px !important;
+}
+
+/* Prevent text from being cut off by rounded corners */
+.MuiCard-root .MuiTypography-root {
+  padding-inline: 4px;
+}
+
+/* Fix for cards with background colors */
+.MuiCard-root[class*="bgcolor"] .MuiCardContent-root {
+  padding: 28px !important;
+}
+
+/* ========== DIALOG FIXES ========== */
+
+/* Ensure dialogs have proper spacing */
+.MuiDialog-paper {
+  overflow: visible !important;
+}
+
+.MuiDialogTitle-root {
+  padding: 24px 24px 16px 24px !important;
+}
+
+.MuiDialogContent-root {
+  padding: 20px 24px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+.MuiDialogActions-root {
+  padding: 16px 24px !important;
+}
+
+/* ========== BUTTON FIXES ========== */
+
+/* Ensure button text is never cut off */
+.MuiButton-root {
+  padding: 8px 20px !important;
+  min-height: 40px !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+}
+
+.MuiButton-contained {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.MuiButton-contained:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-1px) !important;
+}
+
+.MuiButton-outlined {
+  border-width: 1.5px !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.MuiButton-outlined:hover {
+  border-width: 2px !important;
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Icon buttons */
+.MuiIconButton-root {
+  padding: 10px !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.MuiIconButton-root:hover {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+  transform: scale(1.05) !important;
+}
+
+/* ========== CHIP FIXES ========== */
+
+.MuiChip-root {
+  border-radius: 16px !important;
+  padding: 4px 8px !important;
+  height: auto !important;
+  min-height: 28px !important;
+}
+
+.MuiChip-label {
+  padding-inline: 8px !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+}
+
+.MuiChip-icon {
+  margin-left: 6px !important;
+  margin-right: -4px !important;
+}
+
+/* ========== TEXT OVERFLOW FIXES ========== */
+
+/* Proper ellipsis for all text that should truncate */
+.text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+
+.text-ellipsis-2-lines {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.text-ellipsis-3-lines {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ========== BORDER RADIUS STANDARDIZATION ========== */
+
+/* Small radius for compact elements */
+.MuiChip-root,
+.MuiAvatar-root:not(.MuiAvatar-circular) {
+  border-radius: 8px !important;
+}
+
+/* Medium radius for standard cards and inputs */
+.MuiCard-root,
+.MuiPaper-root:not(.MuiDialog-paper):not(.MuiPopover-paper),
+.MuiTextField-root .MuiOutlinedInput-root {
+  border-radius: 12px !important;
+}
+
+/* Large radius for dialogs and major containers */
+.MuiDialog-paper {
+  border-radius: 16px !important;
+}
+
+/* Extra large radius for special cards */
+.MuiCard-root[class*="borderRadius-4"],
+.special-card {
+  border-radius: 20px !important;
+}
+
+/* ========== LIST ITEM FIXES ========== */
+
+.MuiListItem-root,
+.MuiListItemButton-root {
+  border-radius: 8px !important;
+  margin-bottom: 4px !important;
+  padding: 12px 16px !important;
+}
+
+.MuiListItemButton-root:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.MuiListItemText-root {
+  margin: 0 !important;
+}
+
+.MuiListItemText-primary {
+  font-weight: 500 !important;
+  margin-bottom: 2px !important;
+}
+
+/* ========== TABLE FIXES ========== */
+
+.MuiTableCell-root {
+  padding: 16px !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+}
+
+.MuiTableCell-head {
+  font-weight: 600 !important;
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
+.MuiTableRow-root:hover {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
+/* ========== INPUT FIXES ========== */
+
+.MuiTextField-root {
+  margin-bottom: 16px !important;
+}
+
+.MuiOutlinedInput-root {
+  border-radius: 10px !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-width: 2px !important;
+}
+
+.MuiInputLabel-root {
+  background-color: white !important;
+  padding-inline: 4px !important;
+}
+
+/* ========== TOOLTIP FIXES ========== */
+
+.MuiTooltip-tooltip {
+  padding: 8px 12px !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  max-width: 300px !important;
+}
+
+/* ========== AVATAR FIXES ========== */
+
+.MuiAvatar-root {
+  font-weight: 600 !important;
+}
+
+.MuiAvatar-root.MuiAvatar-circular {
+  border-radius: 50% !important;
+}
+
+/* Ensure avatars in cards don't get cut off */
+.MuiCard-root .MuiAvatar-root {
+  flex-shrink: 0 !important;
+}
+
+/* ========== DIVIDER FIXES ========== */
+
+.MuiDivider-root {
+  margin: 16px 0 !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ========== BOX CONTAINER FIXES ========== */
+
+/* Prevent horizontal overflow */
+.MuiBox-root {
+  overflow-x: visible !important;
+}
+
+/* Grid items should have proper spacing */
+.MuiGrid-item {
+  padding: 8px !important;
+}
+
+/* ========== PROGRESS BAR FIXES ========== */
+
+.MuiLinearProgress-root {
+  border-radius: 10px !important;
+  height: 8px !important;
+}
+
+.MuiLinearProgress-bar {
+  border-radius: 10px !important;
+}
+
+/* ========== ALERT FIXES ========== */
+
+.MuiAlert-root {
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+}
+
+.MuiAlert-message {
+  padding: 4px 0 !important;
+}
+
+/* ========== BADGE FIXES ========== */
+
+.MuiBadge-badge {
+  padding: 0 6px !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  border-radius: 10px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+}
+
+/* ========== ANIMATION IMPROVEMENTS ========== */
+
+/* Smooth transitions for all interactive elements */
+.MuiButton-root,
+.MuiIconButton-root,
+.MuiCard-root,
+.MuiChip-root,
+.MuiListItemButton-root {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Hover lift effect */
+.hover-lift {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out !important;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ========== SCROLLBAR STYLING ========== */
+
+/* Custom scrollbar for better UX */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* ========== FOCUS VISIBLE IMPROVEMENTS ========== */
+
+.MuiButton-root:focus-visible,
+.MuiIconButton-root:focus-visible {
+  outline: 2px solid #667eea !important;
+  outline-offset: 2px !important;
+}
+
+/* ========== SPECIFIC COMPONENT FIXES ========== */
+
+/* Export dialog cards */
+.export-format-card {
+  cursor: pointer;
+  transition: all 0.2s ease-in-out !important;
+  border: 2px solid transparent !important;
+}
+
+.export-format-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
+  border-color: #667eea !important;
+}
+
+.export-format-card .MuiCardContent-root {
+  padding: 24px !important;
+  min-height: 160px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+/* Template cards */
+.template-card {
+  cursor: pointer;
+  transition: all 0.2s ease-in-out !important;
+  border: 2px solid transparent !important;
+}
+
+.template-card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1) !important;
+  border-color: #667eea !important;
+}
+
+.template-card.selected {
+  border-color: #667eea !important;
+  background-color: rgba(102, 126, 234, 0.05) !important;
+}
+
+/* Workflow cards */
+.workflow-card .MuiCardContent-root {
+  padding: 24px !important;
+}
+
+.workflow-card .MuiAvatar-root {
+  width: 56px !important;
+  height: 56px !important;
+  flex-shrink: 0 !important;
+}
+
+.workflow-card .MuiTypography-h6 {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  max-width: 100% !important;
+}
+
+/* Campaign cards */
+.campaign-status-card {
+  padding: 28px !important;
+  border-radius: 16px !important;
+  border: 2px solid !important;
+}
+
+.campaign-status-card .MuiTypography-root {
+  padding: 0 4px !important;
+}
+
+/* ========== RESPONSIVE IMPROVEMENTS ========== */
+
+@media (max-width: 600px) {
+  .MuiCardContent-root {
+    padding: 16px !important;
+  }
+  
+  .MuiDialogTitle-root,
+  .MuiDialogContent-root,
+  .MuiDialogActions-root {
+    padding: 16px !important;
+  }
+  
+  .MuiButton-root {
+    padding: 6px 16px !important;
+    min-height: 36px !important;
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .export-format-card .MuiCardContent-root {
+    min-height: 140px !important;
+    padding: 20px !important;
+  }
+}
+
+/* ========== PRINT STYLES ========== */
+
+@media print {
+  .MuiCard-root,
+  .MuiDialog-paper {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+  }
+  
+  .MuiButton-root {
+    display: none !important;
+  }
+}
+
+/* ========== DARK MODE SUPPORT (Future) ========== */
+
+@media (prefers-color-scheme: dark) {
+  .MuiCard-root {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+  }
+  
+  .MuiDivider-root {
+    border-color: rgba(255, 255, 255, 0.12) !important;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+
+/* ========== ACCESSIBILITY IMPROVEMENTS ========== */
+
+/* Ensure sufficient color contrast */
+.MuiTypography-body2 {
+  color: rgba(0, 0, 0, 0.7) !important;
+}
+
+.MuiTypography-caption {
+  color: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Keyboard navigation highlights */
+*:focus-visible {
+  outline: 2px solid #667eea !important;
+  outline-offset: 2px !important;
+  border-radius: 4px !important;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

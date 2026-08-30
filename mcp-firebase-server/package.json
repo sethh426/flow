@@ -1,0 +1,14 @@
+{
+  "name": "affiliateflow-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP Server for AffiliateFlow Firebase Data Access",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "firebase-admin": "^12.0.0"
+  }
+}

@@ -1,0 +1,39 @@
+name: Cred-Bot Test
+
+# Trigger on any push (you can narrow to main if you like)
+on:
+  push:
+
+permissions:
+  id-token: write     # needed for Workload Identity Federation
+  contents: read      # to checkout your code
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) Check out the repo
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2) Authenticate to GCP via Workload Identity
+      - id: auth
+        name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account:            ${{ secrets.SA_EMAIL }}
+
+      # 3) Fetch a Firestore access token from Cred-Bot
+      - name: Fetch Firestore token
+        run: |
+          curl -s "${{ secrets.CRED_BOT_URL }}/token?scope=https://www.googleapis.com/auth/datastore" \
+            > token.json
+          jq . token.json
+
+      # 4) Use that token to list your Firestore indexes
+      - name: List Firestore indexes
+        run: |
+          gcloud auth login --cred-file=token.json --brief
+          gcloud firestore indexes list

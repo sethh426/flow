@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Waitlist signups - allow anyone to create and query
+    match /waitlist_signups/{signup} {
+      allow read, create: if true;
+      allow update, delete: if false;
+    }
+    
+    // Meta counters - anyone can read and update
+    match /meta/waitlist {
+      allow read, write: if true;
+    }
+  }
+}

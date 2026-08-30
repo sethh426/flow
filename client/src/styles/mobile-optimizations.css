@@ -1,0 +1,104 @@
+/**
+ * Mobile Performance Optimizations
+ * Reduce animations and optimize rendering on mobile devices
+ */
+
+/* Reduce motion for accessibility only */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Keep smooth animations on mobile for better UX */
+@media (max-width: 768px) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.2s !important;
+    transition-duration: 0.2s !important;
+  }
+}
+
+/* Optimize touch targets for mobile */
+@media (max-width: 768px) {
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Prevent text size adjustment on mobile */
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Optimize scrolling performance */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Reduce complexity of shadows on mobile */
+  .MuiPaper-root,
+  .MuiCard-root {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
+  }
+
+  /* Simplify borders */
+  * {
+    border-radius: min(8px, var(--border-radius, 8px)) !important;
+  }
+
+  /* Optimize images for mobile */
+  img {
+    content-visibility: auto;
+    will-change: auto;
+  }
+
+  /* Reduce backdrop blur on mobile */
+  .backdrop-blur {
+    backdrop-filter: none !important;
+    background-color: rgba(255, 255, 255, 0.95) !important;
+  }
+
+  /* Optimize Grid layout for mobile */
+  .MuiGrid-container {
+    contain: layout style;
+  }
+
+  /* Lazy load offscreen content */
+  [data-lazy] {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 500px;
+  }
+}
+
+/* High-performance GPU acceleration for key elements only */
+@media (min-width: 769px) {
+  .accelerate {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+}
+
+/* Reduce paint areas */
+body {
+  contain: layout style paint;
+}
+
+/* Optimize repaints */
+.MuiDrawer-root,
+.MuiDialog-root,
+.MuiModal-root {
+  contain: layout style paint;
+}

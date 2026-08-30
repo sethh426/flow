@@ -1,0 +1,67 @@
+/* Touch-optimized styles for mobile devices */
+
+/* Minimum touch target size */
+.workflow-node,
+button,
+a,
+input,
+.MuiButton-root,
+.MuiIconButton-root {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* Touch feedback */
+@media (hover: none) and (pointer: coarse) {
+    button:active,
+    .MuiButton-root:active,
+    .workflow-node:active {
+        transform: scale(0.95);
+        transition: transform 0.1s ease;
+    }
+    
+    a:active {
+        opacity: 0.7;
+        transition: opacity 0.1s ease;
+    }
+}
+
+/* Prevent text selection on double-tap */
+.workflow-canvas,
+.workflow-node,
+button {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* Smooth scrolling on mobile */
+@media (max-width: 768px) {
+    .workflow-canvas-compact {
+        height: 400px;
+        touch-action: pan-x pan-y pinch-zoom;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Safe area insets for notched devices */
+    .node-tabs-container {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    .mobile-nav {
+        padding-top: env(safe-area-inset-top);
+    }
+}
+
+/* Remove tap highlight color */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Focus visible for accessibility */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+    outline: 2px solid #6366f1;
+    outline-offset: 2px;
+}

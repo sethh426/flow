@@ -1,0 +1,2560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow - Join the Waitlist</title>
+    <link rel="icon" type="image/png" href="flow-logo.png" sizes="32x32">
+    <script defer src="firebase-config.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    
+    <!-- ReactFlow CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reactflow@11/dist/style.css">
+    
+    <!-- Open Graph Meta Tags for Social Sharing -->
+    <meta property="og:title" content="Flow - Build Your Social Empire">
+    <meta property="og:description" content="Join the first 500 creators shaping the future of digital entrepreneurship. AI-powered automation launching March 2026.">
+    <meta property="og:image" content="https://flowearlyadopters.web.app/flow-logo.png">
+    <meta property="og:url" content="https://flowearlyadopters.web.app">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Flow - Build Your Social Empire">
+    <meta name="twitter:description" content="Join the first 500 creators shaping the future of digital entrepreneurship. AI-powered automation launching March 2026.">
+    <meta name="twitter:image" content="https://flowearlyadopters.web.app/flow-logo.png">
+    
+    <!-- Additional Meta Tags -->
+    <meta name="description" content="Flow: AI-powered platform for affiliate marketers and creators. Reduce 20 hours/week to 2 hours with intelligent automation. Join 500 early adopters.">
+    <meta name="keywords" content="affiliate marketing, content creation, AI automation, social media management, digital entrepreneurship">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        
+        /* Hero */
+        .hero { 
+            text-align: center; 
+            padding: 100px 20px 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .hero-branding {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+        .hero h1 { 
+            font-size: 3.75rem; 
+            margin: 0;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-align: center;
+        }
+        .hero-logo {
+            height: 140px;
+            width: auto;
+            filter: drop-shadow(0 6px 18px rgba(0,0,0,0.35));
+        }
+        .hero p { 
+            font-size: 1.4rem; 
+            margin-bottom: 40px;
+            opacity: 0.95;
+        }
+        
+        /* Share Buttons */
+        .share-section {
+            margin: 30px 0;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .share-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        .share-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        .share-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .share-twitter {
+            background: #1DA1F2;
+            color: white;
+        }
+        .share-x {
+            background: #000;
+            color: white;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+        }
+        .share-x:hover {
+            box-shadow: 0 10px 25px rgba(0,0,0,0.45);
+        }
+        .share-facebook {
+            background: linear-gradient(135deg, #f97316, #ef4444);
+            color: white;
+            box-shadow: 0 6px 18px rgba(239, 68, 68, 0.35);
+        }
+        .share-facebook:hover {
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.45);
+        }
+        .share-linkedin {
+            background: #0077B5;
+            color: white;
+        }
+        .share-copy {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .share-copy.copied {
+            background: #10b981;
+            border-color: #10b981;
+        }
+
+        .demo-button-row {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        .workflow-zoom-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: rgba(102, 126, 234, 0.9);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+        }
+
+        .workflow-zoom-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .workflow-zoom-btn:active {
+            transform: translateY(0);
+        }
+
+        .workflow-cta {
+            background: rgba(59, 130, 246, 0.65);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.18);
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 8px 22px rgba(59, 130, 246, 0.28);
+            backdrop-filter: blur(12px);
+        }
+
+        .workflow-cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 26px rgba(99, 102, 241, 0.35);
+        }
+
+        .workflow-cta.is-playing {
+            background: rgba(16, 185, 129, 0.92);
+            box-shadow: 0 0 24px rgba(16, 185, 129, 0.45);
+            border-color: rgba(16, 185, 129, 0.9);
+        }
+
+        .workflow-cta.is-linking {
+            background: rgba(236, 72, 153, 0.92);
+            border-color: rgba(236, 72, 153, 0.9);
+            box-shadow: 0 0 28px rgba(236, 72, 153, 0.45);
+        }
+
+        /* Advanced Workflow Node Animations */
+        .workflow-node {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .workflow-node::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .workflow-node:hover::before {
+            left: 100%;
+        }
+
+        .workflow-node:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        .workflow-node.active {
+            transform: scale(1.05);
+            box-shadow: 0 25px 50px rgba(251, 191, 36, 0.4);
+        }
+
+        /* Advanced Form Validation */
+        .form-field {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .form-field input,
+        .form-field textarea {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            font-size: 1rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .form-field input:focus,
+        .form-field textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+            background: rgba(255,255,255,0.2);
+        }
+
+        .form-field.valid input,
+        .form-field.valid textarea {
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+
+        .form-field.invalid input,
+        .form-field.invalid textarea {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+        }
+
+        .form-field .field-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-field.valid .field-icon {
+            color: #10b981;
+        }
+
+        .form-field.invalid .field-icon {
+            color: #ef4444;
+        }
+
+        /* Social Proof Counter Animation */
+        .counter-pulse {
+            animation: counterPulse 2s infinite;
+        }
+
+        @keyframes counterPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Progressive Loading */
+        .skeleton {
+            background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Accessibility Improvements */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Focus Management */
+        .workflow-node:focus,
+        .share-btn:focus,
+        button:focus {
+            outline: 2px solid #667eea;
+            outline-offset: 2px;
+        }
+
+        .flow-node-card {
+            padding: 12px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.28);
+            cursor: grab;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border 0.25s ease, opacity 0.25s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            user-select: none;
+        }
+
+        .flow-node-card.flow-node-active {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 14px 32px rgba(16, 185, 129, 0.45);
+            border-color: rgba(16, 185, 129, 0.9);
+        }
+
+        .flow-node-card.flow-node-completed {
+            opacity: 0.85;
+            border-color: rgba(16, 185, 129, 0.6);
+            box-shadow: 0 10px 24px rgba(16, 185, 129, 0.32);
+        }
+
+        .flow-node-card.flow-node-linking {
+            transform: translateY(-4px) scale(1.04);
+            border-color: rgba(236, 72, 153, 0.85);
+            box-shadow: 0 16px 32px rgba(236, 72, 153, 0.35);
+        }
+
+        .flow-node-card:active {
+            cursor: grabbing;
+        }
+
+        .flow-connection {
+            stroke-width: 3.5;
+            stroke-linecap: round;
+            fill: none;
+            stroke-dasharray: 10 6;
+            animation: flowDash 3s linear infinite;
+            filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.35));
+            opacity: 0.85;
+        }
+
+        .flow-connection.flow-connection--active {
+            stroke-width: 4.5;
+            animation-duration: 1.2s;
+            filter: drop-shadow(0 0 16px rgba(16, 185, 129, 0.55));
+            opacity: 1;
+        }
+
+        .flow-connection.flow-connection--completed {
+            stroke-dasharray: 0;
+            opacity: 0.95;
+            filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.45));
+        }
+
+        @keyframes flowDash {
+            from { stroke-dashoffset: 0; }
+            to { stroke-dashoffset: -120; }
+        }
+
+        #workflow-status-banner {
+            pointer-events: auto;
+            font-size: 0.85rem;
+            letter-spacing: 0.3px;
+            padding: 9px 16px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            box-shadow: 0 12px 32px rgba(15,23,42,0.25);
+            backdrop-filter: blur(12px);
+            transition: all 0.2s ease;
+        }
+
+        #workflow-status-banner[data-variant="info"] {
+            background: rgba(30, 64, 175, 0.35);
+            border-color: rgba(147, 197, 253, 0.35);
+            color: #e0f2fe;
+        }
+
+        #workflow-status-banner[data-variant="action"] {
+            background: rgba(217, 119, 6, 0.35);
+            border-color: rgba(251, 191, 36, 0.45);
+            color: #fef3c7;
+        }
+
+        #workflow-status-banner[data-variant="success"] {
+            background: rgba(16, 185, 129, 0.3);
+            border-color: rgba(167, 243, 208, 0.45);
+            color: #ecfdf5;
+        }
+
+        #workflow-status-banner[data-variant="warning"] {
+            background: rgba(239, 68, 68, 0.32);
+            border-color: rgba(254, 202, 202, 0.4);
+            color: #fee2e2;
+        }
+
+        /* Share Button Hover Effects */
+        .share-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        /* Horizontal Node Tabs - Mobile First */
+        .node-tabs-container {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 12px 0;
+            margin-bottom: 20px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(102, 126, 234, 0.5) transparent;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .node-tabs-container::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .node-tabs-container::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+            border-radius: 4px;
+        }
+
+        .node-tabs-container::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.5);
+            border-radius: 4px;
+        }
+
+        .node-tab {
+            flex: 0 0 auto;
+            min-width: 140px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: center;
+            opacity: 0.7;
+            position: relative;
+        }
+
+        .node-tab:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .node-tab.active {
+            opacity: 1;
+            border-color: rgba(255,255,255,0.3);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            transform: translateY(-2px);
+        }
+
+        .node-tab-icon {
+            font-size: 1.8rem;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .node-tab-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: block;
+            text-transform: uppercase;
+        }
+
+        .node-details-card {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(99, 102, 241, 0.35);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .panel-close-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            line-height: 1;
+            padding: 0;
+        }
+
+        .panel-close-btn:hover {
+            background: rgba(239, 68, 68, 0.25);
+            border-color: rgba(239, 68, 68, 0.5);
+            transform: scale(1.1);
+        }
+
+        .node-menu-item:hover > div {
+            background: rgba(102, 126, 234, 0.15);
+            transform: translateX(5px);
+        }
+
+        .workflow-canvas-compact {
+            background: #0a0a0a;
+            border-radius: 16px;
+            border: 2px solid rgba(102, 126, 234, 0.4);
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            position: relative;
+            height: 500px;
+            touch-action: none;
+            will-change: transform;
+        }
+        
+        .flow-node-card {
+            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+            will-change: transform;
+        }
+
+        @media (max-width: 768px) {
+            .workflow-canvas-compact {
+                height: 400px;
+                border-radius: 12px;
+            }
+            
+            .node-tab {
+                min-width: 120px;
+                padding: 12px 14px;
+            }
+
+            .node-tab-icon {
+                font-size: 1.5rem;
+            }
+
+            .node-tab-label {
+                font-size: 0.65rem;
+            }
+
+            .node-details-card {
+                padding: 16px;
+            }
+        }
+
+        #node-details-panel {
+            margin-top: 25px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(99, 102, 241, 0.35);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+        }
+
+        #node-details-panel h4 {
+            font-size: 1.1rem;
+            color: #fbbf24;
+            margin-bottom: 12px;
+            letter-spacing: 0.6px;
+        }
+
+        #node-details-body {
+            font-size: 0.95rem;
+            color: #d1d5db;
+            line-height: 1.7;
+        }
+
+        #node-details-body strong {
+            color: #a78bfa;
+        }
+        
+        /* Mobile orientation message - hidden on desktop */
+        .mobile-rotate-message {
+            display: none;
+        }
+        
+        /* Urgency Badge */
+        .urgency-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin: 15px 0;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        /* Testimonial Style */
+        .testimonial {
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 4px solid #667eea;
+            padding: 20px 25px;
+            margin: 20px auto;
+            max-width: 700px;
+            border-radius: 8px;
+            font-style: italic;
+            opacity: 0.95;
+        }
+        .testimonial-author {
+            margin-top: 10px;
+            font-weight: 600;
+            color: #a78bfa;
+            font-style: normal;
+        }
+        
+        /* Form */
+        .waitlist-form {
+            max-width: 500px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .waitlist-form input,
+        .waitlist-form textarea {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: rgba(255,255,255,0.9);
+            resize: vertical;
+        }
+        .waitlist-form button {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            background: #FF6B35;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .waitlist-form button:hover {
+            background: #ff5520;
+            transform: translateY(-2px);
+        }
+        
+        /* Sections */
+        section { padding: 50px 28px; }
+        section h2 { 
+            font-size: 3rem; 
+            margin-bottom: 30px;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .problem, .solution { background: #111; }
+        
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-top: 40px;
+        }
+        .benefit-card {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            transition: all 0.3s;
+        }
+        .benefit-card:hover {
+            transform: translateY(-5px);
+            border-color: #667eea;
+        }
+        .benefit-card h3 {
+            color: #a78bfa;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+        
+        /* FAQ */
+        .faq-item {
+            background: rgba(102, 126, 234, 0.05);
+            padding: 25px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .faq-item h3 {
+            color: #a78bfa;
+            margin-bottom: 10px;
+        }
+        
+        /* Music Toggle */
+        .music-toggle {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fbbf24, #a855f7 60%, #312e81 100%);
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            font-size: 2rem;
+            color: #fff;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 14px 30px rgba(59, 130, 246, 0.45);
+            transition: transform 0.25s ease, box-shadow 0.3s ease;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+        }
+        .music-toggle::before {
+            content: "";
+            position: absolute;
+            inset: -30%;
+            background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 70%);
+            opacity: 0.35;
+            animation: glowPulse 4s infinite;
+        }
+        .music-toggle:hover {
+            transform: translateY(-3px) scale(1.08);
+            box-shadow: 0 18px 40px rgba(96, 165, 250, 0.6);
+        }
+        .music-toggle:active {
+            transform: scale(0.94);
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes glowPulse {
+            0%, 100% { transform: scale(0.9); opacity: 0.3; }
+            50% { transform: scale(1.15); opacity: 0.55; }
+        }
+        
+        /* Mobile */
+        @media (max-width: 768px) {
+            body { padding-top: 0; }
+            .container { padding: 0 18px; }
+            .hero-branding { gap: 14px; margin-bottom: 24px; }
+            .hero-logo { height: 90px; }
+            .hero h1 { font-size: 2.2rem; letter-spacing: 1px; }
+            .hero p { font-size: 1.1rem; }
+            section h2 { font-size: 2.2rem; }
+            .hero { padding: 50px 16px 40px; }
+            #workflow-demo { padding: 28px 22px; }
+            .demo-button-row { flex-direction: column; align-items: stretch; }
+            .demo-button-row button { width: 100%; }
+            #nodes-container { grid-template-columns: 1fr; }
+            #workflow-canvas { height: 500px; }
+            .music-toggle { bottom: 20px; right: 20px; width: 58px; height: 58px; }
+            .waitlist-form { padding: 24px 20px; }
+            .benefits-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .share-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .share-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            .mobile-rotate-message {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-branding">
+                <img src="flow-logo.png" alt="Flow brand logo" class="hero-logo">
+                <h1>FLOW — Build Your Social Empire.</h1>
+            </div>
+            <p>Be among the <strong>first 500 creators</strong> to lock in <em>lifetime founding member perks</em> and early access to the AI platform that turns 20 hours of work into 2.</p>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="problem" style="padding-top: 50px;">
+        <div class="container">
+            <h2 style="font-size: 3.5rem; text-align: center;">The Struggle is Real</h2>
+            <p style="text-align: center; font-size: 1.25rem; max-width: 850px; margin: 0 auto 40px auto; line-height: 1.8;">
+                <strong>73% of creators never launch</strong> because they're drowning in 15+ tools, spending <strong>20+ hours/week</strong> on tasks that should take minutes. 
+                Task-switching kills productivity (equivalent to a <strong>10-point IQ drop</strong>). You deserve better.
+            </p>
+            
+            <!-- Pain Points -->
+            <div class="benefits-grid" style="margin-top: 40px;">
+                <div class="benefit-card" style="background: rgba(255, 107, 53, 0.1); border-color: rgba(255, 107, 53, 0.3);">
+                    <h3 style="color: #FF6B35;">😵‍💫 Tool Overload</h3>
+                    <p>Juggling Canva, Shopify, Instagram, TikTok, Mailchimp, Google Analytics... and 10 more tabs.</p>
+                </div>
+                <div class="benefit-card" style="background: rgba(255, 107, 53, 0.1); border-color: rgba(255, 107, 53, 0.3);">
+                    <h3 style="color: #FF6B35;">⏰ Time Vampires</h3>
+                    <p>5 hours researching products. 8 hours creating content. 7 hours scheduling posts. Every. Single. Week.</p>
+                </div>
+                <div class="benefit-card" style="background: rgba(255, 107, 53, 0.1); border-color: rgba(255, 107, 53, 0.3);">
+                    <h3 style="color: #FF6B35;">💸 Subscription Hell</h3>
+                    <p>$200+/month for tools that don't talk to each other. Your profit margin is crying.</p>
+                </div>
+                <div class="benefit-card" style="background: rgba(255, 107, 53, 0.1); border-color: rgba(255, 107, 53, 0.3);">
+                    <h3 style="color: #FF6B35;">🧠 Decision Fatigue</h3>
+                    <p>200+ micro-decisions daily drain your creative energy. By noon, you're mentally fried.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="solution" style="padding-top: 50px;">
+        <div class="container">
+            <h2 style="font-size: 3.8rem; margin-bottom: 25px; display: flex; align-items: center; justify-content: center; gap: 20px;"><img src="flow-logo.png" alt="Flow" style="height: 65px; width: auto;"> Flow Fixes Everything (Seriously)</h2>
+            <p style="text-align: center; font-size: 1.25rem; max-width: 900px; margin: 0 auto 50px auto; line-height: 1.8; color: #e5e7eb;">
+                Imagine waking up, having coffee, and watching Flow handle your entire content pipeline while you focus on what matters: <strong>creating</strong> and <strong>connecting with your audience</strong>. That's the Flow life.
+            </p>
+            
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <h3>🤖 AI Campaign Engine</h3>
+                    <p><strong>What it does:</strong> Analyzes 50+ data sources, finds trending products in your niche, generates conversion-optimized posts, emails, and ads in seconds.</p>
+                    <p style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8;">💡 5 hours of research → 5 minutes</p>
+                </div>
+                <div class="benefit-card">
+                    <h3>⏱️ 90% Time Saved</h3>
+                    <p><strong>What it does:</strong> Automates scheduling, publishing, syncing, and analytics tracking across all platforms. Set it once, runs forever.</p>
+                    <p style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8;">💡 20 hours/week → 2 hours/week</p>
+                </div>
+                <div class="benefit-card">
+                    <h3>🎨 Content Studio</h3>
+                    <p><strong>What it does:</strong> Generates product mockups, lifestyle images, carousel posts, Reels scripts, email sequences, and landing pages with your brand voice.</p>
+                    <p style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8;">💡 Export to 15+ formats instantly</p>
+                </div>
+                <div class="benefit-card">
+                    <h3>🧠 Cognitive Freedom</h3>
+                    <p><strong>What it does:</strong> Reduces daily decisions from 200+ to under 30. No more mental fatigue. More energy for high-value creative work.</p>
+                    <p style="margin-top: 10px; font-size: 0.9rem; opacity: 0.8;">💡 Reclaim 18+ hours of mental bandwidth</p>
+                </div>
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- Interactive Demo Section -->
+    <section style="background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%); padding: 80px 0;">
+        <div class="container">
+            <div style="text-align: center; margin-bottom: 50px;">
+                <h2 style="font-size: 3rem; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 20px;"><img src="flow-logo.png" alt="Flow" style="height: 70px; width: auto;"> FlowBot Guides You Every Step</h2>
+                <p style="font-size: 1.3rem; max-width: 800px; margin: 0 auto 20px auto; color: #d1d5db; line-height: 1.6;">
+                    Flow prepares everything. You review and approve. <strong>FlowBot flows to each step, keeping you on track.</strong>
+                </p>
+                <p style="font-size: 1rem; max-width: 700px; margin: 0 auto; color: #a78bfa; opacity: 0.9;">
+                    👇 Click any step below to see how Flow helps at each stage
+                </p>
+            </div>
+
+            <!-- Interactive Workflow Demo -->
+            <div id="workflow-demo" style="max-width: 1000px; margin: 0 auto; background: rgba(10, 10, 10, 0.6); backdrop-filter: blur(10px); border-radius: 20px; padding: 40px 20px; border: 2px solid rgba(102, 126, 234, 0.3); box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);">
+                
+                <!-- Simple 3-Step Flow -->
+                <div style="background: rgba(0,0,0,0.3); border-radius: 15px; padding: 30px 15px; margin-bottom: 30px;">
+                    <h3 style="text-align: center; color: #fbbf24; font-size: 1.4rem; margin-bottom: 25px;">How Flow Works</h3>
+                
+                <div id="nodes-container" style="display: flex; justify-content: center; align-items: center; gap: 40px; max-width: 900px; margin: 0 auto; flex-wrap: wrap;">
+                    
+                    <!-- Step 1: Input -->
+                    <div class="workflow-node" data-step="1" onclick="activateNode(1)" tabindex="0" role="button" aria-label="Step 1: Paste Product Link" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 15px; cursor: pointer; border: 3px solid #fbbf24; opacity: 0.5; position: relative; min-width: 200px; text-align: center;">
+                        <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #fbbf24; color: #000; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: 800;">START</div>
+                        <div style="font-size: 3rem; margin-bottom: 15px;">🔗</div>
+                        <h4 style="font-size: 1.4rem; margin-bottom: 10px; font-weight: 700;">Paste Product Link</h4>
+                        <p style="font-size: 1rem; opacity: 0.9; line-height: 1.5;">Drop any affiliate URL</p>
+                    </div>
+
+                    <!-- Arrow -->
+                    <div class="workflow-arrow" style="font-size: 2rem; color: #667eea; margin: 0 20px; opacity: 0.7;">→</div>
+
+                    <!-- Step 2: AI Magic -->
+                    <div class="workflow-node" data-step="2" onclick="activateNode(2)" tabindex="0" role="button" aria-label="Step 2: AI Creates Everything" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 30px; border-radius: 15px; cursor: pointer; border: 2px solid transparent; opacity: 0.5; position: relative; min-width: 200px; text-align: center;">
+                        <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: 800;">FLOW AI</div>
+                        <div style="font-size: 3rem; margin-bottom: 15px;">⚡</div>
+                        <h4 style="font-size: 1.4rem; margin-bottom: 10px; font-weight: 700;">AI Creates Everything</h4>
+                        <p style="font-size: 1rem; opacity: 0.9; line-height: 1.5;">Content, images, posts ready</p>
+                    </div>
+
+                    <!-- Arrow -->
+                    <div class="workflow-arrow" style="font-size: 2rem; color: #667eea; margin: 0 20px; opacity: 0.7;">→</div>
+
+                    <!-- Step 3: Launch -->
+                    <div class="workflow-node" data-step="3" onclick="activateNode(3)" tabindex="0" role="button" aria-label="Step 3: Auto-Publish & Track" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); padding: 30px; border-radius: 15px; cursor: pointer; border: 2px solid transparent; opacity: 0.5; position: relative; min-width: 200px; text-align: center;">
+                        <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #a78bfa; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: 800;">LAUNCH</div>
+                        <div style="font-size: 3rem; margin-bottom: 15px;">🚀</div>
+                        <h4 style="font-size: 1.4rem; margin-bottom: 10px; font-weight: 700;">Auto-Publish & Track</h4>
+                        <p style="font-size: 1rem; opacity: 0.9; line-height: 1.5;">Schedule and monitor results</p>
+                    </div>
+
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <button onclick="runDemo()" style="padding: 15px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                        ▶️ Run Flow For Me
+                    </button>
+                </div>
+            </div>
+
+                <!-- Demo Output -->
+                <div id="demo-output" style="background: rgba(0, 0, 0, 0.5); border-radius: 12px; padding: 30px; min-height: 150px; border: 2px solid rgba(102, 126, 234, 0.3);">
+                    <div id="output-content" style="color: #d1d5db; line-height: 1.8; font-size: 1.05rem;">
+                        <p style="opacity: 0.8; text-align: center; font-size: 1.05rem;">
+                            Click any step above to see how <strong style="color: #a78bfa;">FlowBot</strong> guides you through each stage
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+            <!-- What You Just Saw -->
+            <div style="margin-top: 50px; text-align: center;">
+                <h3 style="font-size: 2.3rem; color: #a78bfa; margin-bottom: 20px;">🔥 That's Just the Beginning...</h3>
+                <div style="max-width: 850px; margin: 0 auto; background: rgba(102, 126, 234, 0.05); padding: 30px; border-radius: 12px; border-left: 4px solid #667eea;">
+                    <p style="font-size: 1.2rem; line-height: 1.8; color: #e5e7eb; margin-bottom: 25px; font-weight: 600;">
+                        Flow has <strong style="color: #fbbf24;">50+ ready-to-use automations</strong> you can turn on with one click.
+                    </p>
+                    <p style="font-size: 1.05rem; line-height: 1.7; color: #d1d5db; margin-bottom: 25px;">
+                        No setup. No tutorials. No "figuring it out". Just click what you want, and it works.
+                    </p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 25px;">
+                        <div style="padding: 15px; background: rgba(102, 126, 234, 0.1); border-radius: 8px;">
+                            <p style="font-size: 1rem; font-weight: 600; color: #a78bfa;">🎨 Content Creator</p>
+                            <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 5px;">Images, videos, captions... done</p>
+                        </div>
+                        <div style="padding: 15px; background: rgba(102, 126, 234, 0.1); border-radius: 8px;">
+                            <p style="font-size: 1rem; font-weight: 600; color: #a78bfa;">📧 Email Campaigns</p>
+                            <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 5px;">Write, send, track... auto</p>
+                        </div>
+                        <div style="padding: 15px; background: rgba(102, 126, 234, 0.1); border-radius: 8px;">
+                            <p style="font-size: 1rem; font-weight: 600; color: #a78bfa;">📱 Social Posting</p>
+                            <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 5px;">30 days scheduled in 30 min</p>
+                        </div>
+                        <div style="padding: 15px; background: rgba(102, 126, 234, 0.1); border-radius: 8px;">
+                            <p style="font-size: 1rem; font-weight: 600; color: #a78bfa;">🔍 Product Finder</p>
+                            <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 5px;">Viral products delivered daily</p>
+                        </div>
+                        <div style="padding: 15px; background: rgba(102, 126, 234, 0.1); border-radius: 8px;">
+                            <p style="font-size: 1rem; font-weight: 600; color: #a78bfa;">💰 Sales Dashboard</p>
+                            <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 5px;">All earnings, one place</p>
+                        </div>
+                        <div style="padding: 15px; background: rgba(102, 126, 234, 0.1); border-radius: 8px;">
+                            <p style="font-size: 1rem; font-weight: 600; color: #a78bfa;">🧠 AI Assistant</p>
+                            <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 5px;">Answers anything, anytime</p>
+                        </div>
+                    </div>
+                    <p style="margin-top: 30px; font-size: 1.3rem; color: #fbbf24; font-weight: 700;">
+                        💎 Click once. It runs forever. That's Flow.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bottom CTA / Email Signup -->
+    <section style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 60px 20px; margin-top: 60px;">
+        <div class="container" style="max-width: 700px; text-align: center;">
+            <h2 style="font-size: 3rem; color: #ffffff; margin-bottom: 20px;">Ready to Automate Everything?</h2>
+            <p style="font-size: 1.2rem; color: rgba(255,255,255,0.95); margin-bottom: 15px; line-height: 1.6;">
+                Join <strong><span id="waitlist-count" style="color: #fbbf24;">500</span></strong> founders, marketers, and creators already on the waitlist.
+            </p>
+            <p id="waitlist-counter-status" style="font-size: 0.95rem; color: rgba(255,255,255,0.85); margin-bottom: 35px; font-style: italic;"></p>
+            
+            <form id="email-form" class="waitlist-form" style="margin-bottom: 30px;">
+                <div style="display: flex; flex-direction: column; gap: 15px; max-width: 500px; margin: 0 auto;">
+                    <div class="form-field">
+                        <input type="text" name="name" placeholder="Your Name" required style="width: 100%; padding: 16px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.15); color: #fff; font-size: 1rem; backdrop-filter: blur(10px);" />
+                        <span class="field-icon">👤</span>
+                    </div>
+                    <div class="form-field">
+                        <input type="email" name="email" placeholder="Your Email" required style="width: 100%; padding: 16px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.15); color: #fff; font-size: 1rem; backdrop-filter: blur(10px);" />
+                        <span class="field-icon">✉️</span>
+                    </div>
+                    <div class="form-field">
+                        <textarea name="interest" placeholder="What do you want to automate first?" rows="3" style="width: 100%; padding: 16px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.15); color: #fff; font-size: 1rem; backdrop-filter: blur(10px); resize: vertical;"></textarea>
+                        <span class="field-icon">💡</span>
+                    </div>
+                    <button type="submit" style="padding: 18px 40px; background: #fbbf24; color: #1e1b4b; border: none; border-radius: 12px; font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 20px rgba(251,191,36,0.4);">
+                        🚀 Join the Waitlist
+                    </button>
+                </div>
+            </form>
+
+            <div style="margin-top: 35px; padding-top: 35px; border-top: 1px solid rgba(255,255,255,0.2);">
+                <p style="font-size: 1rem; color: rgba(255,255,255,0.85); margin-bottom: 20px;">Share Flow with your network:</p>
+                <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                    <a href="https://twitter.com/intent/tweet?text=Just%20joined%20the%20waitlist%20for%20Flow%20%E2%80%94%20the%20AI%20platform%20that%20automates%20my%20entire%20marketing%20workflow.%20Check%20it%20out%3A%20https%3A%2F%2Fflowearlyadopters.web.app" target="_blank" class="share-btn" style="padding: 12px 24px; background: rgba(255,255,255,0.2); color: #fff; border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s; backdrop-filter: blur(10px);">
+                        🐦 Twitter
+                    </a>
+                    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://flowearlyadopters.web.app" target="_blank" class="share-btn" style="padding: 12px 24px; background: rgba(255,255,255,0.2); color: #fff; border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s; backdrop-filter: blur(10px);">
+                        💼 LinkedIn
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://flowearlyadopters.web.app" target="_blank" class="share-btn" style="padding: 12px 24px; background: rgba(255,255,255,0.2); color: #fff; border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s; backdrop-filter: blur(10px);">
+                        📘 Facebook
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section>
+        <div class="container">
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-item">
+                <h3>When will Flow be available?</h3>
+                <p><strong>March 2026.</strong> The first 500 waitlist members get:</p>
+                <ul style="margin-top: 10px; margin-left: 20px; opacity: 0.9;">
+                    <li>✅ Priority beta access (1-2 weeks early)</li>
+                    <li>✅ Lifetime 50% discount on all paid plans</li>
+                    <li>✅ Exclusive founding member badge + perks</li>
+                    <li>✅ Direct line to our product team (your feedback shapes Flow)</li>
+                    <li>✅ Free onboarding + 1-on-1 setup call</li>
+                </ul>
+            </div>
+            <div class="faq-item">
+                <h3>Is my data safe?</h3>
+                <p>100%. We use <strong>enterprise-grade encryption</strong>, never sell your data, and are SOC 2 compliant. Built on Google Cloud Platform with 99.9% uptime SLA. Your content, campaigns, and customer data are locked down tighter than Fort Knox.</p>
+            </div>
+            <div class="faq-item">
+                <h3>What makes Flow different from [insert tool]?</h3>
+                <p>Flow is the <strong>only platform</strong> that unifies AI campaign management, content generation, multi-platform automation, AND analytics in one workspace. No more paying for Canva + Hootsuite + Later + Google Analytics + Zapier + ConvertKit. Flow replaces 15+ tools with one intelligent system that <em>actually talks to itself</em>.</p>
+            </div>
+            <div class="faq-item">
+                <h3>How much will it cost?</h3>
+                <p>Plans start at <strong>$29/month</strong> (70% cheaper than the typical multi-tool stack). Free tier available for aspiring creators. <strong>Founding members get lifetime 50% off</strong> – that's $14.50/month forever for Starter, $39.50/month for Pro.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Do I need technical skills?</h3>
+                <p>Nope! Flow is designed for <strong>everyday people</strong> – parents, nurses, teachers, side-hustlers – with zero technical background. If you can use Instagram, you can use Flow. We built it for humans, not developers.</p>
+            </div>
+            <div class="faq-item">
+                <h3>What if I don't like it?</h3>
+                <p>Cancel anytime. No contracts, no penalties, no hard feelings. We're so confident you'll love Flow that we offer a <strong>60-day money-back guarantee</strong> (double the industry standard). Plus, beta access is 100% free – try before you buy.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Music Toggle -->
+    <button id="musicBtn" class="music-toggle">🎵</button>
+    <audio id="flowAudio" loop preload="metadata">
+      <source src="let-it-flow.m4a" type="audio/mp4">
+    </audio>
+
+    <script>
+        // Waitlist + Firebase setup
+        const waitlistTarget = 500;
+        let firestoreDb = null;
+        let firebaseReady = false;
+
+        function setCounterStatus(message, isError = false) {
+            const statusEl = document.getElementById('waitlist-counter-status');
+            if (!statusEl) return;
+            statusEl.textContent = message;
+            statusEl.style.color = isError ? '#f87171' : 'rgba(236, 253, 245, 0.75)';
+        }
+
+        function updateWaitlistCountDisplay(count) {
+            const countEl = document.getElementById('waitlist-count');
+            if (!countEl) return;
+            const normalized = Math.max(0, count || 0);
+            countEl.textContent = normalized.toLocaleString();
+            const submitBtn = document.querySelector('.waitlist-form button[type="submit"]');
+            if (submitBtn && !submitBtn.disabled) {
+                const seats = Math.max(waitlistTarget - normalized, 0);
+                submitBtn.textContent = seats > 0 ? `Claim Your Spot (${seats.toLocaleString()} Left)` : 'Join Priority Standby';
+            }
+            if (normalized >= waitlistTarget) {
+                setCounterStatus('Founding cohort is full — new signups join the priority standby list.');
+            } else {
+                const spotsLeft = waitlistTarget - normalized;
+                setCounterStatus(`${spotsLeft.toLocaleString()} founding seats still available.`);
+            }
+        }
+
+        function initFirebase() {
+            if (!window.firebase || !window.FLOW_FIREBASE_CONFIG) {
+                setCounterStatus('Add your Firebase config to enable the live counter.');
+                console.warn('Firebase SDK or config missing.');
+                return;
+            }
+
+            if (window.FLOW_FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') {
+                setCounterStatus('Update firebase-config.js with your Firebase credentials to sync the counter.');
+                console.warn('firebase-config.js still contains placeholder values.');
+                return;
+            }
+
+            try {
+                if (!firebase.apps || firebase.apps.length === 0) {
+                    firebase.initializeApp(window.FLOW_FIREBASE_CONFIG);
+                }
+                firestoreDb = firebase.firestore();
+                firebaseReady = true;
+                setCounterStatus('Syncing with Flow\'s database…');
+
+                const statsRef = firestoreDb.collection('meta').doc('waitlist');
+                statsRef.onSnapshot(doc => {
+                    const data = doc.data();
+                    if (data && typeof data.count === 'number') {
+                        updateWaitlistCountDisplay(data.count);
+                    }
+                }, err => {
+                    console.error('Failed to subscribe to waitlist counter', err);
+                    setCounterStatus('Live counter temporarily unavailable.');
+                });
+
+                // Fetch initial snapshot in case listener hasn't fired yet
+                statsRef.get().then(doc => {
+                    if (doc.exists && typeof doc.data().count === 'number') {
+                        updateWaitlistCountDisplay(doc.data().count);
+                    } else {
+                        updateWaitlistCountDisplay(0);
+                    }
+                }).catch(err => {
+                    console.error('Failed to load waitlist count', err);
+                });
+
+            } catch (error) {
+                console.error('Firebase initialization failed', error);
+                setCounterStatus('Could not connect to Flow\'s database.');
+            }
+        }
+
+        window.addEventListener('load', initFirebase);
+
+        // Interactive Workflow Demo
+        let currentStep = 0;
+        let demoInterval = null;
+        
+        const stepMessages = {
+            1: {
+                title: "Step 1: You Start With Any Product Link",
+                message: "<strong>You paste:</strong> Any affiliate/product URL<br><br>✅ FlowBot activates instantly<br>💬 <em>\"I'll handle everything from here.\"</em><br><br>⏱️ Your time: 5 seconds"
+            },
+            2: {
+                title: "Step 2: AI Creates Everything Automatically",
+                message: "<strong>Flow generates complete content:</strong><br><br>📸 Product images & graphics<br>🎨 Social media posts & captions<br>📧 Email sequences<br>📝 Blog articles<br>🎬 Video scripts<br>📊 Performance predictions<br><br>💬 FlowBot: <em>\"Content ready for your review.\"</em><br><br>✏️ <strong>You review and approve</strong><br><br>⏱️ AI creation: 30 seconds"
+            },
+            3: {
+                title: "Step 3: Auto-Publish & Track Results",
+                message: "<strong>Flow handles everything:</strong><br><br>📤 Schedules optimal posting times<br>📊 Tracks real-time performance<br>💰 Monitors commissions & revenue<br>🧠 Suggests improvements<br>📈 Provides daily insights<br><br>💬 FlowBot: <em>\"Campaign live! I'll optimize as data comes in.\"</em><br><br>✅ <strong>One-click launch, then monitor</strong><br><br>⏱️ Total hands-on time: 5 minutes/day<br>💪 Flow runs your business 24/7"
+            }
+        };
+        
+        function activateNode(step) {
+            // On mobile, show details inline below the card
+            const isMobile = window.innerWidth <= 768;
+            
+            // Deactivate all nodes
+            document.querySelectorAll('.workflow-node').forEach(node => {
+                node.style.opacity = '0.5';
+                node.style.border = '2px solid transparent';
+                node.style.transform = 'scale(1)';
+                
+                // Remove any existing inline details
+                const existingDetails = node.querySelector('.inline-details');
+                if (existingDetails) {
+                    existingDetails.remove();
+                }
+            });
+            
+            // Activate clicked node
+            const nodes = document.querySelectorAll('.workflow-node');
+            const targetNode = nodes[step - 1];
+            targetNode.style.opacity = '1';
+            targetNode.style.border = '2px solid #fbbf24';
+            targetNode.style.transform = isMobile ? 'scale(1)' : 'scale(1.05)';
+            targetNode.style.boxShadow = '0 8px 32px rgba(251, 191, 36, 0.4)';
+            
+            // Get step data
+            const stepData = stepMessages[step];
+            const detailsHTML = `
+                <div style="animation: fadeIn 0.5s;">
+                    <p style="font-size: 1.2rem; font-weight: 700; color: #fbbf24; margin-bottom: 15px;">${stepData.title}</p>
+                    <div style="font-size: 1rem; line-height: 1.8; color: #d1d5db;">${stepData.message}</div>
+                </div>
+            `;
+            
+            if (isMobile) {
+                // Show inline below the card
+                const inlineDiv = document.createElement('div');
+                inlineDiv.className = 'inline-details';
+                inlineDiv.style.cssText = 'margin-top: 20px; padding: 20px; background: rgba(0,0,0,0.6); border-radius: 10px; border: 1px solid rgba(251,191,36,0.3);';
+                inlineDiv.innerHTML = detailsHTML;
+                targetNode.appendChild(inlineDiv);
+                
+                // Scroll the card into view
+                setTimeout(() => {
+                    targetNode.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            } else {
+                // Show in bottom output area (desktop)
+                const output = document.getElementById('output-content');
+                output.innerHTML = detailsHTML;
+            }
+            
+            currentStep = step;
+        }
+        
+        function runDemo() {
+            if (demoInterval) clearInterval(demoInterval);
+            
+            currentStep = 0;
+            const btn = event.target;
+            btn.textContent = '⏳ Running...';
+            btn.disabled = true;
+            
+            demoInterval = setInterval(() => {
+                currentStep++;
+                if (currentStep <= 3) {
+                    activateNode(currentStep);
+                } else {
+                    clearInterval(demoInterval);
+                    btn.textContent = '✅ Complete! Run Again?';
+                    btn.disabled = false;
+                    setTimeout(() => {
+                        btn.textContent = '▶️ Run Flow For Me';
+                    }, 3000);
+                }
+            }, 1800); // 1.8 seconds per step
+        }
+        
+        function resetDemo() {
+            if (demoInterval) clearInterval(demoInterval);
+            currentStep = 0;
+            
+            // Reset all nodes
+            document.querySelectorAll('.workflow-node').forEach(node => {
+                node.style.opacity = '0.5';
+                node.style.border = '2px solid transparent';
+                node.style.transform = 'scale(1)';
+                node.style.boxShadow = 'none';
+            });
+            
+            // Reset output
+            document.getElementById('output-content').innerHTML = `
+                <p style="opacity: 0.75; text-align: center; font-style: italic;">Tap <strong style="color: #10b981;">▶️ Run Flow For Me</strong> whenever you're ready for another pass.</p>
+            `;
+            
+            // Reset button
+            const runBtn = document.querySelector('button[onclick="runDemo()"]');
+            if (runBtn) {
+                runBtn.textContent = '▶️ Run Flow For Me';
+                runBtn.disabled = false;
+            }
+        }
+
+        // Advanced Form Validation (Demo-Only)
+        function validateField(field) {
+            const value = field.value.trim();
+            const fieldContainer = field.parentElement;
+            const isValid = field.checkValidity() && value.length > 0;
+            
+            fieldContainer.classList.remove('valid', 'invalid');
+            if (isValid) {
+                fieldContainer.classList.add('valid');
+            } else if (value.length > 0) {
+                fieldContainer.classList.add('invalid');
+            }
+            
+            return isValid;
+        }
+
+        function initFormValidation() {
+            const form = document.getElementById('email-form');
+            if (!form) return;
+
+            const inputs = form.querySelectorAll('input, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('input', () => validateField(input));
+                input.addEventListener('blur', () => validateField(input));
+            });
+
+            // Demo form submission (no real accounts)
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const name = this.querySelector('input[name="name"]').value;
+                const email = this.querySelector('input[name="email"]').value;
+                const interest = this.querySelector('textarea[name="interest"]').value;
+                
+                // Demo validation
+                if (!name || !email) {
+                    alert('Please fill in all required fields for the demo.');
+                    return;
+                }
+                
+                // Demo success message
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = '🎉 Welcome to Flow!';
+                submitBtn.disabled = true;
+                
+                // Simulate processing
+                setTimeout(() => {
+                    alert(`Demo Signup Complete!\n\nName: ${name}\nEmail: ${email}\nInterest: ${interest}\n\nThis is a demo - no real account created.`);
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                    this.reset();
+                    
+                    // Reset validation states
+                    this.querySelectorAll('.form-field').forEach(field => {
+                        field.classList.remove('valid', 'invalid');
+                    });
+                }, 1000);
+            });
+        }
+
+        // Enhanced Workflow Interactions
+        function enhanceWorkflowInteractions() {
+            const nodes = document.querySelectorAll('.workflow-node');
+            
+            nodes.forEach((node, index) => {
+                // Keyboard navigation
+                node.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        activateNode(index + 1);
+                    }
+                });
+                
+                // Progressive disclosure hint
+                node.addEventListener('mouseenter', () => {
+                    if (index < nodes.length - 1) {
+                        const nextArrow = node.nextElementSibling;
+                        if (nextArrow && nextArrow.classList.contains('workflow-arrow')) {
+                            nextArrow.style.opacity = '1';
+                            nextArrow.style.transform = 'scale(1.1)';
+                        }
+                    }
+                });
+                
+                node.addEventListener('mouseleave', () => {
+                    const arrows = document.querySelectorAll('.workflow-arrow');
+                    arrows.forEach(arrow => {
+                        arrow.style.opacity = '0.7';
+                        arrow.style.transform = 'scale(1)';
+                    });
+                });
+            });
+        }
+
+        // Social Proof Animation (Demo)
+        function initSocialProof() {
+            const counter = document.getElementById('waitlist-count');
+            if (counter) {
+                counter.classList.add('counter-pulse');
+                
+                // Simulate live updates (demo)
+                setInterval(() => {
+                    const current = parseInt(counter.textContent.replace(/,/g, ''));
+                    if (current < 500 && Math.random() > 0.7) {
+                        const newCount = current + Math.floor(Math.random() * 3) + 1;
+                        counter.textContent = Math.min(newCount, 500).toLocaleString();
+                    }
+                }, 30000); // Update every 30 seconds
+            }
+        }
+
+        // Performance Optimizations
+        function initPerformanceOptimizations() {
+            // Lazy load images (if any)
+            const images = document.querySelectorAll('img[data-src]');
+            const imageObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.classList.remove('skeleton');
+                        imageObserver.unobserve(img);
+                    }
+                });
+            });
+            
+            images.forEach(img => imageObserver.observe(img));
+            
+            // Debounced scroll events
+            let scrollTimeout;
+            window.addEventListener('scroll', () => {
+                if (!scrollTimeout) {
+                    scrollTimeout = setTimeout(() => {
+                        // Handle scroll-based animations here
+                        scrollTimeout = null;
+                    }, 16);
+                }
+            });
+        }
+
+        // Initialize all enhancements
+        window.addEventListener('load', () => {
+            initFormValidation();
+            enhanceWorkflowInteractions();
+            initSocialProof();
+            initPerformanceOptimizations();
+        });
+        
+        // Add hover effects
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.workflow-node').forEach(node => {
+                node.addEventListener('mouseenter', function() {
+                    if (this.style.opacity !== '1') {
+                        this.style.opacity = '0.75';
+                    }
+                });
+                node.addEventListener('mouseleave', function() {
+                    if (this.style.border === '2px solid transparent') {
+                        this.style.opacity = '0.5';
+                    }
+                });
+            });
+
+            // Node template hover effects
+            document.querySelectorAll('.node-template').forEach(node => {
+                node.addEventListener('mouseenter', function() {
+                    this.style.border = '2px solid rgba(255,255,255,0.5)';
+                    this.style.transform = 'scale(1.02)';
+                });
+                node.addEventListener('mouseleave', function() {
+                    this.style.border = '2px solid transparent';
+                    this.style.transform = 'scale(1)';
+                });
+            });
+
+            initWorkflowCanvas();
+            showNodeDetails();
+            updateTourButtonState();
+        });
+
+        // Workflow Canvas Builder
+        let nodes = [];
+        let connections = [];
+        let nodeIdCounter = 1;
+        let connectionIdCounter = 1;
+        let zoom = 1;
+        let pan = { x: 0, y: 0 };
+        let workflowCanvas = null;
+        let workflowSvg = null;
+        let isDraggingCanvas = false;
+        let canvasDragStart = { x: 0, y: 0 };
+        let isDraggingNode = false;
+        let nodeDragOffset = { x: 0, y: 0 };
+        let selectedNode = null;
+        let activeNodeId = null;
+        let activeConnectionId = null;
+        let completedNodeIds = new Set();
+        let completedConnectionIds = new Set();
+        let workflowTourActive = false;
+        let workflowTourTimers = [];
+        let linkingMode = false;
+        let linkingStartNodeId = null;
+
+        const STATUS_MESSAGES = {
+            default: 'Select a node to explore Flow details, or press Run Sample Flow.',
+            empty: 'Drag a colorful box from the left to start building your workflow.',
+            linkingReady: 'Link mode active — click a starting node.',
+            linkingNext: 'Great! Now choose the target node to complete the connection.',
+            linkingSuccess: 'Connection created. Add another link or exit link mode.',
+            linkingDuplicate: 'Those nodes are already connected. Try a different pair.',
+            linkingSame: 'Pick two different nodes to link.',
+            linkingMissing: 'Select two valid nodes to build a connection.',
+            tourActive: 'Sample tour running — watch Flow automate every step.'
+        };
+
+        function setWorkflowStatus(message, variant = 'info') {
+            const banner = document.getElementById('workflow-status-banner');
+            if (!banner) {
+                return;
+            }
+            banner.textContent = message;
+            banner.setAttribute('data-variant', variant);
+        }
+
+        function updateLinkButtonState() {
+            const linkBtn = document.getElementById('linkButton');
+            if (!linkBtn) {
+                return;
+            }
+            if (linkingMode) {
+                linkBtn.textContent = '⛔ Done';
+                linkBtn.classList.add('is-linking');
+            } else {
+                linkBtn.textContent = '🔗 Link';
+                linkBtn.classList.remove('is-linking');
+            }
+        }
+
+        function disableLinkMode({ silent = false, skipRender = false } = {}) {
+            if (!linkingMode) {
+                return;
+            }
+            linkingMode = false;
+            linkingStartNodeId = null;
+            updateLinkButtonState();
+            if (!silent) {
+                setWorkflowStatus(STATUS_MESSAGES.default, 'info');
+            }
+            if (!skipRender) {
+                renderWorkflow();
+            }
+        }
+
+        function toggleLinkMode() {
+            if (linkingMode) {
+                disableLinkMode();
+                return;
+            }
+            stopWorkflowTour(true);
+            linkingMode = true;
+            linkingStartNodeId = null;
+            updateLinkButtonState();
+            setWorkflowStatus(STATUS_MESSAGES.linkingReady, 'action');
+            renderWorkflow();
+        }
+
+        function addConnection(fromId, toId) {
+            const fromNode = nodes.find(node => node.id === fromId);
+            const toNode = nodes.find(node => node.id === toId);
+
+            if (!fromNode || !toNode) {
+                setWorkflowStatus(STATUS_MESSAGES.linkingMissing, 'warning');
+                return null;
+            }
+
+            if (fromId === toId) {
+                setWorkflowStatus(STATUS_MESSAGES.linkingSame, 'warning');
+                return null;
+            }
+
+            const alreadyLinked = connections.some(connection => connection.from === fromId && connection.to === toId);
+            if (alreadyLinked) {
+                setWorkflowStatus(STATUS_MESSAGES.linkingDuplicate, 'warning');
+                return null;
+            }
+
+            const connection = { id: `conn-${connectionIdCounter++}`, from: fromId, to: toId };
+            connections.push(connection);
+            activeConnectionId = connection.id;
+            completedConnectionIds = new Set();
+
+            return connection;
+        }
+
+        function handleNodeClick(node, event) {
+            event.stopPropagation();
+
+            if (linkingMode) {
+                if (!linkingStartNodeId) {
+                    linkingStartNodeId = node.id;
+                    activeNodeId = node.id;
+                    setWorkflowStatus(STATUS_MESSAGES.linkingNext, 'action');
+                    showNodeDetails(node);
+                    renderWorkflow();
+                    return;
+                }
+
+                if (linkingStartNodeId === node.id) {
+                    linkingStartNodeId = null;
+                    activeNodeId = null;
+                    setWorkflowStatus(STATUS_MESSAGES.linkingReady, 'action');
+                    showNodeDetails(node);
+                    renderWorkflow();
+                    return;
+                }
+
+                const newConnection = addConnection(linkingStartNodeId, node.id);
+                if (newConnection) {
+                    linkingStartNodeId = null;
+                    activeNodeId = node.id;
+                    setWorkflowStatus(STATUS_MESSAGES.linkingSuccess, 'success');
+                    showNodeDetails(node);
+                    renderWorkflow();
+                }
+                return;
+            }
+
+            stopWorkflowTour(true);
+            activeNodeId = node.id;
+            completedNodeIds = new Set();
+            completedConnectionIds = new Set();
+            renderWorkflow();
+            showNodeDetails(node);
+            setWorkflowStatus(STATUS_MESSAGES.default, 'info');
+        }
+
+        const nodeMeta = {
+            link: {
+                bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                border: '#667eea',
+                icon: '🔗',
+                tag: 'LINK INTAKE',
+                description: 'Kick off any Flow automation by pasting a single URL. Flow ingests the page, cleans it, and makes it actionable.',
+                outputs: [
+                    'Captures screenshots, metadata, pricing, and review counts automatically.',
+                    'Strips tracking clutter so Flow works with a clean canonical link.'
+                ]
+            },
+            intel: {
+                bg: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                border: '#ec4899',
+                icon: '🧠',
+                tag: 'FLOW INTEL',
+                description: 'Runs Flow Research: trends, keywords, audience data, and creative inspiration added to your workspace.',
+                outputs: [
+                    'Pulls trend data, keyword gaps, and audience segments in real-time.',
+                    'Scores product demand and identifies why it is spiking right now.'
+                ]
+            },
+            create: {
+                bg: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                border: '#f59e0b',
+                icon: '🎨',
+                tag: 'CONTENT FORGE',
+                description: 'Auto-generates videos, carousels, captions, emails, landing pages, and more with your brand voice baked in.',
+                outputs: [
+                    'Delivers ready-to-post short-form scripts, hooks, and headlines in seconds.',
+                    'Auto-resizes creative across Instagram, TikTok, YouTube Shorts, and email.'
+                ]
+            },
+            launch: {
+                bg: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                border: '#22d3ee',
+                icon: '🚀',
+                tag: 'LAUNCHPAD',
+                description: 'Schedules and deploys your campaign across every channel—social, email, SMS, ads—with one click.',
+                outputs: [
+                    'Syncs calendars and best-time-to-post rules per platform automatically.',
+                    'Pushes campaigns to social, email, SMS, and ad accounts in one motion.'
+                ]
+            },
+            insights: {
+                bg: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                border: '#10b981',
+                icon: '📈',
+                tag: 'FLOW INSIGHTS',
+                description: 'Tracks earnings, conversions, and top creative in real-time, then suggests next best actions automatically.',
+                outputs: [
+                    'Surfaces daily affiliate earnings, ROI, and conversion swings instantly.',
+                    'Triggers smart alerts when a creative or product deserves a boost.'
+                ]
+            }
+        };
+
+        function initWorkflowCanvas() {
+            workflowCanvas = document.getElementById('workflow-canvas');
+            workflowSvg = document.getElementById('workflow-svg');
+
+            // Add sample workflow
+            addSampleWorkflow();
+
+            setWorkflowStatus(STATUS_MESSAGES.default, 'info');
+            updateLinkButtonState();
+
+            // Canvas panning
+            workflowCanvas.addEventListener('mousedown', function(e) {
+                if (e.target === workflowCanvas || e.target === workflowSvg || e.target.tagName === 'line' || e.target.tagName === 'path') {
+                    isDraggingCanvas = true;
+                    canvasDragStart = { x: e.clientX - pan.x, y: e.clientY - pan.y };
+                }
+            });
+
+            workflowCanvas.addEventListener('mousemove', function(e) {
+                if (isDraggingCanvas) {
+                    pan.x = e.clientX - canvasDragStart.x;
+                    pan.y = e.clientY - canvasDragStart.y;
+                    renderWorkflow();
+                }
+            });
+
+            workflowCanvas.addEventListener('mouseleave', () => {
+                isDraggingCanvas = false;
+            });
+
+            workflowCanvas.addEventListener('mouseup', function() {
+                isDraggingCanvas = false;
+            });
+
+            // Drag and drop from menu items
+            document.querySelectorAll('.node-menu-item').forEach(item => {
+                item.addEventListener('dragstart', function(e) {
+                    e.dataTransfer.setData('nodeType', this.dataset.type);
+                    selectedNodeType = this.dataset.type;
+                    e.dataTransfer.effectAllowed = 'copy';
+                });
+            });
+            
+            // Legacy tab support
+            document.querySelectorAll('.node-tab').forEach(tab => {
+                tab.addEventListener('dragstart', function(e) {
+                    e.dataTransfer.setData('nodeType', this.dataset.type);
+                    selectedNodeType = this.dataset.type;
+                });
+                
+                tab.setAttribute('draggable', 'true');
+                
+                tab.addEventListener('touchstart', function(e) {
+                    selectedNodeType = this.dataset.type;
+                    selectNodeTab(this.dataset.type);
+                }, { passive: true });
+            });
+
+            workflowCanvas.addEventListener('dragover', function(e) {
+                e.preventDefault();
+            });
+
+            workflowCanvas.addEventListener('drop', function(e) {
+                e.preventDefault();
+                const nodeType = e.dataTransfer.getData('nodeType') || selectedNodeType;
+                const rect = workflowCanvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left - pan.x) / zoom; // No sidebar offset
+                const y = (e.clientY - rect.top - pan.y) / zoom;
+                
+                addNode(nodeType, x, y);
+                document.getElementById('canvas-instructions').style.display = 'none';
+            });
+            
+            // Touch tap on canvas to add selected node type
+            workflowCanvas.addEventListener('touchend', function(e) {
+                if (isDraggingNode || isDraggingCanvas) return;
+                
+                const touch = e.changedTouches[0];
+                const rect = workflowCanvas.getBoundingClientRect();
+                const x = (touch.clientX - rect.left - pan.x) / zoom;
+                const y = (touch.clientY - rect.top - pan.y) / zoom;
+                
+                // Check if touch is on a node
+                const touchedNode = nodes.find(node => {
+                    const dx = x - node.x;
+                    const dy = y - node.y;
+                    return Math.sqrt(dx * dx + dy * dy) < 50;
+                });
+                
+                if (!touchedNode && selectedNodeType) {
+                    addNode(selectedNodeType, x, y);
+                    document.getElementById('canvas-instructions').style.display = 'none';
+                }
+            });
+
+            document.addEventListener('mousemove', handleNodeDragMove);
+            document.addEventListener('mouseup', stopNodeDrag);
+            document.addEventListener('touchmove', handleNodeDragMove, { passive: false });
+            document.addEventListener('touchend', stopNodeDrag);
+        }
+
+        function addNode(type, x, y) {
+            const meta = nodeMeta[type] || nodeMeta.link;
+            const node = {
+                id: nodeIdCounter++,
+                type: type,
+                x: x,
+                y: y,
+                label: meta.tag
+            };
+            nodes.push(node);
+            stopWorkflowTour();
+            activeNodeId = node.id;
+            completedNodeIds = new Set();
+            completedConnectionIds = new Set();
+            renderWorkflow();
+            showNodeDetails(node);
+            setWorkflowStatus(STATUS_MESSAGES.default, 'info');
+        }
+
+        function addSampleWorkflow() {
+            // Pre-populate with sample workflow
+            // Adjust positioning based on viewport
+            const isMobile = window.innerWidth <= 768;
+            const startX = isMobile ? 150 : 300;
+            const spacing = isMobile ? 180 : 250;
+            const yPos = isMobile ? 150 : 100;
+            
+            connectionIdCounter = 1;
+            nodes = [
+                { id: 1, type: 'link', x: startX, y: yPos, label: 'Paste Link' },
+                { id: 2, type: 'intel', x: startX + spacing, y: yPos, label: 'Flow Research' },
+                { id: 3, type: 'create', x: startX + spacing * 2, y: yPos, label: 'Generate Assets' },
+                { id: 4, type: 'launch', x: startX + spacing * 3, y: yPos, label: 'Launch Everywhere' },
+                { id: 5, type: 'insights', x: startX + spacing * 4, y: yPos, label: 'Flow Analytics' }
+            ];
+            connections = [
+                { id: `conn-${connectionIdCounter++}`, from: 1, to: 2 },
+                { id: `conn-${connectionIdCounter++}`, from: 2, to: 3 },
+                { id: `conn-${connectionIdCounter++}`, from: 3, to: 4 },
+                { id: `conn-${connectionIdCounter++}`, from: 4, to: 5 }
+            ];
+            nodeIdCounter = 6;
+            activeNodeId = null;
+            activeConnectionId = null;
+            completedNodeIds = new Set();
+            completedConnectionIds = new Set();
+            renderWorkflow();
+            const instructions = document.getElementById('canvas-instructions');
+            if (instructions) {
+                instructions.style.display = 'none';
+            }
+            const firstNode = nodes[0];
+            if (firstNode) {
+                activeNodeId = firstNode.id;
+                renderWorkflow();
+                showNodeDetails(firstNode);
+            } else {
+                showNodeDetails();
+            }
+
+            setWorkflowStatus(nodes.length ? STATUS_MESSAGES.default : STATUS_MESSAGES.empty, nodes.length ? 'info' : 'action');
+        }
+
+        function renderWorkflow() {
+            if (!workflowSvg) {
+                workflowSvg = document.getElementById('workflow-svg');
+                if (!workflowSvg) {
+                    return;
+                }
+            }
+
+            workflowSvg.innerHTML = '';
+            const svgNS = 'http://www.w3.org/2000/svg';
+            const nodeWidth = 180;
+            const nodeHeight = 80;
+
+            const defs = document.createElementNS(svgNS, 'defs');
+            defs.innerHTML = `
+                <linearGradient id="flowConnectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#22d3ee"></stop>
+                    <stop offset="50%" stop-color="#818cf8"></stop>
+                    <stop offset="100%" stop-color="#fbbf24"></stop>
+                </linearGradient>
+                <marker id="flowArrow" markerWidth="12" markerHeight="12" refX="11" refY="6" orient="auto" markerUnits="strokeWidth">
+                    <path d="M0,0 L12,6 L0,12 z" fill="url(#flowConnectionGradient)"></path>
+                </marker>
+            `;
+            workflowSvg.appendChild(defs);
+
+            connections.forEach(conn => {
+                if (!conn.id) {
+                    conn.id = `conn-${connectionIdCounter++}`;
+                }
+                const fromNode = nodes.find(n => n.id === conn.from);
+                const toNode = nodes.find(n => n.id === conn.to);
+                if (!fromNode || !toNode) {
+                    return;
+                }
+
+                const startX = (fromNode.x + nodeWidth) * zoom + pan.x;
+                const startY = (fromNode.y + nodeHeight / 2) * zoom + pan.y;
+                const endX = toNode.x * zoom + pan.x;
+                const endY = (toNode.y + nodeHeight / 2) * zoom + pan.y;
+                const curveOffset = Math.max(Math.min((endX - startX) / 2, 160), -160);
+
+                const path = document.createElementNS(svgNS, 'path');
+                path.setAttribute('d', `M ${startX} ${startY} C ${startX + curveOffset} ${startY - 40}, ${endX - curveOffset} ${endY + 40}, ${endX} ${endY}`);
+                path.setAttribute('stroke', 'url(#flowConnectionGradient)');
+                path.setAttribute('marker-end', 'url(#flowArrow)');
+                const connectionClasses = ['flow-connection'];
+                if (conn.id === activeConnectionId) {
+                    connectionClasses.push('flow-connection--active');
+                }
+                if (completedConnectionIds.has(conn.id)) {
+                    connectionClasses.push('flow-connection--completed');
+                }
+                path.setAttribute('class', connectionClasses.join(' '));
+                path.dataset.connectionId = conn.id;
+                workflowSvg.appendChild(path);
+            });
+
+            nodes.forEach(node => {
+                const foreignObject = document.createElementNS(svgNS, 'foreignObject');
+                foreignObject.setAttribute('x', node.x * zoom + pan.x);
+                foreignObject.setAttribute('y', node.y * zoom + pan.y);
+                foreignObject.setAttribute('width', nodeWidth * zoom);
+                foreignObject.setAttribute('height', nodeHeight * zoom);
+                foreignObject.dataset.nodeId = node.id;
+
+                const div = document.createElement('div');
+                const meta = nodeMeta[node.type] || nodeMeta.link;
+                const cardClasses = ['flow-node-card'];
+                if (node.id === activeNodeId) {
+                    cardClasses.push('flow-node-active');
+                }
+                if (completedNodeIds.has(node.id)) {
+                    cardClasses.push('flow-node-completed');
+                }
+                if (linkingMode && linkingStartNodeId === node.id) {
+                    cardClasses.push('flow-node-linking');
+                }
+                div.innerHTML = `
+                    <div class="${cardClasses.join(' ')}" style="background: ${meta.bg}; border-color: ${meta.border};">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                            <span style="font-size: 1.25rem;">${meta.icon}</span>
+                            <span style="font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.88); letter-spacing: 0.55px;">${meta.tag}</span>
+                        </div>
+                        <p style="font-size: 0.9rem; color: rgba(255,255,255,0.95); margin: 0; font-weight: 600;">${node.label}</p>
+                    </div>
+                `;
+
+                const card = div.firstElementChild;
+                card.style.cursor = linkingMode ? 'pointer' : 'grab';
+                card.dataset.nodeId = node.id;
+                card.addEventListener('mouseenter', function() {
+                    if (!isDraggingNode) {
+                        this.style.boxShadow = '0 10px 26px rgba(0,0,0,0.45)';
+                    }
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.boxShadow = '';
+                });
+                card.addEventListener('mousedown', event => startNodeDrag(event, node));
+                card.addEventListener('touchstart', event => startNodeDrag(event, node), { passive: false });
+                card.addEventListener('click', event => handleNodeClick(node, event));
+                card.addEventListener('dblclick', event => {
+                    event.stopPropagation();
+                    renameFlowNode(node);
+                });
+                card.addEventListener('dragstart', event => event.preventDefault());
+
+                foreignObject.appendChild(div);
+                workflowSvg.appendChild(foreignObject);
+            });
+
+            const instructions = document.getElementById('canvas-instructions');
+            if (instructions) {
+                instructions.style.display = nodes.length ? 'none' : 'block';
+            }
+        }
+
+        function startNodeDrag(event, node) {
+            if (!workflowCanvas) {
+                return;
+            }
+            if (linkingMode) {
+                return;
+            }
+            if (event.type === 'mousedown' && event.button !== 0) {
+                return;
+            }
+            const pointer = event.touches ? event.touches[0] : event;
+            if (!pointer) {
+                return;
+            }
+            if (event.cancelable) {
+                event.preventDefault();
+            }
+            selectedNode = node;
+            isDraggingNode = true;
+            activeNodeId = node.id;
+            const rect = workflowCanvas.getBoundingClientRect();
+            const canvasX = pointer.clientX - rect.left;
+            const canvasY = pointer.clientY - rect.top;
+            nodeDragOffset = {
+                x: canvasX - (node.x * zoom + pan.x),
+                y: canvasY - (node.y * zoom + pan.y)
+            };
+            document.body.style.cursor = 'grabbing';
+            showNodeDetails(node);
+        }
+
+        function handleNodeDragMove(event) {
+            if (!isDraggingNode || !selectedNode || !workflowCanvas) {
+                return;
+            }
+            const pointer = event.touches ? event.touches[0] : event;
+            if (!pointer) {
+                return;
+            }
+            if (event.cancelable) {
+                event.preventDefault();
+            }
+            const rect = workflowCanvas.getBoundingClientRect();
+            const canvasX = pointer.clientX - rect.left;
+            const canvasY = pointer.clientY - rect.top;
+            selectedNode.x = ((canvasX - nodeDragOffset.x) - pan.x) / zoom;
+            selectedNode.y = ((canvasY - nodeDragOffset.y) - pan.y) / zoom;
+            
+            // Use requestAnimationFrame for smooth rendering
+            if (!window.dragRenderPending) {
+                window.dragRenderPending = true;
+                requestAnimationFrame(() => {
+                    renderWorkflow();
+                    window.dragRenderPending = false;
+                });
+            }
+        }
+
+        function stopNodeDrag(event) {
+            if (!isDraggingNode) {
+                return;
+            }
+            if (event && event.type === 'mouseup' && event.button !== 0) {
+                return;
+            }
+            isDraggingNode = false;
+            selectedNode = null;
+            document.body.style.cursor = '';
+        }
+
+        function showNodeDetails(node = null) {
+            const panel = document.getElementById('node-details-body');
+            if (!panel) {
+                return;
+            }
+            panel.innerHTML = '';
+            if (!node) {
+                panel.textContent = 'Select a node or press Run Sample Flow to see how Flow ships every step for you.';
+                return;
+            }
+
+            const meta = nodeMeta[node.type] || nodeMeta.link;
+
+            const wrapper = document.createElement('div');
+            wrapper.style.display = 'grid';
+            wrapper.style.gap = '14px';
+
+            const header = document.createElement('div');
+            header.style.display = 'flex';
+            header.style.gap = '12px';
+            header.style.alignItems = 'center';
+
+            const icon = document.createElement('span');
+            icon.textContent = meta.icon;
+            icon.style.fontSize = '2rem';
+
+            const textBlock = document.createElement('div');
+            textBlock.style.display = 'flex';
+            textBlock.style.flexDirection = 'column';
+            textBlock.style.gap = '4px';
+
+            const tagLabel = document.createElement('span');
+            tagLabel.textContent = meta.tag;
+            tagLabel.style.fontWeight = '700';
+            tagLabel.style.letterSpacing = '0.55px';
+            tagLabel.style.color = '#f8fafc';
+
+            const labelInfo = document.createElement('span');
+            labelInfo.style.fontSize = '0.85rem';
+            labelInfo.style.color = 'rgba(226, 232, 240, 0.75)';
+            labelInfo.textContent = 'Current step label: ';
+            const labelStrong = document.createElement('strong');
+            labelStrong.textContent = node.label;
+            labelInfo.appendChild(labelStrong);
+            labelInfo.appendChild(document.createElement('br'));
+            const hint = document.createElement('span');
+            hint.textContent = 'Tip: Double-click the node to rename it.';
+            hint.style.color = 'rgba(148, 163, 184, 0.9)';
+            labelInfo.appendChild(hint);
+
+            textBlock.appendChild(tagLabel);
+            textBlock.appendChild(labelInfo);
+
+            header.appendChild(icon);
+            header.appendChild(textBlock);
+
+            const description = document.createElement('p');
+            description.style.margin = '0';
+            description.textContent = meta.description;
+
+            wrapper.appendChild(header);
+            wrapper.appendChild(description);
+
+            if (Array.isArray(meta.outputs) && meta.outputs.length) {
+                const outputsTitle = document.createElement('p');
+                outputsTitle.style.margin = '0';
+                outputsTitle.style.color = '#c4b5fd';
+                outputsTitle.style.fontWeight = '600';
+                outputsTitle.textContent = 'What Flow ships automatically:';
+                const list = document.createElement('ul');
+                list.style.margin = '6px 0 0 0';
+                list.style.paddingLeft = '20px';
+                list.style.color = 'rgba(148, 163, 184, 0.95)';
+                meta.outputs.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    list.appendChild(li);
+                });
+                wrapper.appendChild(outputsTitle);
+                wrapper.appendChild(list);
+            }
+
+            panel.appendChild(wrapper);
+        }
+
+        function renameFlowNode(node) {
+            const nextLabel = prompt('Rename this step', node.label);
+            if (!nextLabel) {
+                return;
+            }
+            const trimmed = nextLabel.trim();
+            if (!trimmed || trimmed === node.label) {
+                return;
+            }
+            node.label = trimmed;
+            activeNodeId = node.id;
+            renderWorkflow();
+            showNodeDetails(node);
+        }
+
+        function computeFlowSequence() {
+            if (!nodes.length) {
+                return [];
+            }
+            const inbound = new Map();
+            const adjacency = new Map();
+            connections.forEach(conn => {
+                inbound.set(conn.to, (inbound.get(conn.to) || 0) + 1);
+                if (!adjacency.has(conn.from)) {
+                    adjacency.set(conn.from, []);
+                }
+                adjacency.get(conn.from).push(conn);
+            });
+
+            const queue = [];
+            nodes.forEach(node => {
+                if (!inbound.get(node.id)) {
+                    queue.push(node.id);
+                }
+            });
+            if (!queue.length) {
+                queue.push(nodes[0].id);
+            }
+
+            const visited = new Set();
+            const order = [];
+            while (queue.length) {
+                const current = queue.shift();
+                if (visited.has(current)) {
+                    continue;
+                }
+                visited.add(current);
+                order.push(current);
+                const edges = adjacency.get(current) || [];
+                edges.forEach(edge => {
+                    if (!visited.has(edge.to)) {
+                        queue.push(edge.to);
+                    }
+                });
+            }
+
+            nodes.forEach(node => {
+                if (!visited.has(node.id)) {
+                    order.push(node.id);
+                }
+            });
+
+            return order;
+        }
+
+        function clearWorkflowTourTimers() {
+            workflowTourTimers.forEach(timer => clearTimeout(timer));
+            workflowTourTimers = [];
+        }
+
+        function updateTourButtonState() {
+            const btn = document.getElementById('tourButton');
+            if (!btn) {
+                return;
+            }
+            if (workflowTourActive) {
+                btn.textContent = '⏹ Stop Tour';
+                btn.classList.add('is-playing');
+            } else {
+                btn.textContent = '▶ Run Sample Flow';
+                btn.classList.remove('is-playing');
+            }
+        }
+
+        function startWorkflowTour() {
+            if (!nodes.length) {
+                return;
+            }
+
+            disableLinkMode({ silent: true, skipRender: true });
+            stopWorkflowTour(true);
+            workflowTourActive = true;
+            completedNodeIds = new Set();
+            completedConnectionIds = new Set();
+            updateTourButtonState();
+            setWorkflowStatus(STATUS_MESSAGES.tourActive, 'action');
+
+            const instructions = document.getElementById('canvas-instructions');
+            if (instructions) {
+                instructions.style.display = 'none';
+            }
+
+            const sequence = computeFlowSequence();
+            if (!sequence.length) {
+                stopWorkflowTour();
+                return;
+            }
+
+            let stepIndex = 0;
+
+            const highlightNext = () => {
+                if (stepIndex >= sequence.length) {
+                    workflowTourActive = false;
+                    activeNodeId = null;
+                    activeConnectionId = null;
+                    renderWorkflow();
+                    showNodeDetails();
+                    updateTourButtonState();
+                    return;
+                }
+
+                const nodeId = sequence[stepIndex];
+                const node = nodes.find(n => n.id === nodeId);
+                if (!node) {
+                    stepIndex += 1;
+                    highlightNext();
+                    return;
+                }
+
+                activeNodeId = nodeId;
+                renderWorkflow();
+                showNodeDetails(node);
+
+                workflowTourTimers.push(setTimeout(() => {
+                    completedNodeIds.add(nodeId);
+                    activeNodeId = null;
+                    const nextNodeId = sequence[stepIndex + 1];
+                    if (nextNodeId !== undefined) {
+                        const edge = connections.find(conn => conn.from === nodeId && conn.to === nextNodeId);
+                        if (edge) {
+                            activeConnectionId = edge.id;
+                            renderWorkflow();
+                            workflowTourTimers.push(setTimeout(() => {
+                                completedConnectionIds.add(edge.id);
+                                activeConnectionId = null;
+                                renderWorkflow();
+                                stepIndex += 1;
+                                highlightNext();
+                            }, 650));
+                            return;
+                        }
+                    }
+                    renderWorkflow();
+                    stepIndex += 1;
+                    highlightNext();
+                }, 850));
+            };
+
+            highlightNext();
+        }
+
+        function stopWorkflowTour(keepHighlights = false) {
+            if (!workflowTourActive && !workflowTourTimers.length) {
+                return;
+            }
+            clearWorkflowTourTimers();
+            workflowTourActive = false;
+            if (!keepHighlights) {
+                activeNodeId = null;
+                activeConnectionId = null;
+                completedNodeIds = new Set();
+                completedConnectionIds = new Set();
+                renderWorkflow();
+                showNodeDetails();
+                setWorkflowStatus(nodes.length ? STATUS_MESSAGES.default : STATUS_MESSAGES.empty, nodes.length ? 'info' : 'action');
+            }
+            updateTourButtonState();
+        }
+
+        function toggleWorkflowTour() {
+            if (workflowTourActive) {
+                stopWorkflowTour();
+            } else {
+                startWorkflowTour();
+            }
+        }
+
+        function clearWorkflowCanvas() {
+            stopWorkflowTour();
+            disableLinkMode({ silent: true, skipRender: true });
+            nodes = [];
+            connections = [];
+            nodeIdCounter = 1;
+            connectionIdCounter = 1;
+            activeNodeId = null;
+            activeConnectionId = null;
+            completedNodeIds = new Set();
+            completedConnectionIds = new Set();
+            renderWorkflow();
+            showNodeDetails();
+            setWorkflowStatus(STATUS_MESSAGES.empty, 'action');
+        }
+
+        function resetWorkflowCanvas() {
+            stopWorkflowTour();
+            disableLinkMode({ silent: true, skipRender: true });
+            nodes = [];
+            connections = [];
+            addSampleWorkflow();
+        }
+
+        function zoomIn() {
+            zoom = Math.min(zoom + 0.1, 2);
+            renderWorkflow();
+        }
+
+        function zoomOut() {
+            zoom = Math.max(zoom - 0.1, 0.5);
+            renderWorkflow();
+        }
+
+        function resetZoom() {
+            zoom = 1;
+            pan = { x: 0, y: 0 };
+            renderWorkflow();
+        }
+
+        // Tab Selection for Mobile Node Palette
+        let selectedNodeType = 'link';
+        let nodeMenuOpen = false;
+
+        function toggleNodeMenu() {
+            const menu = document.getElementById('node-menu');
+            const arrow = document.getElementById('menu-arrow');
+            nodeMenuOpen = !nodeMenuOpen;
+            
+            if (nodeMenuOpen) {
+                menu.style.display = 'block';
+                arrow.style.transform = 'rotate(180deg)';
+            } else {
+                menu.style.display = 'none';
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function selectNodeFromMenu(nodeType, emoji, label) {
+            selectedNodeType = nodeType;
+            
+            // Update button text
+            document.getElementById('menu-btn-text').textContent = `${emoji} ${label}`;
+            
+            // Close menu
+            document.getElementById('node-menu').style.display = 'none';
+            document.getElementById('menu-arrow').style.transform = 'rotate(0deg)';
+            nodeMenuOpen = false;
+            
+            // Highlight selected in menu
+            document.querySelectorAll('.node-menu-item').forEach(item => {
+                if (item.dataset.type === nodeType) {
+                    item.style.background = 'rgba(102, 126, 234, 0.2)';
+                } else {
+                    item.style.background = 'transparent';
+                }
+            });
+        }
+
+        function selectNodeTab(nodeType) {
+            selectedNodeType = nodeType;
+            
+            // Update tab UI (legacy support)
+            document.querySelectorAll('.node-tab').forEach(tab => {
+                if (tab.dataset.type === nodeType) {
+                    tab.classList.add('node-tab-active');
+                } else {
+                    tab.classList.remove('node-tab-active');
+                }
+            });
+        }
+
+        // Panel Close Handlers
+        function closeHelperPanel() {
+            const panel = document.getElementById('helper-panel');
+            if (panel) {
+                panel.style.display = 'none';
+            }
+        }
+
+        function closeNodePanel() {
+            const panel = document.getElementById('node-details-panel');
+            if (panel) {
+                panel.style.display = 'none';
+            }
+        }
+
+        // Email Form with ConvertKit/HubSpot Integration
+        document.getElementById('email-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const name = this.querySelector('input[name="name"]').value;
+            const email = this.querySelector('input[name="email"]').value;
+            const interest = this.querySelector('textarea[name="interest"]').value;
+            const submitBtn = this.querySelector('button[type="submit"]');
+
+            if (!firebaseReady || !firestoreDb) {
+                alert('We\'re setting up the waitlist database. Please try again in a moment.');
+                return;
+            }
+
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Saving your spot…';
+
+                const waitlistRef = firestoreDb.collection('waitlist_signups');
+                await waitlistRef.add({
+                    name,
+                    email,
+                    interest,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                await firestoreDb.collection('meta').doc('waitlist').set({
+                    count: firebase.firestore.FieldValue.increment(1),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                document.getElementById('success-message').style.display = 'block';
+                this.style.display = 'none';
+
+                document.getElementById('share-section').style.border = '2px solid #10b981';
+                document.getElementById('share-section').style.padding = '20px';
+                document.getElementById('share-section').style.borderRadius = '12px';
+                document.getElementById('share-section').style.marginTop = '30px';
+
+            } catch (error) {
+                console.error('Failed to capture waitlist signup', error);
+                alert('We hit a snag saving your signup. Please refresh and try again.');
+            } finally {
+                submitBtn.disabled = false;
+                const currentCount = parseInt((document.getElementById('waitlist-count')?.textContent || '0').replace(/,/g, ''), 10) || 0;
+                const seatsRemaining = Math.max(waitlistTarget - currentCount, 0);
+                submitBtn.textContent = seatsRemaining > 0 ? `Claim Your Spot (${seatsRemaining.toLocaleString()} Left)` : 'Join Priority Standby';
+            }
+        });
+
+        // Music Toggle - FIXED VERSION
+        let audioInitialized = false;
+        const audio = document.getElementById('flowAudio');
+        const btn = document.getElementById('musicBtn');
+
+        btn.onclick = function() {
+            if (!audioInitialized) {
+                audio.load();
+                audioInitialized = true;
+            }
+            
+            if (audio.paused) {
+                audio.play()
+                    .then(() => { 
+                        btn.textContent = '🎶'; 
+                        btn.setAttribute('aria-label', 'Pause music');
+                    })
+                    .catch(err => { 
+                        console.log('Audio play prevented:', err);
+                        btn.textContent = '🎵';
+                        // Try again on next click
+                        audioInitialized = false;
+                    });
+            } else {
+                audio.pause();
+                btn.textContent = '🎵';
+                btn.setAttribute('aria-label', 'Play music');
+            }
+        };
+
+        // Enhanced Copy Share Message Function
+        function copyShareMessage() {
+            const shareText = `🚀 Just joined the Flow waitlist – an AI platform that turns 20 hours/week into 2 hours!
+
+First 500 creators get:
+✨ Lifetime founding member benefits
+🎁 Free beta access (March 2026)
+💰 Exclusive pricing & perks
+
+Join me: https://flowearlyadopters.web.app
+
+#FlowCreators #AIAutomation #ContentCreation`;
+
+            navigator.clipboard.writeText(shareText).then(() => {
+                const btn = document.getElementById('copyBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅ Copied! Share it everywhere!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('copied');
+                }, 3000);
+            }).catch(err => {
+                // Fallback for older browsers
+                const textarea = document.createElement('textarea');
+                textarea.value = shareText;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                
+                const btn = document.getElementById('copyBtn');
+                btn.innerHTML = '✅ Copied!';
+                setTimeout(() => btn.innerHTML = '🔗 Copy Share Message', 3000);
+            });
+        }
+
+        // Auto-scroll to form on page load (better conversion)
+        window.addEventListener('load', function() {
+            // Smooth scroll after 1 second delay
+            setTimeout(() => {
+                const form = document.querySelector('.waitlist-form');
+                if (form && window.scrollY < 100) {
+                    form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

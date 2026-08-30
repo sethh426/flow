@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow by IntelliSeth Incorporated – Pitch Deck</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            color: #1a1a2e;
+            position: relative;
+        }
+
+        /* Subtle backdrop watermark */
+        body::before {
+            content: 'FLOW';
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-12deg);
+            font-size: 32vw;
+            font-weight: 900;
+            letter-spacing: 1vw;
+            color: rgba(255,255,255,0.08);
+            text-shadow: 0 0 40px rgba(0,0,0,0.05);
+            pointer-events: none;
+            z-index: 0;
+            user-select: none;
+            mix-blend-mode: overlay;
+        }
+
+        .presentation {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            position: absolute;
+            width: 90%;
+            height: 85%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(4px);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+            padding: 60px 80px;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            overflow-y: auto;
+            z-index: 1;
+        }
+
+        .slide.active {
+            opacity: 1;
+            z-index: 10;
+        }
+
+        .slide h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .slide h2 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #764ba2;
+        }
+
+        .slide h3 {
+            font-size: 1.5rem;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .slide h4 {
+            font-size: 1.2rem;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #764ba2;
+        }
+
+        .slide p, .slide li {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #4a4a4a;
+            margin-bottom: 10px;
+        }
+
+        .slide ul {
+            margin-left: 30px;
+        }
+
+        .slide strong {
+            color: #667eea;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+        }
+
+        .controls button {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .controls button:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .slide-counter {
+            position: fixed;
+            top: 30px;
+            right: 40px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1rem;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .brand-mark {
+            position: fixed;
+            top: 28px;
+            right: 40px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            letter-spacing: 0.18em;
+            padding: 8px 18px;
+            border-radius: 40px;
+            background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 40%, #e9e9e9 100%);
+            color: #5a54b3;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+            z-index: 110;
+            user-select: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card h3 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-card p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .feature-box {
+            background: #f8f9ff;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+
+        .feature-box h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #ffc107;
+            margin: 20px 0;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        .comparison-table tr:hover {
+            background: #f8f9ff;
+        }
+
+        .emoji {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+
+        .title-slide {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .title-slide h1 {
+            font-size: 5rem;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        .title-slide .flow-logo {
+            width: 180px;
+            height: 180px;
+            display: inline-block;
+            border-radius: 50%;
+            box-shadow: 0 16px 48px rgba(102, 126, 234, 0.4);
+            background: transparent;
+            padding: 0;
+            object-fit: cover;
+            object-position: center;
+            clip-path: circle(45% at center);
+        }
+
+        .title-slide h2 {
+            font-size: 2.5rem;
+            color: #4a4a4a;
+            font-weight: 400;
+        }
+
+        .tagline {
+            font-size: 1.5rem;
+            color: #764ba2;
+            margin-top: 30px;
+            font-style: italic;
+        }
+
+        .timeline {
+            margin: 30px 0;
+        }
+
+        .timeline-item {
+            padding: 20px;
+            margin-bottom: 15px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+
+        .timeline-item.completed {
+            border-left-color: #10b981;
+        }
+
+        .timeline-item.roadmap {
+            border-left-color: #fbbf24;
+        }
+
+        /* Final Slide Layout */
+        .final-slide {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            justify-content: space-between;
+        }
+
+        .final-header h1 {
+            font-size: 3rem;
+            text-align: left;
+        }
+
+        .final-subtitle {
+            margin-top: 15px;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            max-width: 720px;
+            color: #4a4a4a;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 32px;
+        }
+
+        .contact-card,
+        .preview-card {
+            background: rgba(248, 249, 255, 0.95);
+            border-radius: 18px;
+            padding: 32px;
+            box-shadow: 0 18px 45px rgba(102, 126, 234, 0.18);
+            border: 1px solid rgba(118, 75, 162, 0.15);
+        }
+
+        .contact-card h2,
+        .preview-card h2 {
+            color: #667eea;
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+        }
+
+        .contact-card ul {
+            list-style: none;
+            display: grid;
+            gap: 14px;
+            margin-top: 10px;
+        }
+
+        .contact-card li {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 14px;
+            font-size: 1rem;
+            color: #3f3d56;
+        }
+
+        .contact-card li strong {
+            color: #5a54b3;
+            font-size: 0.95rem;
+            min-width: 120px;
+        }
+
+        .cta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .cta-button {
+            border: none;
+            border-radius: 999px;
+            padding: 12px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            box-shadow: 0 12px 28px rgba(102, 126, 234, 0.25);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 18px 32px rgba(118, 75, 162, 0.3);
+        }
+
+        .cta-button.secondary {
+            background: #ffffff;
+            color: #5a54b3;
+            border: 1px solid rgba(102, 126, 234, 0.45);
+            box-shadow: 0 12px 22px rgba(90, 84, 179, 0.15);
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 18px;
+        }
+
+        .preview-card figure {
+            margin: 0;
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 12px 26px rgba(15, 23, 42, 0.12);
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .preview-card img {
+            width: 100%;
+            max-width: 160px;
+            object-fit: contain;
+        }
+
+        .preview-card figcaption {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4a4a4a;
+            text-align: center;
+        }
+
+        .preview-note {
+            margin-top: 18px;
+            font-size: 0.85rem;
+            color: #555555;
+            line-height: 1.5;
+        }
+
+        .final-footer {
+            text-align: center;
+            font-size: 0.95rem;
+            letter-spacing: 0.08em;
+            color: #5a54b3;
+        }
+
+        @media (max-width: 768px) {
+            .final-header h1 {
+                font-size: 2.4rem;
+            }
+
+            .contact-card,
+            .preview-card {
+                padding: 24px;
+            }
+
+            .cta-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 40px;
+            }
+
+            .slide h1 {
+                font-size: 2.5rem;
+            }
+
+            .slide h2 {
+                font-size: 1.5rem;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .title-slide h1 {
+                font-size: 3rem;
+            }
+        }
+
+        .checkmark {
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .roadmap-icon {
+            color: #fbbf24;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation">
+        <!-- Slide 1: Title -->
+        <div class="slide active title-slide">
+            <h1><img src="client/public/flow-logo.png" alt="Flow logo" class="flow-logo" /> FLOW PLATFORM</h1>
+            <h2>AI-Powered End-to-End Affiliate Marketing Automation</h2>
+            <p class="tagline">Transforming 20 hours of manual work into 2 hours of automated revenue generation</p>
+        </div>
+
+        <!-- Slide 2: The Problem -->
+        <div class="slide">
+            <h1>📊 The Problem</h1>
+            <h2>Affiliate Marketers Are Drowning in Manual Work</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>10-20 hrs/week</h3>
+                    <p>Content creation alone</p>
+                </div>
+                <div class="stat-card">
+                    <h3>$99-649/mo</h3>
+                    <p>Fragmented tool stacks</p>
+                </div>
+                <div class="stat-card">
+                    <h3>1-3%</h3>
+                    <p>Conversion rates (vs 7-9% top performers)</p>
+                </div>
+                <div class="stat-card">
+                    <h3>102 days</h3>
+                    <p>Sales cycle from lead to commission</p>
+                </div>
+            </div>
+
+            <h3>Pain Points Across 5 Verticals:</h3>
+            <ul>
+                <li><strong>Affiliate Marketers:</strong> 80% of time on content, managing 3+ platforms</li>
+                <li><strong>Service Businesses:</strong> 5-6 hours/week lost to admin ($620/month cost)</li>
+                <li><strong>Real Estate:</strong> 0.4-1.2% conversion (should be 7-9%)</li>
+                <li><strong>Automotive:</strong> 19% take >1hr to respond (80% conversion loss)</li>
+                <li><strong>Restaurants:</strong> 6-10 hours/week just on social media</li>
+            </ul>
+
+            <div class="highlight">
+                <strong>The Gap:</strong> Existing tools only solve <strong>one piece</strong> of the workflow. No solution automates the <strong>entire journey</strong> from discovery to conversion.
+            </div>
+        </div>
+
+        <!-- Slide 3: The Solution -->
+        <div class="slide">
+            <h1>💡 The Solution</h1>
+            <h2>Flow by IntelliSeth Incorporated: 90% Workflow Automation Platform</h2>
+
+            <div class="feature-grid">
+                <div class="feature-box">
+                    <h4>🔍 AI-Powered Discovery</h4>
+                    <p>Find trending products & opportunities automatically</p>
+                </div>
+                <div class="feature-box">
+                    <h4>🎨 Intelligent Content Creation</h4>
+                    <p>Generate professional visuals in seconds</p>
+                </div>
+                <div class="feature-box">
+                    <h4>📱 Multi-Platform Publishing</h4>
+                    <p>Automate distribution across all channels</p>
+                </div>
+            </div>
+
+            <div class="feature-boxes">
+                <div class="feature-box">
+                    <h4>🔗 Smart Link Management</h4>
+                    <p>Track & optimize affiliate links</p>
+                </div>
+                <div class="feature-box">
+                    <h4>📊 Revenue Intelligence</h4>
+                    <p>Real-time analytics & optimization</p>
+                </div>
+            </div>
+
+            <h3>Transformation Metrics:</h3>
+            <ul>
+                <li>⏰ <strong>90% time reduction:</strong> 20 hours/week → 2 hours/week</li>
+                <li>💰 <strong>5-10x revenue increase</strong> through automation</li>
+                <li>🎯 <strong>85-95% automation coverage</strong> across all stages</li>
+                <li>📈 <strong>30-50% conversion improvement</strong> via AI optimization</li>
+            </ul>
+
+            <div class="highlight">
+                <strong>Key Differentiator:</strong> Unlike fragmented tools, Flow (IntelliSeth Incorporated) provides <strong>one unified system</strong> that handles the complete affiliate marketing lifecycle.
+            </div>
+        </div>
+
+        <!-- Slide 4: The Product -->
+        <div class="slide">
+            <h1>🎯 The Product</h1>
+            <h2>AI-First Platform Architecture</h2>
+
+            <h3>🤖 FlowBot - AI System Controller</h3>
+            <ul>
+                <li>Natural language interface controls entire platform</li>
+                <li>"Show me my top campaigns" → Instant analytics</li>
+                <li>"Create a summer sale campaign" → Automated execution</li>
+                <li>Autonomous task execution with visual flight system</li>
+            </ul>
+
+            <h3>🎨 Content Studio (5 Production Templates)</h3>
+            <ul>
+                <li>Product Card (1:1), Story (9:16), Blog Headers (16:9), Email Banners (3:1)</li>
+                <li>AI Image Generation (Imagen 3) with template-aware prompts</li>
+                <li>AI Image Editing with mask-based natural language editing</li>
+                <li>Complete workflow: Select → Customize → Generate → Edit → Download</li>
+            </ul>
+
+            <h3>🔍 Trend Discovery System</h3>
+            <ul>
+                <li>AI-powered category/industry search with reasoning</li>
+                <li>Target audience analysis + SEO keywords</li>
+                <li>Learning system with feedback loop</li>
+            </ul>
+
+            <h3>📊 Real-Time Analytics Dashboard</h3>
+            <ul>
+                <li>Live metrics: campaigns, products, content, revenue</li>
+                <li>Top 5 categories with progress visualization</li>
+                <li>Firestore real-time sync</li>
+            </ul>
+
+            <h3>🧪 A/B Testing Engine</h3>
+            <ul>
+                <li>Statistical analysis with Z-test significance</li>
+                <li>Automatic winner determination</li>
+            </ul>
+        </div>
+
+        <!-- Slide 5: Technology Advantage -->
+        <div class="slide">
+            <h1>🏗️ Technology Advantage</h1>
+            <h2>Built on Google Cloud Platform - Production-Ready Stack</h2>
+
+            <div class="feature-grid">
+                <div class="feature-box">
+                    <h4>AI & Machine Learning</h4>
+                    <ul>
+                        <li>Gemini 1.5 Flash (60 req/min free)</li>
+                        <li>Imagen 3 (generation + editing)</li>
+                        <li>Genkit SDK orchestration</li>
+                        <li>Flow Autopilot (roadmap)</li>
+                    </ul>
+                </div>
+                <div class="feature-box">
+                    <h4>Scalable Infrastructure</h4>
+                    <ul>
+                        <li>Cloud Run (scales to zero)</li>
+                        <li>Firebase Hosting (global CDN)</li>
+                        <li>Firestore (real-time NoSQL)</li>
+                        <li>Cloud Functions (2M free/month)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Cost-Optimized Architecture:</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>$400/month</h3>
+                    <p>Operating cost (production-ready)</p>
+                </div>
+                <div class="stat-card">
+                    <h3>85%+</h3>
+                    <p>Infrastructure on free tiers</p>
+                </div>
+                <div class="stat-card">
+                    <h3>1000x</h3>
+                    <p>Scalability without major refactor</p>
+                </div>
+                <div class="stat-card">
+                    <h3>$0</h3>
+                    <p>Avoided expenses (vs $73/mo GKE)</p>
+                </div>
+            </div>
+
+            <h3>13 Production APIs:</h3>
+            <ul>
+                <li>Campaigns (5 endpoints): CRUD + status management</li>
+                <li>Products (3 endpoints): Management + search</li>
+                <li>Analytics (1 endpoint): Real-time metrics</li>
+                <li>Content Generation (1 endpoint): AI-powered creation</li>
+                <li>A/B Testing (3 endpoints): Testing + results tracking</li>
+            </ul>
+        </div>
+
+        <!-- Slide 6: Market Opportunity -->
+        <div class="slide">
+            <h1>📈 Market Opportunity</h1>
+            <h2>$1.7+ Trillion Addressable Market</h2>
+
+            <h3>1. Digital Affiliate Marketing: $17B → $27.8B by 2027</h3>
+            <ul>
+                <li>77.1% solo operators earning avg $8,038/month</li>
+                <li>Currently spending $99-649/month on fragmented tools</li>
+                <li><strong>Automation ROI: 22-67x</strong> (saving 20 hrs/week = $2,000/month value)</li>
+            </ul>
+
+            <h3>2. Service Businesses: 33.2M US SMBs</h3>
+            <ul>
+                <li>5-6 hours/week admin drain = $620/month cost</li>
+                <li>Currently paying $300-500/month for marketing tools</li>
+            </ul>
+
+            <h3>3. Real Estate: 1.6M+ Active Agents</h3>
+            <ul>
+                <li>Only 0.4-1.2% conversion (should be 7-9%)</li>
+                <li>Spending $500-1,500/month on CRM + marketing</li>
+            </ul>
+
+            <h3>4. Automotive: 18,000+ Dealerships</h3>
+            <ul>
+                <li>19% take >1 hour to respond (80% conversion loss)</li>
+                <li>$800-2,000/month on marketing automation</li>
+            </ul>
+
+            <h3>5. Restaurants: 1M+ US Establishments</h3>
+            <ul>
+                <li>6-10 hours/week on social media alone</li>
+                <li>$200-800/month on marketing services</li>
+            </ul>
+
+            <div class="highlight">
+                <strong>Initial Focus:</strong> 77.1% solo affiliate marketers (lowest CAC, highest urgency)
+            </div>
+        </div>
+
+        <!-- Slide 7: Business Model -->
+        <div class="slide">
+            <h1>💰 Business Model</h1>
+            <h2>Hybrid Freemium + Usage-Based Pricing</h2>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Plan</th>
+                        <th>Price</th>
+                        <th>Included Coins</th>
+                        <th>Extra Coins</th>
+                        <th>Margin</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>🆓 Free</strong></td>
+                        <td>$0</td>
+                        <td>5 coins</td>
+                        <td>$1.00 ea (84¢ margin)</td>
+                        <td>–$0.81 (loss leader)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>💼 Basic</strong></td>
+                        <td>$30/mo</td>
+                        <td>20 coins</td>
+                        <td>$0.60 ea (44¢ margin)</td>
+                        <td>$26.75 (89%)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>🚀 Pro</strong></td>
+                        <td>$60/mo</td>
+                        <td>45 coins</td>
+                        <td>$0.50 ea (34¢ margin)</td>
+                        <td>$52.69 (88%)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>🏢 Business</strong></td>
+                        <td>$90/mo</td>
+                        <td>60 coins</td>
+                        <td>$0.40 ea (24¢ margin)</td>
+                        <td>$80.25 (89%)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Flow Coins Economics:</h3>
+            <ul>
+                <li><strong>1 Flow Coin</strong> = ~6,000 AI tokens (Gemini + Imagen)</li>
+                <li><strong>Internal cost</strong>: $0.162/coin (after 35% optimization)</li>
+                <li><strong>Gross margins</strong>: 88-89% on subscriptions</li>
+                <li><strong>Extra coin pricing</strong>: $1.00 (Free) → $0.40 (Business)</li>
+                <li><strong>Upgrade path</strong>: 5 → 20 → 45 → 60 coins (natural progression)</li>
+            </ul>
+
+            <h3>Revenue Projections:</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>$430K</h3>
+                    <p>Year 1 ARR (1K users)</p>
+                </div>
+                <div class="stat-card">
+                    <h3>$8.6M</h3>
+                    <p>Year 3 ARR (20K users)</p>
+                </div>
+                <div class="stat-card">
+                    <h3>$43M</h3>
+                    <p>Year 5 ARR (100K users)</p>
+                </div>
+                <div class="stat-card">
+                    <h3>6-12x</h3>
+                    <p>LTV:CAC ratio</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Traction -->
+        <div class="slide">
+            <h1>🎯 Traction & Milestones</h1>
+            <h2>Production-Ready Platform with Real Backend Infrastructure</h2>
+
+            <div class="timeline">
+                <div class="timeline-item completed">
+                    <h4><span class="checkmark">✅</span> Core Infrastructure</h4>
+                    <ul>
+                        <li>Campaign Manager - Full CRUD with Firestore</li>
+                        <li>Product Management - API-based operations</li>
+                        <li>Analytics Dashboard - Real-time metrics</li>
+                        <li>Content Generation - Production-ready</li>
+                        <li>A/B Testing - Statistical analysis</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item completed">
+                    <h4><span class="checkmark">✅</span> AI Features</h4>
+                    <ul>
+                        <li>FlowBot - Natural language system controller</li>
+                        <li>Trend Discovery - AI-powered search with learning</li>
+                        <li>Imagen 3 integration (generation + editing)</li>
+                        <li>Gemini AI integration (FlowBot intelligence)</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item completed">
+                    <h4><span class="checkmark">✅</span> Technical Achievements</h4>
+                    <ul>
+                        <li>13 production-ready API endpoints deployed</li>
+                        <li>Firebase + Cloud Run infrastructure operational</li>
+                        <li>Real-time Firestore sync across all features</li>
+                        <li>Navigation system with 6 major feature areas</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item completed">
+                    <h4><span class="checkmark">✅</span> Cost Optimization</h4>
+                    <ul>
+                        <li>Operating at $400/month production cost</li>
+                        <li>85%+ infrastructure on free tiers</li>
+                        <li>Avoided $73/month GKE costs</li>
+                        <li>Scalable to 1000x without major refactor</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Competitive Landscape -->
+        <div class="slide">
+            <h1>🚀 Competitive Landscape</h1>
+            <h2>We're the Only End-to-End Automation Platform</h2>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Solution</th>
+                        <th>What They Do</th>
+                        <th>What They Miss</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>SEMrush</strong></td>
+                        <td>SEO + competitor analysis</td>
+                        <td>No content, no automation</td>
+                        <td>$139-499/mo</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Canva</strong></td>
+                        <td>Design templates</td>
+                        <td>No AI generation, no tracking</td>
+                        <td>$12.99/mo</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hootsuite</strong></td>
+                        <td>Social scheduling</td>
+                        <td>No content creation, no links</td>
+                        <td>$99-739/mo</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Flow (IntelliSeth Inc.)</strong></td>
+                        <td>Complete workflow automation</td>
+                        <td>Nothing - full stack</td>
+                        <td>$30-90/mo</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Our Advantages:</h3>
+            <ul>
+                <li><span class="checkmark">✅</span> <strong>Complete Workflow Automation</strong> (others: single-function)</li>
+                <li><span class="checkmark">✅</span> <strong>AI-First Architecture</strong> (others: bolt-on AI)</li>
+                <li><span class="checkmark">✅</span> <strong>Unified Platform</strong> (others: require 3-6 tools)</li>
+                <li><span class="checkmark">✅</span> <strong>Natural Language Control</strong> (FlowBot - unique to market)</li>
+                <li><span class="checkmark">✅</span> <strong>Cost-Optimized</strong> ($5/mo vs $73/mo competitors)</li>
+            </ul>
+
+            <div class="highlight">
+                <strong>Market Position:</strong> Not competing with individual tools. <strong>Replacing the entire $99-649/month tool stack</strong> with 10-20x cheaper, 90% faster solution.
+            </div>
+        </div>
+
+        <!-- Slide 10: Roadmap -->
+        <div class="slide">
+            <h1>🔮 Roadmap</h1>
+            <h2>The Future is Autonomous</h2>
+
+            <div class="timeline">
+                <div class="timeline-item completed">
+                    <h4><span class="checkmark">✅</span> Phase 1: Foundation (Complete)</h4>
+                    <ul>
+                        <li>Core infrastructure (Cloud Run, Firebase, Firestore)</li>
+                        <li>5 production templates in Content Studio</li>
+                        <li>FlowBot natural language controller</li>
+                        <li>Real-time analytics + A/B testing</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item roadmap">
+                    <h4><span class="roadmap-icon">🔮</span> Phase 2: Intelligence Expansion (Q1 2026)</h4>
+                    <ul>
+                        <li><strong>Flow Autopilot</strong> - MCP-style autonomous agent system</li>
+                        <li>Multi-platform publishing (Instagram, TikTok, Pinterest)</li>
+                        <li>Smart scheduling based on audience analytics</li>
+                        <li>Automated link rotation & tracking</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item roadmap">
+                    <h4><span class="roadmap-icon">🔮</span> Phase 3: Marketplace (Q2-Q3 2026)</h4>
+                    <ul>
+                        <li>Template marketplace (creators sell templates)</li>
+                        <li>Campaign blueprints (proven workflows)</li>
+                        <li>Referral system (earn coins for invites)</li>
+                        <li>White-label SaaS (agencies resell platform)</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item roadmap">
+                    <h4><span class="roadmap-icon">🔮</span> Phase 4: Enterprise (Q4 2026)</h4>
+                    <ul>
+                        <li>Team collaboration & permissions</li>
+                        <li>Custom AI model training per brand</li>
+                        <li>Advanced workflow builder</li>
+                        <li>API marketplace</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="highlight">
+                <strong>Flow Autopilot Vision:</strong> "Create a summer campaign" → Flow automatically discovers trends, generates content, schedules posts, sets up tracking - <strong>zero human intervention</strong>.
+            </div>
+        </div>
+
+        <!-- Slide 11: Go-to-Market -->
+        <div class="slide">
+            <h1>🎯 Go-to-Market Strategy</h1>
+            <h2>Bottom-Up Viral Growth → Top-Down Enterprise Sales</h2>
+
+            <h3>Phase 1: Community-Led Growth (Months 1-6)</h3>
+            <div class="feature-box">
+                <h4>Target: Solo affiliate marketers (77.1% of market)</h4>
+                <ul>
+                    <li><strong>Content Marketing:</strong> SEO guides, YouTube tutorials, free templates</li>
+                    <li><strong>Viral Referral Loop:</strong> 500 bonus coins per referral + 10% lifetime revenue share</li>
+                    <li><strong>Community Building:</strong> Discord/Slack, weekly showcases, template contests</li>
+                    <li><strong>Goal:</strong> 1,000 organic signups/month + 1.5x viral coefficient</li>
+                </ul>
+            </div>
+
+            <h3>Phase 2: Product-Led Sales (Months 7-12)</h3>
+            <div class="feature-box">
+                <h4>Target: Small agencies & teams (3-10 people)</h4>
+                <ul>
+                    <li><strong>Self-Serve Upgrade:</strong> In-app prompts, free trials, value demonstration</li>
+                    <li><strong>Strategic Partnerships:</strong> Social media influencers, streamers, content creators</li>
+                    <li><strong>Goal:</strong> 30% Free → Pro conversion, 50% signups via partners</li>
+                </ul>
+            </div>
+
+            <h3>Phase 3: Enterprise Sales (Year 2+)</h3>
+            <div class="feature-box">
+                <h4>Target: Large agencies, brands, media companies</h4>
+                <ul>
+                    <li><strong>Outbound Sales Team:</strong> Target agencies with 50+ clients</li>
+                    <li><strong>Custom Solutions:</strong> White-label, custom AI training, SLAs</li>
+                    <li><strong>Goal:</strong> $5K-50K annual contracts, 10 enterprise deals by Year 2</li>
+                </ul>
+            </div>
+
+            <h3>Acquisition Channels:</h3>
+                        <p>
+                            🥇 SEO (85% of marketers rely on this) • 🥈 YouTube (tutorial + case study funnel) • 🥉 Affiliate Networks
+                            • Paid Ads (retarget high‑intent visitors) • Influencers & Content Creators (co-created launch series)
+                            • Gaming Community (streamers + esports micro-sponsorships)
+                        </p>
+        </div>
+
+        <!-- Slide 12: The Ask -->
+        <div class="slide">
+            <h1>💸 The Ask</h1>
+            <h2>$500K Seed Round to Accelerate Growth</h2>
+
+            <h3>Use of Funds:</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>40%</h3>
+                    <p>Product Development ($200K)</p>
+                </div>
+                <div class="stat-card">
+                    <h3>35%</h3>
+                    <p>Go-to-Market ($175K)</p>
+                </div>
+                <div class="stat-card">
+                    <h3>15%</h3>
+                    <p>Infrastructure ($75K)</p>
+                </div>
+                <div class="stat-card">
+                    <h3>10%</h3>
+                    <p>Operations ($50K)</p>
+                </div>
+            </div>
+
+            <h3>12-Month Milestones:</h3>
+            <ul>
+                <li><strong>Month 3:</strong> Flow Autopilot beta launch</li>
+                <li><strong>Month 6:</strong> 5,000 active users (30% paid conversion)</li>
+                <li><strong>Month 9:</strong> $50K MRR ($600K ARR run rate)</li>
+                <li><strong>Month 12:</strong> 20,000 users, $150K MRR, Series A readiness</li>
+            </ul>
+
+            <h3>Why Now?</h3>
+            <ul>
+                <li><span class="checkmark">✅</span> AI infrastructure is mature & affordable (Gemini, Imagen)</li>
+                <li><span class="checkmark">✅</span> Affiliate marketing growing 10%+ annually ($17B → $27.8B)</li>
+                <li><span class="checkmark">✅</span> Solo creator economy exploding (77.1% of market)</li>
+                <li><span class="checkmark">✅</span> Proven product-market fit (all systems operational)</li>
+                <li><span class="checkmark">✅</span> Cost-optimized stack enables profitability at scale</li>
+            </ul>
+
+            <div class="highlight">
+                <strong>Investment Highlights:</strong> Large TAM ($1.7T+) • Proven Traction • Unique IP (Flow Autopilot) • Strong Unit Economics (6-12x LTV:CAC) • Global Scalable • Defensible Moat
+            </div>
+        </div>
+
+        <!-- Slide 13: Contact -->
+        <div class="slide final-slide">
+            <header class="final-header">
+                <h1>📞 Ready to Transform Affiliate Marketing?</h1>
+                <p class="final-subtitle">Flow by IntelliSeth Incorporated keeps your campaigns, creators, and automations in sync. Let's get your team onboarded.</p>
+            </header>
+
+            <div class="contact-grid">
+                <section class="contact-card">
+                    <h2>Connect With The Team</h2>
+                    <ul>
+                        <li><strong>Company</strong><span>IntelliSeth Incorporated</span></li>
+                        <li><strong>Platform</strong><span>Flow Operator Suite</span></li>
+                        <li><strong>Repository</strong><span>github.com/luxcognita/affiliateflow-unified</span></li>
+                        <li><strong>Contact</strong><span>seth@intelliseth.com</span></li>
+                    </ul>
+                </section>
+            </div>
+
+            <footer class="final-footer">
+                <p>Confidential &amp; Proprietary — November 2025</p>
+            </footer>
+        </div>
+    </div>
+
+    <div class="slide-counter">
+        <span id="current-slide">1</span> / <span id="total-slides">13</span>
+    </div>
+    <div class="brand-mark">FLOW</div>
+
+    <div class="controls">
+        <button id="prev-btn">← Previous</button>
+        <button id="next-btn">Next →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        const currentSlideElement = document.getElementById('current-slide');
+        const totalSlidesElement = document.getElementById('total-slides');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+
+        totalSlidesElement.textContent = totalSlides;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            currentSlideElement.textContent = currentSlide + 1;
+
+            // Update button states
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === totalSlides - 1;
+        }
+
+        prevBtn.addEventListener('click', () => showSlide(currentSlide - 1));
+        nextBtn.addEventListener('click', () => showSlide(currentSlide + 1));
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') showSlide(currentSlide - 1);
+            if (e.key === 'ArrowRight') showSlide(currentSlide + 1);
+            if (e.key === 'Home') showSlide(0);
+            if (e.key === 'End') showSlide(totalSlides - 1);
+        });
+
+        // Touch/swipe support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50) showSlide(currentSlide + 1);
+            if (touchEndX > touchStartX + 50) showSlide(currentSlide - 1);
+        }
+    </script>
+</body>
+</html>

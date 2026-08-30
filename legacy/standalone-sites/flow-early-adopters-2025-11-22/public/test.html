@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow Interactive Test</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .demo-box {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 12px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        input {
+            width: 100%;
+            padding: 14px;
+            background: rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+        h1 {
+            color: #a78bfa;
+        }
+        h2 {
+            color: #fbbf24;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Flow Interactive Features Test</h1>
+    <p>This page tests the interactive features that should appear in the main workflow builder.</p>
+    
+    <h2>1. Link Analyzer Test</h2>
+    <div class="demo-box">
+        <p style="font-weight: 700; color: #fbbf24; margin-bottom: 12px;">✨ Try it now:</p>
+        <input type="url" id="url-input" placeholder="Paste any product URL (Amazon, Etsy, Shopify...)">
+        <button onclick="analyzeUrl()">🔍 Analyze Link</button>
+        <div id="url-result" style="margin-top: 16px;"></div>
+    </div>
+    
+    <h2>2. Market Intel Test</h2>
+    <div class="demo-box" style="background: rgba(236, 72, 153, 0.1); border-color: rgba(236, 72, 153, 0.3);">
+        <button onclick="runMarketAnalysis()" style="background: linear-gradient(135deg, #f093fb, #f5576c);">🧠 Run Market Analysis</button>
+        <div id="intel-result" style="margin-top: 16px;"></div>
+    </div>
+    
+    <h2>3. Content Generator Test</h2>
+    <div class="demo-box" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3);">
+        <button onclick="generateContent()" style="background: linear-gradient(135deg, #43e97b, #38f9d7); color: #000;">🎨 Generate Sample Content</button>
+        <div id="content-result" style="margin-top: 16px;"></div>
+    </div>
+    
+    <div style="margin-top: 40px; padding: 20px; background: rgba(251, 191, 36, 0.1); border-radius: 8px; border: 2px solid rgba(251, 191, 36, 0.3);">
+        <p style="color: #fbbf24; font-weight: 700;">✅ If these demos work here, they should work on the main page!</p>
+        <p style="margin-top: 10px;">To see them on the main page:</p>
+        <ol style="line-height: 2;">
+            <li>Go to <a href="/" style="color: #667eea;">flowearlyadopters.web.app</a></li>
+            <li>Press <strong>Ctrl+Shift+R</strong> (Windows) or <strong>Cmd+Shift+R</strong> (Mac) to hard refresh</li>
+            <li>Click any node in the workflow (LINK INTAKE, FLOW INTEL, etc.)</li>
+            <li>Look for the interactive demo section below the node description</li>
+        </ol>
+    </div>
+    
+    <script>
+        function analyzeUrl() {
+            const url = document.getElementById('url-input').value.trim();
+            const result = document.getElementById('url-result');
+            
+            if (!url) {
+                result.innerHTML = '<p style="color: #ef4444;">Please enter a URL</p>';
+                return;
+            }
+            
+            try {
+                new URL(url);
+            } catch {
+                result.innerHTML = '<p style="color: #ef4444;">Please enter a valid URL</p>';
+                return;
+            }
+            
+            result.innerHTML = '<p style="color: #fbbf24;">⏳ Analyzing...</p>';
+            
+            setTimeout(() => {
+                const urlObj = new URL(url);
+                const domain = urlObj.hostname.replace('www.', '');
+                const platform = domain.includes('amazon') ? 'Amazon' : 
+                               domain.includes('etsy') ? 'Etsy' :
+                               domain.includes('shopify') ? 'Shopify' : 'E-commerce';
+                
+                result.innerHTML = `
+                    <div style="padding: 16px; background: rgba(16, 185, 129, 0.15); border-radius: 8px; border: 2px solid rgba(16, 185, 129, 0.3);">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                            <span style="font-size: 1.8rem;">✅</span>
+                            <span style="font-weight: 700; color: #10b981; font-size: 1.1rem;">Link Analyzed!</span>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.4); padding: 14px; border-radius: 8px;">
+                            <p style="margin: 8px 0; color: #d1d5db;"><strong style="color: #a78bfa;">Platform:</strong> ${platform}</p>
+                            <p style="margin: 8px 0; color: #d1d5db;"><strong style="color: #a78bfa;">URL:</strong> ${url.substring(0, 50)}...</p>
+                            <p style="margin: 8px 0; color: #10b981;"><strong>✓ Ready for Flow automation</strong></p>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+        }
+        
+        function runMarketAnalysis() {
+            const result = document.getElementById('intel-result');
+            result.innerHTML = '<p style="color: #fbbf24;">⏳ Analyzing trends...</p>';
+            
+            setTimeout(() => {
+                const score = Math.floor(Math.random() * 30) + 70;
+                result.innerHTML = `
+                    <div style="padding: 16px; background: rgba(16, 185, 129, 0.15); border-radius: 8px; border: 2px solid rgba(16, 185, 129, 0.3);">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                            <span style="font-size: 1.8rem;">📊</span>
+                            <span style="font-weight: 700; color: #10b981; font-size: 1.1rem;">Analysis Complete!</span>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.4); padding: 14px; border-radius: 8px;">
+                            <p style="margin: 8px 0; color: #d1d5db;"><strong style="color: #a78bfa;">🔥 Trending Score:</strong> ${score}/100</p>
+                            <p style="margin: 8px 0; color: #d1d5db;"><strong style="color: #a78bfa;">🔍 Search Volume:</strong> 75K/month</p>
+                            <p style="margin: 8px 0; color: #d1d5db;"><strong style="color: #a78bfa;">⚔️ Competition:</strong> Medium</p>
+                        </div>
+                    </div>
+                `;
+            }, 1500);
+        }
+        
+        function generateContent() {
+            const result = document.getElementById('content-result');
+            result.innerHTML = '<p style="color: #fbbf24;">⏳ Creating content...</p>';
+            
+            setTimeout(() => {
+                const captions = [
+                    "🔥 Just found the PERFECT solution! This changed everything. #gamechanger",
+                    "✨ You NEED to see this! I've been using it for 2 weeks and WOW. #musthave"
+                ];
+                const caption = captions[Math.floor(Math.random() * captions.length)];
+                
+                result.innerHTML = `
+                    <div style="padding: 16px; background: rgba(16, 185, 129, 0.15); border-radius: 8px; border: 2px solid rgba(16, 185, 129, 0.3);">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                            <span style="font-size: 1.8rem;">✅</span>
+                            <span style="font-weight: 700; color: #10b981; font-size: 1.1rem;">Content Generated!</span>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.4); padding: 14px; border-radius: 8px;">
+                            <p style="color: #fbbf24; font-weight: 700; margin-bottom: 8px;">📱 INSTAGRAM POST:</p>
+                            <p style="color: #d1d5db; font-style: italic; line-height: 1.6;">"${caption}"</p>
+                        </div>
+                    </div>
+                `;
+            }, 1800);
+        }
+    </script>
+</body>
+</html>

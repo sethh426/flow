@@ -1,0 +1,488 @@
+/* ============================================
+   MODERN GRADIENT UI DESIGN
+   Clean, vibrant, professional interface
+   ============================================ */
+
+:root {
+  /* Modern Light Mode Colors */
+  --neu-bg: #ffffff;
+  --neu-shadow-dark: rgba(0, 0, 0, 0.1);
+  --neu-shadow-light: rgba(255, 255, 255, 0.9);
+  --neu-text: #1f2937;
+  --neu-text-secondary: #6b7280;
+  --neu-primary: #8b5cf6;
+  --neu-primary-light: #a78bfa;
+  --neu-success: #10b981;
+  --neu-warning: #f59e0b;
+  --neu-error: #ef4444;
+  --neu-surface: #f9fafb;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --neu-bg: #111827;
+    --neu-shadow-dark: rgba(0, 0, 0, 0.5);
+    --neu-shadow-light: rgba(55, 65, 81, 0.3);
+    --neu-text: #f9fafb;
+    --neu-text-secondary: #d1d5db;
+    --neu-surface: #1f2937;
+  }
+}
+
+/* ============================================
+   MODERN BUTTON STYLES
+   Clean shadows with smooth transitions
+   ============================================ */
+
+.neu-button {
+  background: white;
+  color: var(--neu-text);
+  border: 1px solid #e5e7eb;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.neu-button:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  border-color: #d1d5db;
+}
+
+.neu-button:active {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transform: translateY(0);
+}
+
+/* Primary Button */
+.neu-button-primary {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+  color: #ffffff !important;
+  border: none;
+  box-shadow: 0 4px 6px rgba(139, 92, 246, 0.3);
+}
+
+.neu-button-primary:hover {
+  box-shadow: 0 6px 12px rgba(139, 92, 246, 0.4);
+  transform: translateY(-2px);
+}
+
+.neu-button-primary:active {
+  box-shadow: 0 2px 4px rgba(139, 92, 246, 0.3);
+  transform: translateY(0);
+}
+
+/* Success Button */
+.neu-button-success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff !important;
+  border: none;
+  box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+}
+
+.neu-button-success:hover {
+  box-shadow: 
+    6px 6px 12px rgba(16, 185, 129, 0.5),
+    -6px -6px 12px rgba(52, 211, 153, 0.5),
+    0 6px 16px rgba(16, 185, 129, 0.4);
+  transform: translateY(-3px);
+}
+
+.neu-button-success:active {
+  box-shadow: 
+    inset 6px 6px 12px rgba(14, 160, 110, 0.6),
+    inset -6px -6px 12px rgba(52, 211, 153, 0.3);
+}
+
+/* Icon Button (Circular) */
+.neu-icon-button {
+  background: white;
+  color: var(--neu-text);
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.neu-icon-button:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  border-color: #d1d5db;
+}
+
+.neu-icon-button:active {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transform: translateY(0);
+}
+
+/* ============================================
+   MODERN CARD STYLES
+   Clean with subtle shadows
+   ============================================ */
+
+.neu-card {
+  background: white;
+  color: var(--neu-text);
+  border-radius: 1rem;
+  padding: 2rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.neu-card:hover {
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+  border-color: #d1d5db;
+}
+
+/* Flat Card */
+.neu-card-flat {
+  background: var(--neu-surface);
+  color: var(--neu-text);
+  border-radius: 1rem;
+  padding: 2rem;
+  border: 1px solid #e5e7eb;
+}
+
+/* Convex Card */
+.neu-card-convex {
+  background: linear-gradient(145deg, #ffffff, #f9fafb);
+  color: var(--neu-text);
+  border-radius: 1rem;
+  padding: 2rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* ============================================
+   MODERN INPUT STYLES
+   Clean with focus states
+   ============================================ */
+
+.neu-input {
+  background: white;
+  border: 1px solid #d1d5db;
+  padding: 0.875rem 1.25rem;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  color: var(--neu-text);
+  font-weight: 400;
+  width: 100%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.neu-input:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+.neu-input::placeholder {
+  color: var(--neu-text-secondary);
+  opacity: 0.5;
+}
+
+/* Textarea */
+.neu-textarea {
+  background: white;
+  border: 1px solid #d1d5db;
+  padding: 0.875rem 1.25rem;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  color: var(--neu-text);
+  font-weight: 400;
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.neu-textarea:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+/* ============================================
+   MODERN TOGGLE SWITCH
+   ============================================ */
+
+.neu-toggle {
+  position: relative;
+  width: 60px;
+  height: 30px;
+  background: #d1d5db;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.neu-toggle-slider {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 
+    4px 4px 8px var(--neu-shadow-dark),
+    -4px -4px 8px var(--neu-shadow-light);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.neu-toggle.active {
+  background: linear-gradient(145deg, #6d6ff6, #5a5dd1);
+}
+
+.neu-toggle.active .neu-toggle-slider {
+  left: 33px;
+  background: white;
+  box-shadow: 
+    2px 2px 4px rgba(0, 0, 0, 0.2),
+    -2px -2px 4px rgba(255, 255, 255, 0.5);
+}
+
+/* ============================================
+   NEUMORPHIC PROGRESS BAR
+   ============================================ */
+
+.neu-progress {
+  background: var(--neu-bg);
+  height: 12px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 
+    inset 4px 4px 8px var(--neu-shadow-dark),
+    inset -4px -4px 8px var(--neu-shadow-light);
+}
+
+.neu-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--neu-primary), var(--neu-primary-light));
+  border-radius: 12px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    2px 2px 4px rgba(99, 102, 241, 0.3);
+}
+
+/* ============================================
+   NEUMORPHIC BADGE/CHIP
+   ============================================ */
+
+.neu-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--neu-bg);
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--neu-text);
+  box-shadow: 
+    6px 6px 12px var(--neu-shadow-dark),
+    -6px -6px 12px var(--neu-shadow-light);
+}
+
+.neu-badge-primary {
+  background: linear-gradient(145deg, #6d6ff6, #5a5dd1);
+  color: #ffffff; /* White text is OK on gradient background */
+  box-shadow: 
+    6px 6px 12px rgba(99, 102, 241, 0.3),
+    -6px -6px 12px rgba(129, 140, 248, 0.3);
+}
+
+/* ============================================
+   NEUMORPHIC DIVIDER
+   ============================================ */
+
+.neu-divider {
+  height: 1px;
+  background: transparent;
+  margin: 1.5rem 0;
+  box-shadow: 
+    0 1px 0 var(--neu-shadow-light),
+    0 -1px 0 var(--neu-shadow-dark);
+}
+
+/* ============================================
+   NEUMORPHIC STAT CARD
+   ============================================ */
+
+.neu-stat-card {
+  background: var(--neu-bg);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  box-shadow: 
+    10px 10px 20px var(--neu-shadow-dark),
+    -10px -10px 20px var(--neu-shadow-light);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.neu-stat-card:hover {
+  box-shadow: 
+    12px 12px 24px var(--neu-shadow-dark),
+    -12px -12px 24px var(--neu-shadow-light);
+  transform: translateY(-2px);
+}
+
+.neu-stat-value {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--neu-text);
+  margin: 0.5rem 0;
+  line-height: 1;
+}
+
+.neu-stat-label {
+  font-size: 0.875rem;
+  color: var(--neu-text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ============================================
+   NEUMORPHIC SEARCH BAR
+   ============================================ */
+
+.neu-search {
+  position: relative;
+  width: 100%;
+}
+
+.neu-search-input {
+  background: var(--neu-bg);
+  border: none;
+  padding: 0.875rem 1.25rem 0.875rem 3rem;
+  border-radius: 2rem;
+  font-size: 0.9375rem;
+  color: var(--neu-text);
+  width: 100%;
+  box-shadow: 
+    inset 6px 6px 12px var(--neu-shadow-dark),
+    inset -6px -6px 12px var(--neu-shadow-light);
+  transition: all 0.3s ease;
+}
+
+.neu-search-input:focus {
+  outline: none;
+  box-shadow: 
+    inset 4px 4px 8px var(--neu-shadow-dark),
+    inset -4px -4px 8px var(--neu-shadow-light),
+    0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.neu-search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--neu-text-secondary);
+  pointer-events: none;
+}
+
+/* ============================================
+   NEUMORPHIC SLIDER
+   ============================================ */
+
+.neu-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 8px;
+  background: var(--neu-bg);
+  outline: none;
+  box-shadow: 
+    inset 4px 4px 8px var(--neu-shadow-dark),
+    inset -4px -4px 8px var(--neu-shadow-light);
+}
+
+.neu-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--neu-bg);
+  cursor: pointer;
+  box-shadow: 
+    4px 4px 8px var(--neu-shadow-dark),
+    -4px -4px 8px var(--neu-shadow-light);
+  transition: all 0.3s ease;
+}
+
+.neu-slider::-webkit-slider-thumb:hover {
+  box-shadow: 
+    6px 6px 12px var(--neu-shadow-dark),
+    -6px -6px 12px var(--neu-shadow-light);
+}
+
+.neu-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--neu-bg);
+  cursor: pointer;
+  border: none;
+  box-shadow: 
+    4px 4px 8px var(--neu-shadow-dark),
+    -4px -4px 8px var(--neu-shadow-light);
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.neu-shadow-sm {
+  box-shadow: 
+    4px 4px 8px var(--neu-shadow-dark),
+    -4px -4px 8px var(--neu-shadow-light);
+}
+
+.neu-shadow-md {
+  box-shadow: 
+    8px 8px 16px var(--neu-shadow-dark),
+    -8px -8px 16px var(--neu-shadow-light);
+}
+
+.neu-shadow-lg {
+  box-shadow: 
+    12px 12px 24px var(--neu-shadow-dark),
+    -12px -12px 24px var(--neu-shadow-light);
+}
+
+.neu-shadow-inset {
+  box-shadow: 
+    inset 6px 6px 12px var(--neu-shadow-dark),
+    inset -6px -6px 12px var(--neu-shadow-light);
+}
+
+.neu-text-primary {
+  color: var(--neu-text) !important;
+}
+
+.neu-text-secondary {
+  color: var(--neu-text-secondary) !important;
+}
+
+.neu-bg {
+  background: var(--neu-bg) !important;
+}

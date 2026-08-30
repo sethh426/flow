@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Flow - Join the Waitlist</title>
+    <link rel="icon" type="image/png" href="flow-logo.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            overflow-x: hidden;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 30px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #667eea 0%, #a78bfa 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -2px;
+            margin-bottom: 20px;
+        }
+
+        .tagline {
+            font-size: 1.5rem;
+            color: #f3f4f6;
+            font-weight: 400;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #9ca3af;
+            margin-bottom: 50px;
+        }
+
+        .problem-section {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-left: 4px solid #667eea;
+            padding: 40px;
+            border-radius: 16px;
+            margin: 40px 0;
+        }
+
+        .problem-section h2 {
+            font-size: 2.2rem;
+            color: #a78bfa;
+            margin-bottom: 20px;
+        }
+
+        .problem-section p {
+            font-size: 1.2rem;
+            color: #e5e7eb;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .solution-section {
+            margin: 50px 0;
+        }
+
+        .solution-section h2 {
+            font-size: 2.5rem;
+            color: #a78bfa;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .benefits {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .benefit-card {
+            background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+            padding: 30px;
+            border-radius: 14px;
+            border: 2px solid #333;
+            transition: all 0.3s ease;
+        }
+
+        .benefit-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .benefit-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .benefit-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #a78bfa;
+            margin-bottom: 10px;
+        }
+
+        .benefit-text {
+            font-size: 1rem;
+            color: #d1d5db;
+            line-height: 1.6;
+        }
+
+        .form-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 60px 40px;
+            border-radius: 20px;
+            margin: 60px 0;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+
+        .form-section h2 {
+            font-size: 2.8rem;
+            color: white;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .form-description {
+            font-size: 1.2rem;
+            color: #e9d5ff;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .email-form {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 1rem;
+            color: #e9d5ff;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .email-input {
+            width: 100%;
+            padding: 18px 25px;
+            font-size: 1.1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .email-input:focus {
+            outline: none;
+            border-color: white;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .email-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .email-submit {
+            width: 100%;
+            padding: 20px 40px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: white;
+            border: none;
+            border-radius: 12px;
+            color: #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .email-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .form-success {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            background: rgba(16, 185, 129, 0.2);
+            border: 2px solid #10b981;
+            border-radius: 12px;
+            margin: 20px 0;
+            font-size: 1.2rem;
+            color: #10b981;
+        }
+
+        .social-proof {
+            text-align: center;
+            margin: 50px 0;
+        }
+
+        .social-proof p {
+            font-size: 1.1rem;
+            color: #9ca3af;
+            font-style: italic;
+        }
+
+        .faq-section {
+            margin: 60px 0;
+        }
+
+        .faq-section h2 {
+            font-size: 2.5rem;
+            color: #a78bfa;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .faq-item {
+            background: #1a1a1a;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            margin-bottom: 20px;
+        }
+
+        .faq-question {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #a78bfa;
+            margin-bottom: 10px;
+        }
+
+        .faq-answer {
+            font-size: 1.05rem;
+            color: #d1d5db;
+            line-height: 1.7;
+        }
+
+        .audio-control {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+            transition: transform 0.3s ease;
+            font-size: 24px;
+        }
+
+        .audio-control:hover {
+            transform: scale(1.1);
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 20px;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .tagline {
+                font-size: 1.2rem;
+            }
+
+            .problem-section {
+                padding: 25px;
+            }
+
+            .problem-section h2 {
+                font-size: 1.8rem;
+            }
+
+            .problem-section p {
+                font-size: 1.05rem;
+            }
+
+            .solution-section h2 {
+                font-size: 2rem;
+            }
+
+            .benefits {
+                grid-template-columns: 1fr;
+            }
+
+            .form-section {
+                padding: 40px 25px;
+            }
+
+            .form-section h2 {
+                font-size: 2rem;
+            }
+
+            .form-description {
+                font-size: 1.05rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .tagline {
+                font-size: 1.05rem;
+            }
+
+            .form-section h2 {
+                font-size: 1.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="flow-logo.png" alt="Flow" class="logo">
+            <h1>Build Your Social Empire.<br>Join the Flow.</h1>
+            <p class="tagline">Be the first to get the app that makes creation easy.</p>
+            <p class="subtitle">Join 500 future creators on the waitlist</p>
+        </div>
+
+        <div class="problem-section">
+            <h2>Have a great idea but don't know where to start?</h2>
+            <p>Tired of complicated algorithms holding you back? Overwhelmed by managing 15-20 different tools just to run your online business?</p>
+            <p><strong>You're not alone.</strong> 73% of aspiring entrepreneurs never launch because the technical complexity is too overwhelming. Task-switching between tools costs 20+ hours per week and creates mental fatigue equivalent to a 10-point IQ drop.</p>
+        </div>
+
+        <div class="solution-section">
+            <h2>This is Flow</h2>
+            <p style="text-align: center; font-size: 1.2rem; color: #d1d5db; margin-bottom: 40px;">
+                Flow is the simple, powerful tool that puts <strong>you</strong> in control. Create, connect, and grow your community on your terms.
+            </p>
+
+            <div class="benefits">
+                <div class="benefit-card">
+                    <div class="benefit-icon">🤖</div>
+                    <div class="benefit-title">AI That Works For You</div>
+                    <div class="benefit-text">Analyzes trends, suggests products, and generates conversion-ready content in seconds</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">⚡</div>
+                    <div class="benefit-title">Save 18+ Hours/Week</div>
+                    <div class="benefit-text">Automate scheduling, publishing, and analytics across all your platforms</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🎨</div>
+                    <div class="benefit-title">Professional Content Studio</div>
+                    <div class="benefit-text">Create product images, social posts, emails, and landing pages instantly</div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🧠</div>
+                    <div class="benefit-title">Reduce Mental Strain</div>
+                    <div class="benefit-text">85% fewer decisions means more energy for creativity and growth</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>Ready to Create?</h2>
+            <p class="form-description">Join the waitlist and be among the first to access Flow when we launch in Q1 2026</p>
+            
+            <form class="email-form" id="waitlist-form">
+                <div class="form-group">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input type="email" id="email" name="email" class="email-input" placeholder="you@example.com" required>
+                </div>
+                <button type="submit" class="email-submit">Join the Waitlist</button>
+            </form>
+            
+            <div class="form-success" id="form-success">
+                🎉 Success! Check your email to confirm your spot on the waitlist.
+            </div>
+        </div>
+
+        <div class="social-proof">
+            <p>"Join thousands of future creators waiting for Flow."</p>
+        </div>
+
+        <div class="faq-section">
+            <h2>Frequently Asked Questions</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question">When will the app be available?</div>
+                <div class="faq-answer">Flow is launching in Q1 2026. Waitlist members will get priority access and exclusive early-bird pricing.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Is my data safe?</div>
+                <div class="faq-answer">Absolutely. We use enterprise-grade encryption and never sell your data. Your content and customer information are 100% yours.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">What makes Flow different?</div>
+                <div class="faq-answer">Flow is the only platform that combines AI-powered content creation, automation, and analytics in one workspace. No more jumping between 15+ tools—everything you need is in one place.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">How much will it cost?</div>
+                <div class="faq-answer">We'll offer a free plan to get started, with premium plans starting at $29/month. Early waitlist members get 50% off for the first 6 months.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">What platforms does Flow integrate with?</div>
+                <div class="faq-answer">Instagram, TikTok, YouTube, Shopify, WooCommerce, Printify, Printful, Etsy, Amazon, Mailchimp, ConvertKit, and 20+ more. If you use it, we probably integrate with it.</div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="background-audio" loop>
+        <source src="let it flow.m4a" type="audio/mp4">
+    </audio>
+    <button class="audio-control" id="audio-toggle" title="Toggle Music">🔇</button>
+
+    <script>
+        // Audio control
+        const audio = document.getElementById('background-audio');
+        const audioToggle = document.getElementById('audio-toggle');
+        let isPlaying = false;
+
+        audioToggle.addEventListener('click', () => {
+            if (isPlaying) {
+                audio.pause();
+                audioToggle.textContent = '🔇';
+            } else {
+                audio.play();
+                audioToggle.textContent = '🔊';
+            }
+            isPlaying = !isPlaying;
+        });
+
+        // Email form submission (HubSpot integration)
+        const form = document.getElementById('waitlist-form');
+        const successMsg = document.getElementById('form-success');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = form.email.value;
+
+            // HubSpot Forms API endpoint (replace with your portal ID and form GUID)
+            const hubspotEndpoint = 'https://api.hsforms.com/submissions/v3/integration/submit/YOUR_PORTAL_ID/YOUR_FORM_GUID';
+
+            try {
+                const response = await fetch(hubspotEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        fields: [{
+                            name: 'email',
+                            value: email
+                        }],
+                        context: {
+                            pageUri: window.location.href,
+                            pageName: 'Flow Waitlist'
+                        }
+                    })
+                });
+
+                if (response.ok) {
+                    form.style.display = 'none';
+                    successMsg.style.display = 'block';
+                    
+                    // Redirect to thank you page after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = '/thank-you.html';
+                    }, 2000);
+                } else {
+                    // Fallback: show success anyway for demo purposes
+                    form.style.display = 'none';
+                    successMsg.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Form submission error:', error);
+                // Fallback: show success anyway for demo purposes
+                form.style.display = 'none';
+                successMsg.style.display = 'block';
+            }
+        });
+
+        // Auto-play audio on first user interaction
+        document.body.addEventListener('click', () => {
+            if (!isPlaying) {
+                audio.play().then(() => {
+                    isPlaying = true;
+                    audioToggle.textContent = '🔊';
+                }).catch(() => {});
+            }
+        }, { once: true });
+    </script>
+</body>
+</html>

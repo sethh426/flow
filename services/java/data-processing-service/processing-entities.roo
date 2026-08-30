@@ -1,0 +1,42 @@
+// Spring Roo Script for Data Processing Service
+// Run: roo script --file processing-entities.roo
+
+// JPA Setup
+jpa setup --provider HIBERNATE --database H2_IN_MEMORY
+
+// Product Data Entity
+entity jpa --class com.affiliateflow.processing.domain.ProductData
+field string --fieldName externalId --notNull
+field string --fieldName name --notNull
+field string --fieldName description
+field number --fieldName price --type java.math.BigDecimal
+field string --fieldName category
+field string --fieldName brand
+field string --fieldName imageUrl
+field string --fieldName affiliateLink
+field string --fieldName source
+field date --fieldName importedAt --type java.time.LocalDateTime
+field string --fieldName status
+
+// Processing Job Entity
+entity jpa --class com.affiliateflow.processing.domain.ProcessingJob
+field string --fieldName jobId --notNull
+field string --fieldName jobType
+field string --fieldName status
+field date --fieldName startTime --type java.time.LocalDateTime
+field date --fieldName endTime --type java.time.LocalDateTime
+field number --fieldName recordsProcessed --type java.lang.Long
+field number --fieldName recordsFailed --type java.lang.Long
+field string --fieldName errorMessage
+
+// Generate Repositories
+repository jpa --entity com.affiliateflow.processing.domain.ProductData --interface com.affiliateflow.processing.repository.ProductDataRepository
+repository jpa --entity com.affiliateflow.processing.domain.ProcessingJob --interface com.affiliateflow.processing.repository.ProcessingJobRepository
+
+// Generate Services
+service --entity com.affiliateflow.processing.domain.ProductData --interface com.affiliateflow.processing.service.ProductDataService
+service --entity com.affiliateflow.processing.domain.ProcessingJob --interface com.affiliateflow.processing.service.ProcessingJobService
+
+// Generate REST Controllers
+web mvc rest controller --entity com.affiliateflow.processing.domain.ProductData
+web mvc rest controller --entity com.affiliateflow.processing.domain.ProcessingJob

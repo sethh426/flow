@@ -1,0 +1,15 @@
+{
+  "name": "affiliateflow-testing",
+  "version": "1.0.0",
+  "description": "Test configuration for AffiliateFlow",
+  "scripts": {
+    "test": "node test-runner.js",
+    "test:api": "node test-api.js",
+    "test:integration": "node test-integration.js",
+    "test:performance": "node test-performance.js"
+  },
+  "devDependencies": {
+    "axios": "^1.7.9",
+    "chalk": "^4.1.2"
+  }
+}

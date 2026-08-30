@@ -1,0 +1,181 @@
+{
+  "collections": {
+    "Episteme Knowledge": {
+      "description": "Academic luxury with intellectual sophistication",
+      "complete_look": {
+        "hats": {
+          "types": ["Wool Fedora", "Cashmere Beanie", "Structured Wool Cap"],
+          "materials": ["Merino Wool", "Cashmere Blend"],
+          "colors": ["Deep Navy", "Charcoal Gray"],
+          "price_range": "$120-$250"
+        },
+        "shirts": {
+          "types": ["Oxford Button-Down", "Spread Collar Dress Shirt", "Textured Poplin"],
+          "materials": ["Egyptian Cotton", "Sea Island Cotton"],
+          "colors": ["White", "Light Blue", "Ivory"],
+          "price_range": "$125-$225"
+        },
+        "blazers": {
+          "types": ["Professor Blazer", "Scholar Sport Coat", "Structured Wool Blazer"],
+          "materials": ["Italian Wool", "Cashmere Blend"],
+          "colors": ["Navy", "Charcoal", "Deep Brown"],
+          "price_range": "$250-$995"
+        },
+        "pants": {
+          "types": ["Wool Trousers", "Structured Chinos"],
+          "materials": ["Italian Wool", "Premium Cotton"],
+          "colors": ["Charcoal", "Navy", "Khaki"],
+          "price_range": "$225-$395"
+        }
+      },
+      "brand_recommendations": {
+        "primary_brands": [
+          "Theory",
+          "HUGO BOSS",
+          "Ted Baker London",
+          "Canali",
+          "Zegna"
+        ]
+      },
+      "recommended_attributes": {
+        "Weave Type": ["Twill", "Herringbone", "Plain"],
+        "Material Type": ["Merino Wool", "Cashmere", "Organic Cotton", "Wool Blends"],
+        "Lining Material": ["Silk", "Cotton", "Polyester", "Viscose"],
+        "Occasion": ["Business", "Casual", "Formal"]
+      }
+    },
+    "Logos Essentials": {
+      "description": "Elevated casual wear with philosophical undertones",
+      "complete_look": {
+        "tops": {
+          "types": ["Premium T-Shirt", "Long Sleeve Henley", "Polo"],
+          "materials": ["Organic Cotton", "Cotton-Modal Blend"],
+          "colors": ["White", "Gray", "Black"],
+          "price_range": "$85-$150"
+        },
+        "bottoms": {
+          "types": ["Premium Jogger", "Track Pant", "Casual Trouser"],
+          "materials": ["Cotton Fleece", "Technical Wool"],
+          "colors": ["Black", "Gray", "Navy"],
+          "price_range": "$175-$295"
+        }
+      },
+      "brand_recommendations": {
+        "primary_brands": [
+          "Vince",
+          "Theory",
+          "Free People",
+          "ATM Anthony Thomas Melillo",
+          "Reiss"
+        ]
+      }
+    },
+    "Arete Excellence": {
+      "description": "High-end luxury fashion with timeless appeal",
+      "complete_look": {
+        "suits": {
+          "types": ["Three-Piece Suit", "Tuxedo", "Double-Breasted Suit"],
+          "materials": ["Italian Wool", "Silk Blend", "Cashmere"],
+          "colors": ["Black", "Navy", "Charcoal"],
+          "price_range": "$895-$5000"
+        },
+        "accessories": {
+          "types": ["Silk Tie", "Cufflinks", "Pocket Square"],
+          "materials": ["Pure Silk", "Sterling Silver", "Gold-Plated"],
+          "colors": ["Burgundy", "Navy", "Emerald Green"],
+          "price_range": "$100-$500"
+        }
+      },
+      "brand_recommendations": {
+        "primary_brands": [
+          "Tom Ford",
+          "HUGO BOSS",
+          "Canali",
+          "Ted Baker London",
+          "Peter Millar",
+          "Jack Victor"
+        ]
+      }
+    },
+    "Sophia Wisdom": {
+      "description": "Sustainable luxury with mindful design",
+      "complete_look": {
+        "tops": {
+          "types": ["Eco-Silk Blouse", "Organic Cotton Button-Up", "Bamboo Modal Top"],
+          "materials": ["Peace Silk", "GOTS Certified Cotton", "Bamboo Modal"],
+          "colors": ["Ivory", "Sage", "Pearl"],
+          "price_range": "$175-$350"
+        },
+        "bottoms": {
+          "types": ["Organic Cotton Palazzo", "Hemp Wide-Leg", "Eco-Friendly Tapered"],
+          "materials": ["Organic Cotton", "Hemp Blend", "Recycled Materials"],
+          "colors": ["Natural", "Sage", "Sand"],
+          "price_range": "$225-$450"
+        }
+      },
+      "brand_recommendations": {
+        "primary_brands": [
+          "Eileen Fisher",
+          "Vince",
+          "Theory",
+          "Lafayette 148 New York",
+          "Max Mara"
+        ]
+      }
+    },
+    "Active Essentials": {
+      "description": "Performance luxury activewear",
+      "complete_look": {
+        "featured_product": {
+          "name": "Two-Piece Tracksuit Set",
+          "regular_price": 32.00,
+          "sale_price": 35.00,
+          "features": [
+            "Breathable fabric",
+            "Moisture-wicking",
+            "Versatile design"
+          ]
+        },
+        "premium_activewear": {
+          "primary_brands": [
+            "Zella",
+            "Vuori",
+            "Nike",
+            "On Running",
+            "The North Face"
+          ],
+          "key_pieces": {
+            "leggings": {
+              "Zella": ["Live In High Waist Leggings", "Studio Crop", "Restore Pocket Legging"],
+              "Vuori": ["Daily Legging", "Clean Elevation Legging", "Performance Legging"]
+            },
+            "tops": {
+              "Zella": ["Body Fusion Sports Bra", "Studio Tank", "Performance Quarter Zip"],
+              "Vuori": ["Elevation Performance Tank", "Halo Essential Tank", "Mindset Bra"]
+            }
+          }
+        },
+        "seasonal_essentials": {
+          "spring_summer": {
+            "Zella": ["Workout Dress", "Ventilated Tank", "Studio Bike Shorts"],
+            "Vuori": ["Sprint Short", "Ultra-Light Tank", "Performance Brief"]
+          },
+          "fall_winter": {
+            "Zella": ["Heated Running Jacket", "Thermal Leggings", "Studio Fleece"],
+            "Vuori": ["Sunday Performance Jogger", "Ponto Performance Crew", "Meta Fleece"]
+          }
+        }
+      }
+    }
+  },
+  "sustainability_commitment": {
+    "materials": ["Eco-friendly fabrics", "Recycled materials", "Organic Cotton", "Tencel", "Hemp", "Organic Linen"],
+    "practices": ["Ethical production", "Reduced carbon footprint", "Sustainable packaging"],
+    "certifications": ["GOTS", "Fair Trade", "OEKO-TEX"]
+  },
+  "brand_values": {
+    "design_philosophy": "Timeless designs blending with modern trends",
+    "quality_focus": "Premium fabrics and expert craftsmanship",
+    "customer_experience": "Excellence in service and reliability"
+  }
+}

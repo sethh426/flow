@@ -1,0 +1,21 @@
+{
+  "firestore": {
+    "rules": "../firestore.rules",
+    "indexes": "../firestore.indexes.json"
+  },
+  "functions": {
+    "source": "../services/neural-orchestrator",
+    "codebase": "neural-orchestrator",
+    "runtime": "nodejs20"
+  },
+  "hosting": {
+    "public": "../client/out",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "cleanUrls": true,
+    "trailingSlash": false
+  }
+}

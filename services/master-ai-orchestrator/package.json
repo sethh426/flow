@@ -1,0 +1,41 @@
+{
+  "name": "master-ai-orchestrator",
+  "version": "1.0.0",
+  "description": "🔥 Revolutionary Multi-Provider AI Orchestration System - Enterprise Grade",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "node test-orchestrator.js"
+  },
+  "keywords": [
+    "ai",
+    "orchestrator",
+    "multi-provider",
+    "llm",
+    "enterprise",
+    "revolutionary",
+    "workload-identity-federation",
+    "google-cloud"
+  ],
+  "author": "Affiliate Flow",
+  "license": "Proprietary",
+  "dependencies": {
+    "@google-cloud/firestore": "^7.7.0",
+    "@google-cloud/secret-manager": "^6.1.0",
+    "@google/generative-ai": "^0.7.1",
+    "google-auth-library": "^9.0.0",
+    "uuid": "^13.0.0",
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "private",
+    "url": "confidential"
+  }
+}

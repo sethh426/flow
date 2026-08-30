@@ -1,0 +1,19 @@
+{
+  "name": "flow-early-adopters",
+  "version": "1.0.0",
+  "description": "Flow Early Adopters Landing Page",
+  "scripts": {
+    "build": "node build.js",
+    "optimize:images": "node optimize-images.js",
+    "deploy": "npm run build && firebase deploy --config firebase.json --project flowearlyadopters --only hosting",
+    "dev": "npx http-server public -p 3000 -o",
+    "audit": "npx lighthouse https://flowearlyadopters.web.app --output html --output-path ./lighthouse-report.html"
+  },
+  "devDependencies": {
+    "clean-css": "^5.3.3",
+    "firebase": "^12.6.0",
+    "fs-extra": "^11.2.0",
+    "sharp": "^0.33.0",
+    "terser": "^5.27.0"
+  }
+}

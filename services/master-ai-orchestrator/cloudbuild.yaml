@@ -1,0 +1,78 @@
+steps:
+  # Install dependencies
+  - name: 'node:20'
+    entrypoint: npm
+    args: ['ci']
+    dir: 'services/master-ai-orchestrator'
+  
+  # Run tests
+  - name: 'node:20'
+    entrypoint: npm
+    args: ['test']
+    dir: 'services/master-ai-orchestrator'
+  
+  # Run linter
+  - name: 'node:20'
+    entrypoint: npm
+    args: ['run', 'lint']
+    dir: 'services/master-ai-orchestrator'
+  
+  # Security scanning
+  - name: 'aquasec/trivy'
+    args:
+      - 'fs'
+      - '--severity'
+      - 'HIGH,CRITICAL'
+      - '--exit-code'
+      - '1'
+      - 'services/master-ai-orchestrator'
+  
+  # Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/affiliate-flow-images/master-ai-orchestrator:$SHORT_SHA'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/affiliate-flow-images/master-ai-orchestrator:latest'
+      - '-f'
+      - 'services/master-ai-orchestrator/Dockerfile'
+      - 'services/master-ai-orchestrator'
+  
+  # Scan container image
+  - name: 'aquasec/trivy'
+    args:
+      - 'image'
+      - '--severity'
+      - 'HIGH,CRITICAL'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/affiliate-flow-images/master-ai-orchestrator:$SHORT_SHA'
+  
+  # Push to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '--all-tags'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/affiliate-flow-images/master-ai-orchestrator'
+  
+  # Deploy to GKE
+  - name: 'gcr.io/cloud-builders/gke-deploy'
+    args:
+      - 'run'
+      - '--filename=infrastructure/kubernetes/manifests/master-ai-orchestrator.yaml'
+      - '--image=${_REGION}-docker.pkg.dev/$PROJECT_ID/affiliate-flow-images/master-ai-orchestrator:$SHORT_SHA'
+      - '--location=${_REGION}'
+      - '--cluster=affiliate-flow-cluster'
+      - '--namespace=affiliate-flow'
+
+images:
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/affiliate-flow-images/master-ai-orchestrator:$SHORT_SHA'
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/affiliate-flow-images/master-ai-orchestrator:latest'
+
+substitutions:
+  _REGION: us-central1
+
+options:
+  machineType: 'N1_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
+  
+timeout: '1200s'

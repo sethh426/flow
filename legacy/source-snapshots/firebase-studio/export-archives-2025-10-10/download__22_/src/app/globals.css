@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 83% 4%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 224 71% 4%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 263.4 95.2% 66.3%;
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 25.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 263.4 95.2% 66.3%;
+
+    --chart-1: 263.4 95.2% 66.3%;
+    --chart-2: 180 66% 46%;
+    --chart-3: 45 80% 70%;
+    --chart-4: 217 91% 80%;
+    --chart-5: 30 66% 66%;
+
+    --radius: 0.8rem;
+  }
+
+  .dark {
+    --background: 222 83% 4%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 224 71% 4%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 263.4 95.2% 66.3%;
+    --primary-foreground: 222 47% 11%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 25.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 263.4 95.2% 66.3%;
+
+    --chart-1: 263.4 95.2% 66.3%;
+    --chart-2: 180 66% 46%;
+    --chart-3: 45 80% 70%;
+    --chart-4: 217 91% 80%;
+    --chart-5: 30 66% 66%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sans);
+  }
+}
+
+@layer components {
+  .card-interactive {
+    @apply transition-all duration-200 ease-in-out;
+  }
+  .card-interactive:hover {
+      @apply -translate-y-1;
+      box-shadow: 0 10px 15px -3px hsla(var(--primary), 0.1), 0 4px 6px -4px hsla(var(--primary), 0.1);
+      border-color: hsl(var(--primary) / 0.5);
+  }
+}

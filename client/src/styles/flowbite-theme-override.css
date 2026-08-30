@@ -1,0 +1,364 @@
+/* ============================================
+   FLOWBITE COMPONENT THEME OVERRIDES
+   Apply universal theme to all Flowbite components
+   ============================================ */
+
+/* Override Flowbite's default text colors for better readability */
+
+/* Button text - context-aware colors */
+/* Primary/colored buttons get white text */
+button[class*="bg-blue"],
+button[class*="bg-purple"],
+button[class*="bg-green"],
+button[class*="bg-red"],
+button[class*="bg-yellow"],
+button[class*="bg-indigo"],
+button[type="submit"]:not([class*="bg-gray"]) {
+  font-weight: 600 !important;
+  color: white !important;
+}
+
+/* Gray/neutral buttons use theme text color */
+button[class*="bg-gray"],
+button[class*="bg-white"],
+button:not([class*="bg-"]) {
+  font-weight: 600 !important;
+  color: var(--text-primary) !important;
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  button[class*="bg-gray"] {
+    color: var(--text-primary) !important;
+  }
+}
+
+/* Card components */
+[class*="card"], [class*="Card"] {
+  background-color: var(--bg-paper) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-default) !important;
+}
+
+/* Card headers and titles */
+[class*="card"] h1,
+[class*="card"] h2,
+[class*="card"] h3,
+[class*="card"] h4,
+[class*="card"] h5,
+[class*="card"] h6,
+[class*="Card"] h1,
+[class*="Card"] h2,
+[class*="Card"] h3,
+[class*="Card"] h4,
+[class*="Card"] h5,
+[class*="Card"] h6 {
+  color: var(--text-primary) !important;
+}
+
+/* Card body text */
+[class*="card"] p,
+[class*="Card"] p {
+  color: var(--text-secondary) !important;
+}
+
+/* ============================================
+   TAILWIND UTILITY CLASS PROTECTION
+   Ensure Tailwind color utilities work correctly
+   ============================================ */
+
+/* Protect Tailwind text color utilities from being overridden */
+.text-gray-700 {
+  color: rgb(55, 65, 81) !important;
+}
+
+.text-gray-900 {
+  color: rgb(17, 24, 39) !important;
+}
+
+.dark .dark\:text-gray-100 {
+  color: rgb(243, 244, 246) !important;
+}
+
+.dark .dark\:text-gray-300 {
+  color: rgb(209, 213, 219) !important;
+}
+
+/* Ensure gradient text works */
+.bg-clip-text {
+  background-clip: text !important;
+  -webkit-background-clip: text !important;
+}
+
+.text-transparent {
+  color: transparent !important;
+}
+
+/* Labels - high contrast */
+label {
+  color: var(--text-primary) !important;
+  font-weight: 500 !important;
+}
+
+/* Input fields */
+input, textarea, select {
+  background-color: var(--bg-paper) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-default) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-tertiary) !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Dropdowns and Selects */
+[role="listbox"],
+[role="menu"],
+.dropdown-menu {
+  background-color: var(--bg-paper) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+[role="option"],
+.dropdown-item {
+  color: var(--text-primary) !important;
+}
+
+[role="option"]:hover,
+.dropdown-item:hover {
+  background-color: var(--bg-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Tables */
+table {
+  color: var(--text-primary) !important;
+}
+
+thead {
+  background-color: var(--bg-subtle) !important;
+  color: var(--text-primary) !important;
+}
+
+tbody tr {
+  border-color: var(--border-light) !important;
+  color: var(--text-secondary) !important;
+}
+
+tbody tr:hover {
+  background-color: var(--bg-hover) !important;
+}
+
+th {
+  color: var(--text-primary) !important;
+  font-weight: 600 !important;
+}
+
+td {
+  color: var(--text-secondary) !important;
+}
+
+/* Badges and Pills */
+.badge, [class*="badge"] {
+  font-weight: 600 !important;
+}
+
+/* Navbar and Sidebar */
+nav {
+  background-color: var(--bg-paper) !important;
+  border-color: var(--border-default) !important;
+}
+
+nav a {
+  color: var(--text-secondary) !important;
+}
+
+nav a:hover,
+nav a.active {
+  color: var(--text-primary) !important;
+  background-color: var(--bg-hover) !important;
+}
+
+/* Sidebar items */
+.sidebar-item,
+[class*="sidebar"] a {
+  color: var(--text-secondary) !important;
+}
+
+.sidebar-item:hover,
+.sidebar-item.active,
+[class*="sidebar"] a:hover,
+[class*="sidebar"] a.active {
+  color: var(--text-primary) !important;
+  background-color: var(--bg-hover) !important;
+}
+
+/* Modals and Dialogs */
+[role="dialog"],
+.modal {
+  background-color: var(--bg-paper) !important;
+  color: var(--text-primary) !important;
+}
+
+.modal-header,
+.modal-title {
+  color: var(--text-primary) !important;
+}
+
+.modal-body {
+  color: var(--text-secondary) !important;
+}
+
+/* Alerts and Notifications */
+.alert {
+  border-radius: 0.5rem !important;
+}
+
+.alert-info {
+  background-color: rgba(99, 102, 241, 0.1) !important;
+  color: var(--text-primary) !important;
+  border-color: rgba(99, 102, 241, 0.3) !important;
+}
+
+.alert-success {
+  background-color: rgba(16, 185, 129, 0.1) !important;
+  color: var(--text-primary) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+.alert-warning {
+  background-color: rgba(245, 158, 11, 0.1) !important;
+  color: var(--text-primary) !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+.alert-error,
+.alert-danger {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+  color: var(--text-primary) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+/* Tooltips */
+[role="tooltip"] {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-default) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+/* Tabs */
+[role="tablist"] {
+  border-color: var(--border-default) !important;
+}
+
+[role="tab"] {
+  color: var(--text-secondary) !important;
+}
+
+[role="tab"]:hover {
+  color: var(--text-primary) !important;
+}
+
+[role="tab"][aria-selected="true"] {
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  font-weight: 600 !important;
+}
+
+/* Breadcrumbs */
+.breadcrumb,
+nav[aria-label="Breadcrumb"] {
+  color: var(--text-secondary) !important;
+}
+
+.breadcrumb a {
+  color: var(--text-secondary) !important;
+}
+
+.breadcrumb a:hover {
+  color: var(--text-primary) !important;
+}
+
+.breadcrumb-item.active {
+  color: var(--text-primary) !important;
+  font-weight: 500 !important;
+}
+
+/* Progress bars */
+.progress {
+  background-color: var(--bg-subtle) !important;
+}
+
+/* Spinners and Loaders */
+.spinner,
+[class*="spinner"] {
+  color: var(--primary) !important;
+}
+
+/* Stats and Metrics */
+.stat-value,
+.metric-value {
+  color: var(--text-primary) !important;
+  font-weight: 700 !important;
+}
+
+.stat-label,
+.metric-label {
+  color: var(--text-tertiary) !important;
+  font-size: 0.875rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+}
+
+/* Icon text pairing */
+.icon-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary) !important;
+}
+
+.icon-text svg {
+  color: var(--text-tertiary) !important;
+}
+
+/* Description lists */
+dt {
+  color: var(--text-primary) !important;
+  font-weight: 600 !important;
+}
+
+dd {
+  color: var(--text-secondary) !important;
+}
+
+/* Code blocks */
+code {
+  background-color: var(--bg-subtle) !important;
+  color: var(--text-primary) !important;
+  padding: 0.125rem 0.375rem !important;
+  border-radius: 0.25rem !important;
+  font-family: var(--font-geist-mono), monospace !important;
+  font-size: 0.875em !important;
+}
+
+pre {
+  background-color: var(--bg-subtle) !important;
+  color: var(--text-primary) !important;
+  padding: 1rem !important;
+  border-radius: 0.5rem !important;
+  overflow-x: auto !important;
+}
+
+pre code {
+  background-color: transparent !important;
+  padding: 0 !important;
+}

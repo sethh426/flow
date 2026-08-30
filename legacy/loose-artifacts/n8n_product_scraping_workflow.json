@@ -1,0 +1,184 @@
+{
+    "nodes": [
+        {
+            "name": "Manual Trigger",
+            "type": "n8n-nodes-base.manualTrigger",
+            "parameters": {},
+            "position": [
+                200,
+                300
+            ]
+        },
+        {
+            "name": "Run Apify Web Scraper",
+            "type": "n8n-nodes-base.apify",
+            "parameters": {
+                "action": "task",
+                "taskId": "luxcognita/legacy-phantomjs-crawler-task"
+            },
+            "position": [
+                400,
+                300
+            ]
+        },
+        {
+            "name": "Filter In-Stock Products",
+            "type": "n8n-nodes-base.filter",
+            "parameters": {
+                "conditions": {
+                    "boolean": [
+                        {
+                            "value1": "={{$json[\"inStock\"]}}",
+                            "operation": "isTrue"
+                        }
+                    ]
+                }
+            },
+            "position": [
+                600,
+                300
+            ]
+        },
+        {
+            "name": "Categorize Products with ChatGPT",
+            "type": "n8n-nodes-base.openai",
+            "parameters": {
+                "model": "gpt-4",
+                "instruction": "Categorize this product into one of these collections: Episteme Knowledge (Wool Blazers, Cardigans), Logos Essentials (Minimalist Cotton Apparel), Arete Excellence (Luxury Suits, Accessories), Sophia Wisdom (Sustainable Fashion), Active Essentials (Performance Wear)."
+            },
+            "position": [
+                800,
+                300
+            ]
+        },
+        {
+            "name": "Save to Google Sheets",
+            "type": "n8n-nodes-base.googleSheets",
+            "parameters": {
+                "operation": "append",
+                "sheetId": "your-google-sheet-id",
+                "range": "Sheet1!A:E",
+                "values": "={{$json}}"
+            },
+            "position": [
+                1000,
+                300
+            ]
+        },
+        {
+            "name": "Send Slack Approval Message",
+            "type": "n8n-nodes-base.slack",
+            "parameters": {
+                "channel": "your-slack-channel",
+                "text": "New product scraped: {{$json[\"productName\"]}}. Approve or reject?",
+                "attachments": [
+                    {
+                        "fallback": "Approve or Reject?",
+                        "actions": [
+                            {
+                                "name": "approve",
+                                "text": "Approve",
+                                "type": "button",
+                                "value": "approve"
+                            },
+                            {
+                                "name": "reject",
+                                "text": "Reject",
+                                "type": "button",
+                                "value": "reject"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "position": [
+                1200,
+                300
+            ]
+        },
+        {
+            "name": "Upload Approved Products to Shopify",
+            "type": "n8n-nodes-base.shopify",
+            "parameters": {
+                "operation": "createProduct",
+                "productTitle": "={{$json[\"productName\"]}}",
+                "productDescription": "={{$json[\"productDescription\"]}}",
+                "productType": "={{$json[\"category\"]}}",
+                "variants": "={{$json[\"variants\"]}}",
+                "status": "draft"
+            },
+            "position": [
+                1400,
+                300
+            ],
+            "conditions": {
+                "boolean": [
+                    {
+                        "value1": "={{$json[\"approval\"]}}",
+                        "operation": "equal",
+                        "value2": "approve"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Send Final Notifications",
+            "type": "n8n-nodes-base.email",
+            "parameters": {
+                "to": "your-email@example.com",
+                "subject": "Final Product List",
+                "body": "Here is the final list of approved products: {{$json[\"productList\"]}}"
+            },
+            "position": [
+                1600,
+                300
+            ]
+        },
+        {
+            "name": "Send Slack Final Update",
+            "type": "n8n-nodes-base.slack",
+            "parameters": {
+                "channel": "your-slack-channel",
+                "text": "Final product list updated. Check email for details."
+            },
+            "position": [
+                1800,
+                300
+            ]
+        }
+    ],
+    "connections": [
+        {
+            "from": "Manual Trigger",
+            "to": "Run Apify Web Scraper"
+        },
+        {
+            "from": "Run Apify Web Scraper",
+            "to": "Filter In-Stock Products"
+        },
+        {
+            "from": "Filter In-Stock Products",
+            "to": "Categorize Products with ChatGPT"
+        },
+        {
+            "from": "Categorize Products with ChatGPT",
+            "to": "Save to Google Sheets"
+        },
+        {
+            "from": "Save to Google Sheets",
+            "to": "Send Slack Approval Message"
+        },
+        {
+            "from": "Send Slack Approval Message",
+            "to": "Upload Approved Products to Shopify"
+        },
+        {
+            "from": "Upload Approved Products to Shopify",
+            "to": "Send Final Notifications"
+        },
+        {
+            "from": "Send Final Notifications",
+            "to": "Send Slack Final Update"
+        }
+    ]
+}

@@ -1,0 +1,51 @@
+// Spring Roo Script for Integration Service
+// Run: roo script --file integration-entities.roo
+
+// JPA Setup
+jpa setup --provider HIBERNATE --database H2_IN_MEMORY
+
+// Connector Configuration Entity
+entity jpa --class com.affiliateflow.integration.domain.ConnectorConfig
+field string --fieldName connectorId --notNull
+field string --fieldName connectorName --notNull
+field string --fieldName connectorType
+field string --fieldName endpoint
+field string --fieldName apiKey
+field boolean --fieldName isActive
+field date --fieldName lastSync --type java.time.LocalDateTime
+field string --fieldName status
+
+// Sync Log Entity
+entity jpa --class com.affiliateflow.integration.domain.SyncLog
+field string --fieldName connectorId --notNull
+field date --fieldName syncTime --type java.time.LocalDateTime
+field number --fieldName recordsSynced --type java.lang.Long
+field number --fieldName recordsFailed --type java.lang.Long
+field string --fieldName status
+field string --fieldName errorMessage
+
+// External Product Entity
+entity jpa --class com.affiliateflow.integration.domain.ExternalProduct
+field string --fieldName externalId --notNull
+field string --fieldName connectorId --notNull
+field string --fieldName name
+field number --fieldName price --type java.math.BigDecimal
+field string --fieldName url
+field string --fieldName imageUrl
+field date --fieldName lastUpdated --type java.time.LocalDateTime
+field string --fieldName rawData
+
+// Generate Repositories
+repository jpa --entity com.affiliateflow.integration.domain.ConnectorConfig --interface com.affiliateflow.integration.repository.ConnectorConfigRepository
+repository jpa --entity com.affiliateflow.integration.domain.SyncLog --interface com.affiliateflow.integration.repository.SyncLogRepository
+repository jpa --entity com.affiliateflow.integration.domain.ExternalProduct --interface com.affiliateflow.integration.repository.ExternalProductRepository
+
+// Generate Services
+service --entity com.affiliateflow.integration.domain.ConnectorConfig --interface com.affiliateflow.integration.service.ConnectorConfigService
+service --entity com.affiliateflow.integration.domain.SyncLog --interface com.affiliateflow.integration.service.SyncLogService
+service --entity com.affiliateflow.integration.domain.ExternalProduct --interface com.affiliateflow.integration.service.ExternalProductService
+
+// Generate REST Controllers
+web mvc rest controller --entity com.affiliateflow.integration.domain.ConnectorConfig
+web mvc rest controller --entity com.affiliateflow.integration.domain.SyncLog
+web mvc rest controller --entity com.affiliateflow.integration.domain.ExternalProduct

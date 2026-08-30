@@ -1,0 +1,1 @@
+This file is for verifying your connection to the AffiliateFlow project in Firebase Studio. Project ID hint: affiliateflow-abzfy. This is the second verification check.

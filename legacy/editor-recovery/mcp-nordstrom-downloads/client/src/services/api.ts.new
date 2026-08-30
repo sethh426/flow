@@ -1,0 +1,49 @@
+import axios from 'axios';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+});
+
+export interface Product {
+  id: string;
+  name: string;
+  category: string;
+  price: string;
+  status: 'pending' | 'mapped';
+  source: string;
+  approved: boolean;
+  timestamp: string;
+}
+
+export interface Stats {
+  totalProducts: number;
+  mappedProducts: number;
+  pendingProducts: number;
+  mappingRate: string;
+  lastUpdateTime: string;
+}
+
+export interface Category {
+  name: string;
+  count: number;
+  source: 'trending' | 'new';
+}
+
+export const productService = {
+  async getProducts(): Promise<Product[]> {
+    const response = await api.get('/api/products');
+    return response.data;
+  },
+
+  async getCategories(): Promise<Category[]> {
+    const response = await api.get('/api/categories');
+    return response.data;
+  },
+
+  async getStats(): Promise<Stats> {
+    const response = await api.get('/api/stats');
+    return response.data;
+  }
+};

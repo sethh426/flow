@@ -1,0 +1,61 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             request.auth.token.admin == true;
+    }
+    
+    function isServiceAccount() {
+      return request.auth != null && 
+             request.auth.token.email != null &&
+             request.auth.token.email.matches('.*@.*gserviceaccount.com$');
+    }
+    
+    // Model Performance - Read for authenticated users, write for service accounts
+    match /model_performance/{documentId} {
+      allow read: if isAuthenticated();
+      allow write: if isServiceAccount();
+    }
+    
+    // Routing Cache - Service accounts only (internal cache)
+    match /routing_cache/{documentId} {
+      allow read, write: if isServiceAccount();
+    }
+    
+    // Routing Decisions - Read for authenticated users, write for service accounts
+    match /routing_decisions/{documentId} {
+      allow read: if isAuthenticated();
+      allow write: if isServiceAccount();
+    }
+    
+    // Routing Decisions Archive - Read for admins, write for service accounts
+    match /routing_decisions_archive/{documentId} {
+      allow read: if isAdmin();
+      allow write: if isServiceAccount();
+    }
+    
+    // Performance Aggregates - Read for authenticated users, write for service accounts
+    match /performance_aggregates/{documentId} {
+      allow read: if isAuthenticated();
+      allow write: if isServiceAccount();
+    }
+    
+    // Rate Limits - Service accounts only (internal tracking)
+    match /rate_limits/{documentId} {
+      allow read, write: if isServiceAccount();
+    }
+    
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
