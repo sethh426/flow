@@ -1,8 +1,8 @@
 # Flow: current state and structure
 
-Assessment date: 2026-08-30  
-Assessed source commit: `fb8f0d0dd844ea8c70af75051f7e35ea472d4a3c` on `main`  
-Repository: <https://github.com/sethh426/flow>
+- Assessment date: 2026-08-30
+- Assessed source commit: `fb8f0d0dd844ea8c70af75051f7e35ea472d4a3c` on `main`
+- Repository: <https://github.com/sethh426/flow>
 
 ## Executive assessment
 
