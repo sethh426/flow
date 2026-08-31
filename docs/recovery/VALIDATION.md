@@ -1,6 +1,6 @@
 # Recovery validation
 
-Validation performed on 2026-08-30 after consolidation and credential scrubbing.
+Validation performed on 2026-08-30 after consolidation and credential scrubbing; backend hardening checks updated on 2026-08-31.
 
 ## Passing checks
 
@@ -14,6 +14,10 @@ Validation performed on 2026-08-30 after consolidation and credential scrubbing.
 - JSON validation: 82 staged JSON files parse as strict JSON. Three configuration files intentionally use JSON-with-comments syntax (`tsconfig.json`, `tsconfig.node.json`, and a VS Code `tasks.json`).
 - All four GitHub Actions workflow files parse as YAML.
 - Raw archives, environment files, Terraform variables/state, dependency trees, caches, and generated Java/Next.js output are ignored and will not be committed.
+- Trend Finder's lockfile installs successfully; `npm run check --prefix services/trend-finder` passes for its entry and Firebase helper.
+- Trend Finder HTTP smoke test: `/health` returned 200, `/ready` returned 503 without Gemini configuration, and unauthenticated `/find` returned 401 before any billable call.
+- `node --check` passes for the recovered Firebase function API and MCP integration entry files.
+- The direct Trend Finder secret-return endpoint was removed, moderation routes now require verified admin claims, and active personal machine paths were replaced with repository-relative or environment configuration.
 
 Two malformed active-source function names that prevented TypeScript from parsing were repaired during validation: `recommendByPriceRange` and `analyzeBundlePerformance`.
 
@@ -24,5 +28,6 @@ Two malformed active-source function names that prevented TypeScript from parsin
 - The Next.js build succeeds because the recovered build configuration skips type and lint validation. During static generation it logs a handled invalid relative URL for `/api/intelligence/predict-content` and correctly warns that Firebase environment variables are absent.
 - Client dependency audit: 61 advisories (1 low, 31 moderate, 23 high, 6 critical).
 - Early-adopter dependency audit: 5 advisories (1 moderate, 2 high, 2 critical).
+- Trend Finder dependency audit: 12 advisories (10 moderate, 2 high).
 
 No automatic breaking-version upgrade was applied during recovery. Dependency upgrades, type repair, lint-baseline reduction, and the static-generation API call should be handled as follow-up engineering work so the recovered behavior is not silently changed.

@@ -1,6 +1,6 @@
 # Flow: current state and structure
 
-- Assessment date: 2026-08-30
+- Assessment date: 2026-08-31
 - Inventory baseline commit: `fb8f0d0dd844ea8c70af75051f7e35ea472d4a3c` on `main`; the report and Firebase build guard were added afterward
 - Repository: <https://github.com/sethh426/flow>
 
@@ -25,7 +25,7 @@ The right current label is **recovered engineering baseline with a buildable fro
 | Backend services | Recovered, only partially verified | Multiple Node.js, TypeScript, Python, Java, Express, Flask, WebSocket, and Firebase services are present. They were not all installed, built, integrated, or deployed during recovery. |
 | Early-adopter site source | Build passing | The static site's local build succeeds. Its current source no longer embeds a Gemini key and disables the legacy client-side admin flow. |
 | Live early-adopter deployment | Online but needs remediation | `flowearlyadopters.web.app` returned HTTP 200 during recovery, but the deployed HTML differs from the safe local source and contained an old browser-side Gemini key. Rotate the key before redeploying. |
-| CI | Passing, narrow scope | The `Recovery integrity` GitHub Action passes a common-secret-format scan, installs the client, and builds it. It does not run type checking, linting, tests, dependency audits, or backend builds. |
+| CI | Passing, narrow scope | The `Recovery integrity` GitHub Action scans common secret formats, checks recovered backend entry points, installs/checks Trend Finder, and installs/builds the client. It does not run type checking, linting, end-to-end tests, dependency-policy enforcement, or the other service builds. |
 | Deployment automation | Contained | Imported Firebase, Cloud Run, and Terraform workflows are manual-only (`workflow_dispatch`). Their destinations and credentials still require review. |
 | Dependency security | Needs work | Client audit: 61 advisories (1 low, 31 moderate, 23 high, 6 critical). Early-adopter audit: 5 (1 moderate, 2 high, 2 critical). |
 
@@ -126,11 +126,11 @@ The backend is better understood as several recovered generations of the archite
 | `services/ai-orchestrator/` | JavaScript class module | Task-specific LLM orchestration and conversation logging | Single source file with no local package manifest; library/prototype status |
 | `services/image-generator/` | Python, Flask | Image generation/editing and product/social variants | Includes Docker/start/test files; not installed or run during recovery |
 | `services/product-mapper/` | Node.js, Express | Product normalization/mapping | Small containerized service; not verified |
-| `services/trend-finder/` | Node.js, Express | Gemini trend discovery and Firestore persistence | Contains a secret-returning endpoint; deployment blocked |
+| `services/trend-finder/` | Node.js 20, Express | Gemini trend discovery and Firestore persistence | Secret-returning endpoint removed; `/find` now requires a verified Firebase ID token; deployment integration still unproven |
 | `services/vision-analyzer/` | Node.js, Express | Image analysis, OCR, and safety checks | Has health/test source; not verified |
 | `services/workflow-executor/` | Node.js, Express | Workflow/webhook execution and status | Has health endpoint; not verified |
 | `services/java/*` | Java 21, Spring Boot 3.3.5 | Analytics, batch/data processing, and external integrations | Three Maven services recovered; not built in current validation |
-| `functions/` | Node.js, Firebase Functions, Express | Dashboard stats and product approve/reject API | Older parallel implementation; mutations lack auth and it is not root Firebase's selected source |
+| `functions/` | Node.js, Firebase Functions, Express | Dashboard stats and product approve/reject API | Older parallel implementation; reads now require a verified user and moderation requires an admin claim; it is not root Firebase's selected source |
 | `trend-sources/` and `workflows/` | JavaScript/YAML | Trend ingestion and pipeline definitions | Present but not exercised as a complete pipeline |
 
 There are at least five overlapping AI coordination concepts (`ai-orchestrator`, `flow-orchestrator`, `master-ai-orchestrator`, `neural-orchestrator`, and `smart-ai-router`). Before adding features, choose a canonical request path and mark the others as libraries, experiments, or archived implementations.
@@ -164,13 +164,24 @@ Do not deploy the consolidated repository over the live site until the key is ro
 
 ## Security and deployment blockers
 
-The committed tree passes the repository's known-secret-format scanner, but credential scrubbing is only one layer. Static review found these immediate blockers:
+The committed tree passes the repository's known-secret-format scanner, but credential scrubbing is only one layer.
+
+Source controls completed on 2026-08-31:
+
+- removed the `GET /apify-token` endpoint and its Secret Manager dependency from Trend Finder;
+- required a verified Firebase ID token for the billable `/find` operation and recorded the requesting user on new trend documents;
+- required verified users for the recovered `functions/` data API and an `admin` or `role: admin` custom claim for product moderation;
+- replaced permissive CORS with an explicit `ALLOWED_ORIGINS` list in the recovered function API;
+- replaced active MCP, launch, and Java-setup personal Windows paths and credential locations with repository-relative or optional environment configuration;
+- moved Trend Finder to Application Default Credentials/workload identity conventions, Node.js 20, locked dependencies, bounded JSON/query input, and matching health/readiness endpoints.
+
+Immediate deployment blockers that remain:
 
 1. **Rotate exposed credentials.** Revoke the Gemini key found in the live early-adopter HTML and every service-account key that appeared in the old repository or archives.
-2. **Remove secret disclosure.** `services/trend-finder/index.js` exposes `GET /apify-token`, which reads `APIFY_TOKEN` from Secret Manager and returns it to the caller. The endpoint must be removed; the service should use the token internally.
-3. **Add backend authorization.** `functions/index.js` permits product approval/rejection with permissive CORS and no authentication or role check. Other service endpoints also need a systematic auth, authorization, rate-limit, validation, and CORS review.
-4. **Replace hard-coded machine paths.** `services/mcp-integration/index.js` refers to local Windows paths and an old service-account location. It is not portable or safe as a deployment configuration.
-5. **Review Firebase rules and project IDs.** Recovered configurations reference several projects and generations. Confirm ownership, least privilege, billing protections, and environment separation before running any workflow.
+2. **Provision and test access control.** Set trusted admin custom claims, configure allowed origins, and update service callers to send Firebase ID tokens before enabling the hardened endpoints.
+3. **Audit the selected backend.** The controls above cover the specifically identified recovered endpoints, not every service. The eventual canonical backend still needs systematic authentication, authorization, rate-limit, validation, and CORS review.
+4. **Review Firebase rules and project IDs.** Recovered configurations reference several projects and generations. Confirm ownership, least privilege, billing protections, and environment separation before running any workflow.
+5. **Resolve service dependency debt.** Trend Finder installs reproducibly but reports 12 advisories (10 moderate, 2 high); upgrade and retest before deployment.
 6. **Keep deployment workflows manual.** Do not enable push-triggered deployment until the runtime topology and credentials are settled.
 
 See [SECURITY.md](../SECURITY.md) for the repository rules. This recovery review was not a comprehensive penetration test; any internet-facing service still requires a focused security review.
@@ -182,6 +193,9 @@ What is proven:
 - the committed main client installs and builds on Windows and in GitHub Actions without requiring Firebase credentials at build time;
 - the early-adopter site installs and builds locally;
 - the portable committed-file secret scan passes;
+- the Trend Finder package installs from its lockfile and its JavaScript entry/configuration files pass syntax checks;
+- a local Trend Finder HTTP smoke test returns `200` for health, `503` for readiness without Gemini configuration, and `401` for an unauthenticated `/find` request;
+- the recovered Firebase function and MCP integration entry files pass JavaScript syntax checks;
 - JSON/YAML recovery validation passed for the documented files.
 
 What is not yet proven:
@@ -194,7 +208,7 @@ What is not yet proven:
 - an end-to-end path from onboarding through product selection, content generation, scheduling, publishing, and analytics;
 - safe production deployment or rollback.
 
-The current integrity workflow should eventually be expanded in stages: type checking, a controlled lint baseline, unit/service builds, dependency policy, Firebase emulator tests, then a small Playwright smoke suite. Enabling every historical check at once would produce too much noise to be actionable.
+The integrity workflow now covers the recovered backend entry points and Trend Finder in addition to the client. It should still be expanded in stages: type checking, a controlled lint baseline, remaining unit/service builds, dependency policy, Firebase emulator tests, then a small Playwright smoke suite. Enabling every historical check at once would produce too much noise to be actionable.
 
 ## Recovery corpus and documentation reliability
 
@@ -207,7 +221,7 @@ The repository root includes many historical documents with names such as `ALL_S
 ### P0: before any backend or early-adopter deployment
 
 1. Rotate/revoke the exposed Gemini and historical service-account credentials.
-2. Delete the `/apify-token` response path and add authentication/authorization to every write or billable endpoint.
+2. Configure and integration-test the new identity, admin-claim, allowed-origin, and workload-identity paths; the direct source flaws are closed.
 3. Confirm Firebase/GCP project ownership, billing limits, secret storage, Firestore rules, and deploy identities.
 4. Back up the currently deployed early-adopter site, build the safe local source, preview it, then redeploy intentionally.
 

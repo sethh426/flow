@@ -4,22 +4,64 @@ const express = require('express');
 const cors = require('cors');
 
 // Initialize Firebase Admin
-admin.initializeApp();
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
 const db = admin.firestore();
 
 // Create Express app
 const app = express();
 
 // Middleware
-app.use(cors({ origin: true }));
-app.use(express.json());
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
+
+app.disable('x-powered-by');
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Origin is not allowed by CORS.'));
+  },
+}));
+app.use(express.json({ limit: '64kb' }));
+
+async function requireUser(req, res, next) {
+  const authorization = req.get('authorization') || '';
+  const match = authorization.match(/^Bearer\s+(.+)$/i);
+
+  if (!match) {
+    return res.status(401).json({ error: 'A Firebase ID token is required.' });
+  }
+
+  try {
+    req.user = await admin.auth().verifyIdToken(match[1]);
+    return next();
+  } catch (error) {
+    console.warn('Rejected an invalid Firebase ID token:', error.message);
+    return res.status(401).json({ error: 'The Firebase ID token is invalid or expired.' });
+  }
+}
+
+function requireAdmin(req, res, next) {
+  const isAdmin = req.user?.admin === true || req.user?.role === 'admin';
+  if (!isAdmin) {
+    return res.status(403).json({ error: 'Administrator access is required.' });
+  }
+
+  return next();
+}
 
 // Simple health check endpoint
 app.get('/', (req, res) => {
   res.json({
     message: 'AffiliateFlow API is running.',
+    authentication: 'Protected routes require a Firebase ID token.',
     endpoints: [
-      'GET /products',
       'GET /stats',
       'GET /categories',
       'GET /products/pending',
@@ -30,7 +72,7 @@ app.get('/', (req, res) => {
 });
 
 // Get stats for dashboard
-app.get('/stats', async (req, res) => {
+app.get('/stats', requireUser, async (req, res) => {
   try {
     const doc = await db.collection('stats').doc('current').get();
     
@@ -47,7 +89,7 @@ app.get('/stats', async (req, res) => {
 });
 
 // Get categories with counts for dashboard
-app.get('/categories', async (req, res) => {
+app.get('/categories', requireUser, async (req, res) => {
   try {
     const statsDoc = await db.collection('stats').doc('current').get();
     const stats = statsDoc.data();
@@ -71,10 +113,11 @@ app.get('/categories', async (req, res) => {
 });
 
 // Get all products with 'pending' status
-app.get('/products/pending', async (req, res) => {
+app.get('/products/pending', requireUser, requireAdmin, async (req, res) => {
   try {
     const productsRef = db.collection('products');
-    const limit = parseInt(req.query.limit, 10) || 10;
+    const requestedLimit = parseInt(req.query.limit, 10) || 10;
+    const limit = Math.min(Math.max(requestedLimit, 1), 100);
     const lastVisibleTimestamp = req.query.lastVisible;
 
     let query = productsRef
@@ -104,7 +147,7 @@ app.get('/products/pending', async (req, res) => {
 });
 
 // Approve a product
-app.post('/products/:id/approve', async (req, res) => {
+app.post('/products/:id/approve', requireUser, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const productRef = db.collection('products').doc(id);
@@ -117,7 +160,7 @@ app.post('/products/:id/approve', async (req, res) => {
 });
 
 // Reject a product
-app.post('/products/:id/reject', async (req, res) => {
+app.post('/products/:id/reject', requireUser, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const productRef = db.collection('products').doc(id);
@@ -127,6 +170,14 @@ app.post('/products/:id/reject', async (req, res) => {
     console.error(`Failed to reject product ${req.params.id}:`, error);
     res.status(500).json({ message: 'Failed to reject product.', error: error.message });
   }
+});
+
+app.use((error, req, res, next) => {
+  if (error.message === 'Origin is not allowed by CORS.') {
+    return res.status(403).json({ error: error.message });
+  }
+
+  return next(error);
 });
 
 // Export the Express app as a Cloud Function

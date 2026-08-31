@@ -4,6 +4,7 @@
  */
 
 import { spawn } from 'child_process';
+import { randomUUID } from 'node:crypto';
 import { Firestore } from '@google-cloud/firestore';
 import fs from 'fs/promises';
 import path from 'path';
@@ -14,6 +15,9 @@ class MCPIntegration {
     this.servers = new Map();
     this.productCache = new Map();
     this.cacheTimeout = 5 * 60 * 1000; // 5 minutes
+    this.productDataPath = process.env.MCP_PRODUCT_DATA_PATH;
+    this.firebaseProjectId = process.env.MCP_FIREBASE_PROJECT_ID;
+    this.firebaseServiceAccountPath = process.env.MCP_FIREBASE_SERVICE_ACCOUNT_PATH;
   }
 
   /**
@@ -41,9 +45,16 @@ class MCPIntegration {
    * Initialize filesystem MCP server for Nordstrom data access
    */
   async initializeFilesystemServer() {
+    if (!this.productDataPath) {
+      console.warn('[MCP Integration] MCP_PRODUCT_DATA_PATH is not set, skipping filesystem server');
+      return;
+    }
+
+    await fs.access(this.productDataPath);
+
     const config = {
       command: 'npx',
-      args: ['-y', '@modelcontextprotocol/server-filesystem', 'C:\\Users\\sethp\\Downloads\\mcp-nordstrom']
+      args: ['-y', '@modelcontextprotocol/server-filesystem', this.productDataPath]
     };
 
     const server = await this.spawnMCPServer('filesystem', config);
@@ -56,24 +67,20 @@ class MCPIntegration {
    * Initialize Firebase MCP server for Nordstrom scraper project
    */
   async initializeFirebaseServer() {
-    const serviceAccountPath = 'C:\\Users\\sethp\\Downloads\\mcp-nordstrom\\serviceAccountKey.json';
-
-    // Check if service account file exists
-    try {
-      await fs.access(serviceAccountPath);
-    } catch (error) {
-      console.warn('[MCP Integration] Service account file not found, skipping Firebase MCP server');
+    if (!this.firebaseProjectId) {
+      console.warn('[MCP Integration] MCP_FIREBASE_PROJECT_ID is not set, skipping Firebase MCP server');
       return;
+    }
+
+    const args = ['-y', '@firebase/mcp-server', '--project', this.firebaseProjectId];
+    if (this.firebaseServiceAccountPath) {
+      await fs.access(this.firebaseServiceAccountPath);
+      args.push('--serviceAccountKey', this.firebaseServiceAccountPath);
     }
 
     const config = {
       command: 'npx',
-      args: [
-        '-y',
-        '@firebase/mcp-server',
-        '--project', 'nordstrom-scraper',
-        '--serviceAccountKey', serviceAccountPath
-      ]
+      args
     };
 
     const server = await this.spawnMCPServer('firebase', config);
@@ -114,7 +121,7 @@ class MCPIntegration {
 
       // Wait for server to be ready
       setTimeout(() => {
-        if (serverProcess.connected) {
+        if (serverProcess.exitCode === null && !serverProcess.killed) {
           resolve({
             process: serverProcess,
             name,
@@ -183,10 +190,13 @@ class MCPIntegration {
    */
   async searchFilesystemProducts(query, filters) {
     try {
+      if (!this.productDataPath) {
+        return [];
+      }
+
       // This would communicate with the MCP server
       // For now, simulate reading from local Nordstrom data
-      const nordstromPath = 'C:\\Users\\sethp\\Downloads\\mcp-nordstrom';
-      const products = await this.readNordstromData(nordstromPath, query, filters);
+      const products = await this.readNordstromData(this.productDataPath, query, filters);
 
       return products.map(product => ({
         ...product,
@@ -323,7 +333,7 @@ class MCPIntegration {
       const batch = this.firestore.batch();
 
       for (const product of products) {
-        const productRef = this.firestore.collection('products').doc(product.id || uuidv4());
+        const productRef = this.firestore.collection('products').doc(product.id || randomUUID());
         batch.set(productRef, {
           ...product,
           lastSynced: new Date(),
@@ -384,4 +394,6 @@ class MCPIntegration {
     this.productCache.clear();
   }
 }
+
+export default MCPIntegration;
 

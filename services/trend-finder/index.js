@@ -1,74 +1,89 @@
 import express from 'express';
-import fetch from 'node-fetch';
-import { getDb } from '../../firebase.js';
-import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
+import { getDb, verifyIdToken } from './firebase.js';
 
 const app = express();
-app.use(express.json());
+app.disable('x-powered-by');
+app.use(express.json({ limit: '32kb' }));
 
-// --- Google Secret Manager helper ---
+async function requireFirebaseUser(req, res, next) {
+  const authorization = req.get('authorization') || '';
+  const match = authorization.match(/^Bearer\s+(.+)$/i);
 
-/**
- * Fetch a secret value from Google Secret Manager
- * @param {string} secretName
- * @returns {Promise<string|null>}
- */
-export async function getSecret(secretName) {
+  if (!match) {
+    return res.status(401).json({ error: 'A Firebase ID token is required.' });
+  }
+
   try {
-    const client = new SecretManagerServiceClient();
-    const projectId = process.env.GOOGLE_CLOUD_PROJECT;
-    if (!projectId) throw new Error('GOOGLE_CLOUD_PROJECT env var not set');
-    const [version] = await client.accessSecretVersion({
-      name: `projects/${projectId}/secrets/${secretName}/versions/latest`
-    });
-    return version.payload.data.toString();
-  } catch (err) {
-    console.error('SecretManager error:', err.message);
-    return null;
+    req.user = await verifyIdToken(match[1]);
+    return next();
+  } catch (error) {
+    console.warn('Trend Finder rejected an invalid ID token:', error.message);
+    return res.status(401).json({ error: 'The Firebase ID token is invalid or expired.' });
   }
 }
 
-app.post('/find', async (req, res) => {
-  const { query = "fashion" } = req.body;
+app.get('/health', (req, res) => {
+  res.json({ status: 'healthy', service: 'trend-finder' });
+});
+
+app.get('/ready', (req, res) => {
+  const hasGeminiKey = Boolean(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
+  res.status(hasGeminiKey ? 200 : 503).json({
+    status: hasGeminiKey ? 'ready' : 'not-ready',
+    service: 'trend-finder',
+  });
+});
+
+app.post('/find', requireFirebaseUser, async (req, res) => {
+  const query = typeof req.body?.query === 'string' ? req.body.query.trim() : 'fashion';
+
+  if (!query || query.length > 200) {
+    return res.status(400).json({ error: 'query must contain between 1 and 200 characters.' });
+  }
+
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-  if (!apiKey) return res.status(500).send('GEMINI_API_KEY or GOOGLE_API_KEY not set');
+  if (!apiKey) {
+    return res.status(503).json({ error: 'Trend generation is not configured.' });
+  }
+
   try {
-    // Call Gemini/Vertex AI for trend suggestions
     const prompt = `List 5 trending product or fashion topics for: ${query}`;
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + apiKey, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-    });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${encodeURIComponent(apiKey)}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+      }
+    );
+
+    if (!response.ok) {
+      console.error('Gemini trend request failed with status:', response.status);
+      return res.status(502).json({ error: 'Trend generation failed.' });
+    }
+
     const data = await response.json();
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    // Parse trends from Gemini response (split by line or comma)
-    const trends = text.split(/\n|,|\d+\./).map(t => t.trim()).filter(Boolean);
-    // Save to Firestore
+    const trends = text.split(/\n|,|\d+\./).map((trend) => trend.trim()).filter(Boolean);
     const db = getDb();
     const doc = await db.collection('trends').add({
       query,
       trends,
+      requestedBy: req.user.uid,
       timestamp: new Date().toISOString(),
       status: 'pending',
-      approved: false
+      approved: false,
     });
-    res.json({ trends, firestoreId: doc.id });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send(err.message);
+
+    return res.json({ trends, firestoreId: doc.id });
+  } catch (error) {
+    console.error('Trend generation failed:', {
+      name: error.name,
+      code: error.code || error.cause?.code || 'unknown',
+    });
+    return res.status(500).json({ error: 'Trend generation failed.' });
   }
 });
 
-// Example endpoint to fetch APIFY_TOKEN from Secret Manager
-app.get('/apify-token', async (req, res) => {
-  const token = await getSecret('APIFY_TOKEN');
-  if (token) {
-    res.json({ token });
-  } else {
-    res.status(500).json({ error: 'Could not fetch APIFY_TOKEN from Secret Manager' });
-  }
-});
-
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`trend-finder on ${PORT}`));
+const port = Number.parseInt(process.env.PORT || '8082', 10);
+app.listen(port, () => console.log(`trend-finder listening on ${port}`));

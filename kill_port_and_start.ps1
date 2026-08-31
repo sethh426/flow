@@ -4,7 +4,7 @@ param(
     [int]$Port = 8080,
     [string]$ServicePath = "services/trend-finder",
     [string]$NodeScript = "index.js",
-    [string]$ServiceAccountKey = "C:\Users\sethp\Downloads\mcp-nordstrom\serviceAccountKey.json"
+    [string]$ServiceAccountKey = ""
 )
 
 # Kill any process using the port
@@ -16,8 +16,14 @@ if ($tcpConn) {
     Start-Sleep -Seconds 2
 }
 
-# Set environment variable for Firestore credentials
-$env:GOOGLE_APPLICATION_CREDENTIALS = $ServiceAccountKey
+# Use an explicit local credential only when the caller provides one. Deployed
+# services should use Application Default Credentials/workload identity.
+if ($ServiceAccountKey) {
+    $resolvedCredential = Resolve-Path -LiteralPath $ServiceAccountKey -ErrorAction Stop
+    $env:GOOGLE_APPLICATION_CREDENTIALS = $resolvedCredential.Path
+} else {
+    Write-Host "No service-account path supplied; using Application Default Credentials."
+}
 
 # Start the service
 Write-Host "Starting Node.js service in $ServicePath on port $Port..."
