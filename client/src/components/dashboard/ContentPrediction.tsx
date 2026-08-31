@@ -5,8 +5,8 @@
 
 'use client';
 
-import { useState } from 'react';
-import { useIntelligence } from '@/hooks/useIntelligence';
+import { useEffect, useState } from 'react';
+import { useIntelligence, type ContentPredictionResult } from '@/hooks/useIntelligence';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Clock, Target, Zap, Users, Award } from 'lucide-react';
@@ -24,17 +24,25 @@ interface ContentPredictionProps {
 
 export function ContentPrediction({ userId, content }: ContentPredictionProps) {
   const { predictContent, loading, error } = useIntelligence(userId);
-  const [prediction, setPrediction] = useState<any>(null);
+  const [prediction, setPrediction] = useState<ContentPredictionResult | null>(null);
 
-  const handlePredict = async () => {
-    const result = await predictContent(content);
-    setPrediction(result);
-  };
+  useEffect(() => {
+    let active = true;
 
-  // Auto-predict on mount
-  useState(() => {
-    handlePredict();
-  });
+    predictContent(content)
+      .then((result) => {
+        if (active) {
+          setPrediction(result);
+        }
+      })
+      .catch(() => {
+        // The hook exposes the request error for the component to render.
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [content, predictContent]);
 
   if (loading) {
     return (
@@ -183,7 +191,7 @@ export function ContentPrediction({ userId, content }: ContentPredictionProps) {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {prediction.optimizations.map((opt: any, idx: number) => (
+              {prediction.optimizations.map((opt, idx) => (
                 <div key={idx} className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="flex items-start justify-between mb-2">
                     <p className="font-medium text-blue-900">{opt.suggestion}</p>
@@ -232,7 +240,7 @@ export function ContentPrediction({ userId, content }: ContentPredictionProps) {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {prediction.contentGaps.map((gap: any, idx: number) => (
+              {prediction.contentGaps.map((gap, idx) => (
                 <div key={idx} className="flex items-start gap-2 p-2 hover:bg-gray-50 rounded">
                   <span className="text-lg">{gap.icon}</span>
                   <div className="flex-1">

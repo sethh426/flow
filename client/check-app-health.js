@@ -78,7 +78,6 @@ componentChecks.forEach(({ file, name }) => {
 console.log('⚙️  Checking Configuration Files...');
 const configFiles = [
   'package.json',
-  'next.config.ts',
   'next.config.mjs',
   'tsconfig.json',
   'postcss.config.mjs',

@@ -20,7 +20,7 @@ The right current label is **recovered engineering baseline with a buildable fro
 | Main client install | Passing | `npm ci --prefix client` installed successfully. |
 | Main client production build | Passing with gates bypassed | Next.js 15.5.3 generated/exported 46 build routes with Firebase variables intentionally absent. Both Next configurations disable build-time TypeScript and ESLint enforcement. |
 | Client type check | Failing | 158 errors in 38 files. Main clusters are Genkit drift, missing or relocated UI modules, incomplete domain types, and historical test dependencies. |
-| Client lint | Failing | 1,740 findings: 1,026 errors and 714 warnings. |
+| Client lint | Failing | 1,736 findings: 1,022 errors and 714 warnings. The canonical config, preview server, intelligence hook, and content-prediction component pass focused lint. |
 | Automated tests | Present, not established as green | Eight Playwright specifications cover major UI areas, but the recovered baseline does not have a recorded passing end-to-end run. The root test script is a placeholder that exits with failure. |
 | Backend services | Recovered, only partially verified | Multiple Node.js, TypeScript, Python, Java, Express, Flask, WebSocket, and Firebase services are present. They were not all installed, built, integrated, or deployed during recovery. |
 | Early-adopter site source | Build passing | The static site's local build succeeds. Its current source no longer embeds a Gemini key and disables the legacy client-side admin flow. |
@@ -102,16 +102,13 @@ There are 42 checked-in `page.tsx` routes. The major product surfaces are dashbo
 
 The route tree also shows recovery overlap that should be normalized: `/login` and `/auth/login`, `/signup` and `/auth/signup`, top-level and `/dashboard/*` versions of several features, plus multiple test/demo routes. These may be intentional aliases or historical duplicates; that decision has not been made yet.
 
-### Rendering and deployment ambiguity
+### Rendering and deployment model
 
-Two Next.js configuration files coexist:
+`client/next.config.mjs` is now the sole Next.js configuration and defines the canonical deployment model: static export to `client/out` for Firebase Hosting, with root `firebase.json` rewriting `/api/**` to Firebase Functions. The conflicting server-oriented `next.config.ts` was removed. The repository has no checked-in active `client/src/app/api` routes.
 
-- `client/next.config.mjs` enables static export for Firebase Hosting.
-- `client/next.config.ts` says static export is disabled because API routes require a server.
+The exported application can be previewed with `npm start --prefix client`; this serves `client/out` through the repository's dependency-free local preview server. Firebase Auth and Firestore remain disabled when their public configuration is absent, so CI and fresh clones can render authentication pages without an invalid placeholder key.
 
-The successful recovery build behaved as a static export, and root `firebase.json` serves `client/out` while rewriting `/api/**` to a Firebase function. The repository has no checked-in `client/src/app/api` routes. One configuration must become canonical so local development, CI, Firebase Hosting, and any server deployment do not make different assumptions.
-
-Both configurations currently set `ignoreDuringBuilds`/`ignoreBuildErrors`, which is why the production build can pass while the standalone quality checks fail. Firebase Auth and Firestore now remain disabled when their public configuration is absent, so CI and fresh clones can render authentication pages without an invalid placeholder key. Static generation still logs a handled invalid relative URL for `/api/intelligence/predict-content` when no browser origin exists.
+The production build still sets `ignoreDuringBuilds`/`ignoreBuildErrors`, which is why it can pass while the standalone quality checks fail. The render-time content prediction side effect was moved into React `useEffect`, eliminating the invalid relative `/api/intelligence/predict-content` request that previously appeared during static generation.
 
 ## Backend and automation inventory
 
@@ -191,6 +188,8 @@ See [SECURITY.md](../SECURITY.md) for the repository rules. This recovery review
 What is proven:
 
 - the committed main client installs and builds on Windows and in GitHub Actions without requiring Firebase credentials at build time;
+- the 46-route static export completes without the prior render-time relative API request, and the local export server returns the root and dashboard pages successfully;
+- the client health check passes all 46 critical route/component/configuration checks, with only three warnings for optional environment configuration, console logging, and TODOs;
 - the early-adopter site installs and builds locally;
 - the portable committed-file secret scan passes;
 - the Trend Finder package installs from its lockfile and its JavaScript entry/configuration files pass syntax checks;
@@ -227,11 +226,11 @@ The repository root includes many historical documents with names such as `ALL_S
 
 ### P1: establish one runnable product
 
-1. Select one Next.js configuration and document whether the product is static Firebase Hosting plus functions or a server-rendered deployment.
+1. **Completed:** use the sole `next.config.mjs` configuration for static Firebase Hosting plus Functions and the local export preview server.
 2. Select one canonical AI/backend request path and define which services are required for the MVP.
 3. Create a service matrix with start command, port, environment variables, health endpoint, owner, deploy target, and test command.
 4. Fix the 158 TypeScript errors, starting with active routes and excluding/archive-marking `_api_backup` and dead prototypes.
-5. Fix the static-generation relative API request and run the eight Playwright specifications against a known local environment.
+5. **Partially completed:** the static-generation relative API request is fixed; run the eight Playwright specifications against a known local environment.
 
 ### P2: make quality repeatable
 

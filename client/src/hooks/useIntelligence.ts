@@ -3,7 +3,7 @@
  * Easy-to-use React hook for all Phase 2 intelligence features
  */
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 export interface ContentAnalysis {
   contentType: 'post' | 'reel' | 'video' | 'carousel' | 'story' | 'blog' | 'email';
@@ -16,6 +16,34 @@ export interface ContentAnalysis {
   targetAudience?: string;
 }
 
+export interface ContentPredictionResult {
+  overallScore: number;
+  confidence: number;
+  metrics: {
+    engagementRate: number;
+    expectedReach: number;
+    clickThroughRate: number;
+  };
+  viralCoefficient?: number;
+  shareability?: number;
+  bestTime?: string;
+  optimizations?: Array<{
+    suggestion: string;
+    expectedImprovement: number;
+    reason: string;
+  }>;
+  competitorInsights?: {
+    advantages?: string[];
+    gaps?: string[];
+  };
+  contentGaps?: Array<{
+    icon: string;
+    issue: string;
+    impact: string;
+    recommendation: string;
+  }>;
+}
+
 export function useIntelligence(userId: string) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +52,7 @@ export function useIntelligence(userId: string) {
   // CONTENT PREDICTION
   // ============================================================================
 
-  const predictContent = async (content: ContentAnalysis) => {
+  const predictContent = useCallback(async (content: ContentAnalysis): Promise<ContentPredictionResult> => {
     setLoading(true);
     setError(null);
     try {
@@ -39,7 +67,7 @@ export function useIntelligence(userId: string) {
         throw new Error(errorData.error || 'Failed to predict content');
       }
 
-      const data = await response.json();
+      const data = await response.json() as { prediction: ContentPredictionResult };
       return data.prediction;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
@@ -48,7 +76,7 @@ export function useIntelligence(userId: string) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   // ============================================================================
   // REVENUE FORECASTING
@@ -87,7 +115,7 @@ export function useIntelligence(userId: string) {
 
   const predictDecisionImpact = async (
     decision: 'increaseBudget' | 'pauseCampaign' | 'changeStrategy' | 'addProduct' | 'changePrice',
-    decisionParams: any
+    decisionParams: Record<string, unknown>
   ) => {
     setLoading(true);
     setError(null);

@@ -33,6 +33,13 @@ npm run dev --prefix client
 
 Then open `http://localhost:3000`. Fill only the environment values needed for the features you are testing. Individual backend services have their own package files and setup notes under `services/`.
 
+The canonical production shape is a static Next.js export on Firebase Hosting with `/api/**` handled by Firebase Functions. To preview the exported site locally:
+
+```powershell
+npm run build --prefix client
+npm start --prefix client
+```
+
 Useful client checks:
 
 ```powershell

@@ -6,15 +6,23 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const nextConfig = {
-  output: 'export', // Static export for Firebase Hosting
-  // Disable generation of API route pages (they're handled by Firebase Functions)
+  // Canonical deployment model: static export on Firebase Hosting, with
+  // /api/** handled by Firebase Functions through the root firebase.json.
+  output: 'export',
+  reactStrictMode: true,
+  compress: true,
+  poweredByHeader: false,
   trailingSlash: true,
   skipTrailingSlashRedirect: true,
-  
+
+  images: {
+    unoptimized: true,
+  },
+
   // Fix for multiple lockfile warning - use client directory as root
   outputFileTracingRoot: __dirname,
   
-  // WebSocket and HMR configuration to prevent socket errors
+  // WebSocket and HMR configuration for local Windows development.
   webpack: (config, { dev, isServer }) => {
     // Ensure proper WebSocket connection in development
     if (dev && !isServer) {

@@ -8,6 +8,9 @@ Validation performed on 2026-08-30 after consolidation and credential scrubbing;
 - Main client: `npm ci` completed and installed 991 packages.
 - Main client: `npm run build` completed successfully with Next.js 15.5.3 and generated/exported all 46 static routes.
 - Main client: missing Firebase client configuration now disables Auth/Firestore initialization instead of failing prerender with `auth/invalid-api-key`; the credential-free build was repeated successfully.
+- Main client: `next.config.mjs` is the sole static-export configuration; all 46 routes export without the former render-time relative API request.
+- Main client: the dependency-free export preview server returned HTTP 200 for `/` and `/dashboard/`.
+- Main client: `npm run health-check --prefix client` passed 46 checks with no failures and three warnings (optional `.env.local`, console logging, and TODOs).
 - Early-adopter site: `npm ci` completed and `npm run build` succeeded.
 - Secret-pattern check: `scripts/security/sanitize-secrets.ps1 -Check` passed.
 - Known API-key, private-key, GitHub-token, AWS-key, Slack-token, and OpenAI/Anthropic-key format scans returned no unsanitized matches.
@@ -24,8 +27,8 @@ Two malformed active-source function names that prevented TypeScript from parsin
 ## Known recovery-baseline debt
 
 - `npm run type-check --prefix client` exits with 158 errors across 38 files. The main groups are Genkit API-version drift, missing/relocated UI modules, incomplete domain types, and historical test dependencies.
-- `npm run lint --prefix client` reports 1,740 findings: 1,026 errors and 714 warnings. Most are historical `any` types, CommonJS imports, and unused symbols, including code under `_api_backup`.
-- The Next.js build succeeds because the recovered build configuration skips type and lint validation. During static generation it logs a handled invalid relative URL for `/api/intelligence/predict-content` and correctly warns that Firebase environment variables are absent.
+- `npm run lint --prefix client` reports 1,736 findings: 1,022 errors and 714 warnings. The files changed for canonical export/preview and content prediction pass focused ESLint. Most remaining findings are historical `any` types, CommonJS imports, and unused symbols, including code under `_api_backup`.
+- The Next.js build succeeds because the recovered build configuration skips type and lint validation. Static generation correctly warns that Firebase environment variables are absent.
 - Client dependency audit: 61 advisories (1 low, 31 moderate, 23 high, 6 critical).
 - Early-adopter dependency audit: 5 advisories (1 moderate, 2 high, 2 critical).
 - Trend Finder dependency audit: 12 advisories (10 moderate, 2 high).

@@ -70,7 +70,7 @@ async function runStatusCheck() {
   // Check critical files
   const criticalFiles = [
     { path: 'client/package.json', label: 'package.json' },
-    { path: 'client/next.config.ts', label: 'Next.js config' },
+    { path: 'client/next.config.mjs', label: 'Next.js config' },
     { path: 'client/tsconfig.json', label: 'TypeScript config' },
     { path: 'client/src/app/layout.tsx', label: 'Root layout' },
     { path: 'client/src/app/dashboard/page.tsx', label: 'Dashboard page' },
