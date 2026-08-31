@@ -9,9 +9,11 @@ npm ci
 npm run dev
 ```
 
-Copy `public/config.example.js` to `public/config.js` and fill in the public Firebase web-app values if you need real waitlist submissions. `config.js` is ignored by Git.
+Firebase Hosting supplies the public web-app configuration through its reserved
+`/__/firebase/init.js` endpoint. A plain `http-server` preview intentionally
+runs without Firestore; use the unified Hosting emulator or a preview channel
+when testing real waitlist initialization.
 
 The old browser-side Gemini integration was replaced with an optional `aiEndpoint` setting. That endpoint must be an authenticated backend that keeps provider API keys server-side. The legacy `get-signups.html` client-side admin login is disabled in the public source; replace it with Firebase Authentication and server-enforced authorization before use.
 
 Deployment is intentionally not automatic. Review `SECURITY.md`, Firebase rules, the selected project, and the generated output before manually deploying from this directory.
-

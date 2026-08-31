@@ -11,6 +11,11 @@ export class ApiError extends Error {
   }
 }
 
+type FetchImplementation = typeof fetch;
+
+const apiMode = process.env.NEXT_PUBLIC_API_MODE || 'mock';
+const apiBaseUrl = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
+
 // Mock response generators
 const mockResponses: Record<string, (body?: any) => Promise<any>> = {
   // FlowBot
@@ -215,9 +220,13 @@ async function getMockResponse(url: string, body?: any): Promise<any> {
 }
 
 // Universal fetch wrapper
-export async function apiFetch(url: string, options?: RequestInit): Promise<Response> {
+export async function apiFetch(
+  url: string,
+  options?: RequestInit,
+  fetchImplementation: FetchImplementation = globalThis.fetch.bind(globalThis),
+): Promise<Response> {
   // Handle campaigns with existing service
-  if (url.includes('/api/campaigns')) {
+  if (apiMode === 'mock' && url.includes('/api/campaigns')) {
     const method = options?.method || 'GET';
     let mockData: any;
 
@@ -250,7 +259,7 @@ export async function apiFetch(url: string, options?: RequestInit): Promise<Resp
   }
 
   // Handle trends with existing service
-  if (url.includes('/api/trends')) {
+  if (apiMode === 'mock' && url.includes('/api/trends')) {
     try {
       const trends = await trendsService.discoverTrends();
       return new Response(JSON.stringify({ trends }), {
@@ -266,7 +275,7 @@ export async function apiFetch(url: string, options?: RequestInit): Promise<Resp
   }
 
   // Handle other mocked endpoints
-  if (hasMockResponse(url)) {
+  if (apiMode === 'mock' && hasMockResponse(url)) {
     try {
       const body = options?.body ? JSON.parse(options.body as string) : undefined;
       const mockData = await getMockResponse(url, body);
@@ -286,9 +295,26 @@ export async function apiFetch(url: string, options?: RequestInit): Promise<Resp
     }
   }
 
-  // If no mock exists, try real fetch (will fail gracefully)
+  if (apiMode === 'mock') {
+    return new Response(
+      JSON.stringify({
+        error: 'Preview mode',
+        message: 'This endpoint is not connected in the hosted preview.',
+      }),
+      {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
+  }
+
+  // Live mode uses the configured API origin. Keeping the original
+  // fetch implementation avoids recursing through ApiInterceptorInit.
   try {
-    const response = await fetch(url, options);
+    const targetUrl = apiBaseUrl && url.startsWith('/api/')
+      ? `${apiBaseUrl}${url}`
+      : url;
+    const response = await fetchImplementation(targetUrl, options);
     return response;
   } catch (error) {
     // Return a generic error response

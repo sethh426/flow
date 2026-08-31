@@ -25,11 +25,14 @@ The right current label is **recovered engineering baseline with a buildable fro
 | Backend services | Recovered, only partially verified | Multiple Node.js, TypeScript, Python, Java, Express, Flask, WebSocket, and Firebase services are present. They were not all installed, built, integrated, or deployed during recovery. |
 | Early-adopter site source | Build passing | The static site's local build succeeds. Its current source no longer embeds a Gemini key and disables the legacy client-side admin flow. |
 | Live early-adopter deployment | Online but needs remediation | `flowearlyadopters.web.app` returned HTTP 200 during recovery, but the deployed HTML differs from the safe local source and contained an old browser-side Gemini key. Rotate the key before redeploying. |
+| Unified Hosting preview | Passing | A Firebase preview channel serves Early Adopters at `/`, the investor presentation at `/investors/`, and the 46-route application export below `/app/`. The application is visibly labeled preview mode; the production channel is unchanged. |
 | CI | Passing, narrow scope | The `Recovery integrity` GitHub Action scans common secret formats, checks recovered backend entry points, installs/checks Trend Finder, and installs/builds the client. It does not run type checking, linting, end-to-end tests, dependency-policy enforcement, or the other service builds. |
 | Deployment automation | Contained | Imported Firebase, Cloud Run, and Terraform workflows are manual-only (`workflow_dispatch`). Their destinations and credentials still require review. |
 | Dependency security | Needs work | Client audit: 61 advisories (1 low, 31 moderate, 23 high, 6 critical). Early-adopter audit: 5 (1 moderate, 2 high, 2 critical). |
 
 Detailed command results are retained in [recovery validation](recovery/VALIDATION.md), and provenance is in the [recovery inventory](recovery/INVENTORY.md).
+
+The current live-project, endpoint, provider, and shared-host assessment is in the [endpoint and service audit](integration/ENDPOINT_AND_SERVICE_AUDIT.md). It supersedes historical `*_COMPLETE.md` claims when they conflict with current Firebase or source evidence.
 
 ## Logical architecture
 
@@ -158,6 +161,8 @@ The safe local source and the live deployment are not the same:
 - the live site was reachable during recovery, but its deployed HTML contained an old Gemini key and must be treated as compromised until that key is revoked.
 
 Do not deploy the consolidated repository over the live site until the key is rotated, the Firebase project is confirmed, and a deployment preview has been reviewed.
+
+The shared-host preview created on 2026-08-31 is available at <https://flowearlyadopters--shared-host-preview-l3mszyo2.web.app> until 2026-09-07. HTTP and Edge checks confirmed the root landing page, `/investors/`, `/app/`, `/app/dashboard/`, Firebase's reserved initialization script, and representative application assets. The old `get-signups.html` and `config.example.js` files return `404`. This preview is not the live production channel.
 
 ## Security and deployment blockers
 

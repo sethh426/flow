@@ -1,0 +1,12 @@
+{
+  "name": "@flow/unified-hosting",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build and deploy the shared Flow Firebase Hosting surface.",
+  "scripts": {
+    "build": "node build.mjs",
+    "serve": "firebase emulators:start --only hosting --project flowearlyadopters",
+    "deploy:preview": "firebase hosting:channel:deploy shared-host-preview --expires 7d --project flowearlyadopters",
+    "deploy:live": "firebase deploy --only hosting --project flowearlyadopters"
+  }
+}

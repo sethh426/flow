@@ -266,12 +266,59 @@
         -webkit-text-size-adjust: 100%;
         -ms-text-size-adjust: 100%;
       }
+
+      .flow-hub-nav {
+        position: fixed;
+        top: 14px;
+        right: 14px;
+        z-index: 12000;
+        display: flex;
+        gap: 6px;
+        padding: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 999px;
+        background: rgba(10, 10, 18, 0.88);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+        backdrop-filter: blur(14px);
+      }
+
+      .flow-hub-nav a {
+        min-height: auto;
+        padding: 8px 12px;
+        border-radius: 999px;
+        color: #f8fafc;
+        font: 700 12px/1 system-ui, sans-serif;
+        text-decoration: none;
+      }
+
+      .flow-hub-nav a:hover,
+      .flow-hub-nav a:focus-visible {
+        color: #111827;
+        background: #fbbf24;
+        outline: none;
+      }
+
+      @media (max-width: 640px) {
+        .flow-hub-nav {
+          top: auto;
+          right: 50%;
+          bottom: 12px;
+          transform: translateX(50%);
+        }
+
+        .flow-hub-nav a {
+          padding: 8px 10px;
+          font-size: 11px;
+        }
+      }
     </style>
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+    <!-- Firebase Hosting injects this project's public SDK configuration. -->
+    <script src="/__/firebase/init.js"></script>
     
     <!-- Fingerprint.js - FREE tier: 100K API calls/month for visitor identification -->
     <script>
@@ -292,40 +339,48 @@
     <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   </head>
   <body>
+    <nav class="flow-hub-nav" aria-label="Flow sites">
+      <a href="/" aria-current="page">Early Access</a>
+      <a href="/investors/">Investors</a>
+      <a href="/app/">Open App</a>
+    </nav>
     <script>
       // Immediately disable scrollIntoView
       Element.prototype.scrollIntoView = function() {};
     </script>
     <div id="root"></div>
 
-    <!-- Optional local/deployment configuration; copy config.example.js to config.js. -->
-    <script src="config.js"></script>
-
     <!-- Initialize Firebase -->
     <script>
       const flowPublicConfig = window.FLOW_PUBLIC_CONFIG || {};
 
       if (typeof firebase !== 'undefined') {
+        const hostedFirebaseConfig = firebase.apps.length ? firebase.app().options : {};
         const firebaseConfig = {
-          apiKey: flowPublicConfig.firebase?.apiKey || '',
-          authDomain: flowPublicConfig.firebase?.authDomain || 'flowearlyadopters.firebaseapp.com',
-          projectId: flowPublicConfig.firebase?.projectId || 'flowearlyadopters',
-          storageBucket: flowPublicConfig.firebase?.storageBucket || 'flowearlyadopters.firebasestorage.app',
-          messagingSenderId: flowPublicConfig.firebase?.messagingSenderId || '',
-          appId: flowPublicConfig.firebase?.appId || ''
+          apiKey: flowPublicConfig.firebase?.apiKey || hostedFirebaseConfig.apiKey || '',
+          authDomain: flowPublicConfig.firebase?.authDomain || hostedFirebaseConfig.authDomain || 'flowearlyadopters.firebaseapp.com',
+          projectId: flowPublicConfig.firebase?.projectId || hostedFirebaseConfig.projectId || 'flowearlyadopters',
+          storageBucket: flowPublicConfig.firebase?.storageBucket || hostedFirebaseConfig.storageBucket || 'flowearlyadopters.firebasestorage.app',
+          messagingSenderId: flowPublicConfig.firebase?.messagingSenderId || hostedFirebaseConfig.messagingSenderId || '',
+          appId: flowPublicConfig.firebase?.appId || hostedFirebaseConfig.appId || ''
         };
         
-        if (firebaseConfig.apiKey && firebaseConfig.appId) {
+        if (firebase.apps.length || (firebaseConfig.apiKey && firebaseConfig.appId)) {
           // Initialize Firebase only if not already initialized
           if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
-            if (window.location.hostname !== 'localhost') {
-              firebase.analytics();
+          }
+
+          window.analytics = null;
+          if (window.location.hostname !== 'localhost') {
+            try {
+              window.analytics = firebase.analytics();
+            } catch (error) {
+              console.warn('Firebase Analytics is unavailable:', error);
             }
           }
 
           window.db = firebase.firestore();
-          window.analytics = firebase.analytics();
         } else {
           console.warn('Flow Firebase configuration is missing; waitlist submissions will use the local fallback.');
         }

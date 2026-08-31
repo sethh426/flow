@@ -21,6 +21,38 @@
             -webkit-font-smoothing: antialiased;
         }
 
+        .flow-hub-nav {
+            position: sticky;
+            top: 12px;
+            z-index: 1000;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 12px 40px 0;
+        }
+
+        .flow-hub-nav a {
+            padding: 9px 13px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 999px;
+            background: rgba(10, 10, 10, 0.88);
+            color: #f3f4f6;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-decoration: none;
+            backdrop-filter: blur(12px);
+        }
+
+        .flow-hub-nav a:hover,
+        .flow-hub-nav a:focus-visible {
+            border-color: #a78bfa;
+            background: #667eea;
+            color: #fff;
+            outline: none;
+        }
+
         /* Advanced Animations & Interactions */
         .slide-in {
             animation: slideIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -195,6 +227,16 @@
         }
 
         @media (max-width: 768px) {
+            .flow-hub-nav {
+                justify-content: center;
+                padding: 10px 12px 0;
+            }
+
+            .flow-hub-nav a {
+                padding: 8px 10px;
+                font-size: 0.72rem;
+            }
+
             .metrics {
                 grid-template-columns: 1fr;
             }
@@ -640,9 +682,14 @@
     </style>
 </head>
 <body>
+    <nav class="flow-hub-nav" aria-label="Flow sites">
+        <a href="/">Early Access</a>
+        <a href="/investors/" aria-current="page">Investors</a>
+        <a href="/app/">Open App</a>
+    </nav>
     <div class="container">
         <div class="header">
-            <img src="flow-logo.png" alt="Flow" class="logo">
+            <img src="/flow-logo.png" alt="Flow" class="logo">
             <h1>Flow</h1>
         </div>
 

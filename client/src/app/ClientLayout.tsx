@@ -34,6 +34,7 @@ function PageLoader() {
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isPublicPage = pathname === '/' || pathname?.startsWith('/auth');
+  const isPreviewMode = (process.env.NEXT_PUBLIC_API_MODE || 'mock') !== 'live';
 
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
@@ -61,6 +62,14 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>
           <ThemeProvider>
             <AuthProvider>
+              {isPreviewMode && (
+                <div
+                  role="status"
+                  className="sticky top-0 z-[10000] border-b border-amber-300 bg-amber-50 px-4 py-2 text-center text-sm font-semibold text-amber-950 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100"
+                >
+                  Flow preview mode: screens and sample workflows are available, but external publishing, payments, and live automation are not connected.
+                </div>
+              )}
               <FlowBotOnboarding />
               <Suspense fallback={<PageLoader />}>
                 {isPublicPage ? (

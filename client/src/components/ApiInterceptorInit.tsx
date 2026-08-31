@@ -14,7 +14,7 @@ export default function ApiInterceptorInit() {
       
       // Intercept API calls
       if (url.startsWith('/api/')) {
-        return apiFetch(url, init);
+        return apiFetch(url, init, originalFetch);
       }
       
       // Use original fetch for everything else

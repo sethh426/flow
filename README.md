@@ -4,7 +4,7 @@ Flow is an affiliate-selling and marketing automation platform recovered from th
 
 The repository is a recovery baseline and engineering source of truth. It preserves the work without pretending every historical service is currently production-ready.
 
-For the evidence-based assessment of what currently works, how the code is organized, deployment blockers, and the stabilization sequence, read [Flow: current state and structure](docs/CURRENT_STATE_AND_STRUCTURE.md).
+For the evidence-based assessment of what currently works, how the code is organized, deployment blockers, and the stabilization sequence, read [Flow: current state and structure](docs/CURRENT_STATE_AND_STRUCTURE.md). The live Firebase, endpoint, and provider findings are recorded in the [endpoint and service audit](docs/integration/ENDPOINT_AND_SERVICE_AUDIT.md).
 
 ## Current surfaces
 
@@ -14,6 +14,8 @@ For the evidence-based assessment of what currently works, how the code is organ
 - `infrastructure/` and `terraform/` — cloud, Kubernetes, and Terraform definitions.
 - `workflows/` and `trend-sources/` — automation pipelines and trend inputs.
 - `flow-early-adopters/` — source for the legacy early-access landing site currently visible at [flowearlyadopters.web.app](https://flowearlyadopters.web.app).
+- `flowinvestorglance-temp/` — recovered investor presentation source.
+- `hosting/flow-unified/` — repeatable shared-host build that publishes Early Adopters at `/`, investors at `/investors/`, and the application preview at `/app/`.
 - `legacy/` — curated, security-scrubbed recovery snapshots. These are reference material, not active build inputs.
 
 The detailed recovery record is in [docs/recovery/INVENTORY.md](docs/recovery/INVENTORY.md). The original 220-commit local Git repository remains untouched on the computer; its history was not reused because old commits contain service-account files.
