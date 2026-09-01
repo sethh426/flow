@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useRouter } from 'next/navigation';
 import { Button } from 'flowbite-react';
@@ -92,7 +92,7 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950">
       <div className="container mx-auto px-4 py-12 md:py-20 max-w-7xl">
         {/* Hero Section */}
         <section className="grid gap-10 lg:gap-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] items-center mb-16 md:mb-24">
@@ -106,7 +106,7 @@ export default function HomePage() {
               <div>
                 <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-[0.4em] mb-3 uppercase">IntelliSeth Incorporated</p>
                 <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
-                  <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">Flow</span>
+                  <span className="bg-linear-to-r from-purple-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">Flow</span>
                 </h1>
               </div>
 
@@ -123,7 +123,7 @@ export default function HomePage() {
               <Button
                 size="xl"
                 onClick={() => router.push('/dashboard')}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+                className="bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 border-0 shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <HiSparkles className="mr-2 h-5 w-5" />
                 Launch Demo Dashboard
@@ -164,7 +164,7 @@ export default function HomePage() {
               <div className="space-y-4">
                 {['Campaign Sync', 'Product Spotlight', 'Creator Outreach'].map((workflow, index) => (
                   <div key={workflow} className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-sm font-semibold">
+                    <div className="w-8 h-8 rounded-lg bg-linear-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-sm font-semibold">
                       {index + 1}
                     </div>
                     <div className="flex-1">
@@ -206,7 +206,7 @@ export default function HomePage() {
                   className="group p-6 rounded-2xl bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 hover:shadow-xl transition-all duration-300 cursor-pointer"
                 >
                   <div className="flex items-start space-x-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <div className="flex-shrink-0 w-12 h-12 bg-linear-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                       <Icon className="w-6 h-6 text-white" />
                     </div>
                     <div className="flex-1">
@@ -226,7 +226,7 @@ export default function HomePage() {
 
         {/* Platform Highlights */}
         <section className="relative mb-16 lg:mb-24 overflow-hidden rounded-3xl border border-purple-200/70 bg-white/80 shadow-xl backdrop-blur-sm dark:border-purple-500/30 dark:bg-gray-900/70">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-100/50 via-white/10 to-blue-100/40 dark:from-purple-900/20 dark:via-transparent dark:to-blue-900/10" aria-hidden />
+          <div className="absolute inset-0 bg-linear-to-br from-purple-100/50 via-white/10 to-blue-100/40 dark:from-purple-900/20 dark:via-transparent dark:to-blue-900/10" aria-hidden />
           <div className="relative grid gap-10 p-8 sm:p-10 lg:grid-cols-[minmax(280px,320px)_minmax(0,1fr)] lg:p-12">
             <div className="space-y-5">
               <span className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-purple-600 dark:bg-white/10 dark:text-purple-200">
@@ -254,7 +254,7 @@ export default function HomePage() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-600 via-indigo-500 to-blue-500 text-white shadow-lg shadow-purple-500/25">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-linear-to-br from-purple-600 via-indigo-500 to-blue-500 text-white shadow-lg shadow-purple-500/25">
                           <Icon className="h-6 w-6" />
                         </div>
                         <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -298,7 +298,7 @@ export default function HomePage() {
                 key={stage.title}
                 className="group relative overflow-hidden rounded-3xl border border-slate-200/70 bg-white/80 p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl dark:border-slate-800/70 dark:bg-gray-900/70"
               >
-                <div className={`absolute inset-y-0 left-0 w-1 bg-gradient-to-b ${stage.accent}`} aria-hidden />
+                <div className={`absolute inset-y-0 left-0 w-1 bg-linear-to-b ${stage.accent}`} aria-hidden />
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div className="flex items-start gap-4">
                     <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
@@ -330,8 +330,8 @@ export default function HomePage() {
             { value: '24/7', label: 'AI Assistant' },
             { value: '∞', label: 'Scalability' },
           ].map((stat, index) => (
-            <div key={index} className="text-center p-6 rounded-2xl bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
-              <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            <div key={index} className="text-center p-6 rounded-2xl bg-linear-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
+              <div className="text-3xl md:text-4xl font-bold bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
                 {stat.value}
               </div>
               <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -378,7 +378,7 @@ export default function HomePage() {
 
         {/* Final CTA */}
         <section className="mb-16 lg:mb-24">
-          <div className="relative overflow-hidden rounded-3xl border border-purple-300/60 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 p-8 shadow-2xl sm:p-10 lg:p-12">
+          <div className="relative overflow-hidden rounded-3xl border border-purple-300/60 bg-linear-to-r from-purple-600 via-indigo-600 to-blue-600 p-8 shadow-2xl sm:p-10 lg:p-12">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.25),_transparent_55%)]" aria-hidden />
             <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
               <div className="max-w-2xl space-y-4">

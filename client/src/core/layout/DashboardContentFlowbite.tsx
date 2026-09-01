@@ -187,7 +187,7 @@ export default function DashboardContentFlowbite() {
               size="sm"
               color={timeRange === '7d' ? 'purple' : 'gray'}
               onClick={() => setTimeRange('7d')}
-              className={timeRange === '7d' ? 'bg-gradient-to-r from-purple-600 to-blue-600' : ''}
+              className={timeRange === '7d' ? 'bg-linear-to-r from-purple-600 to-blue-600' : ''}
             >
               7 Days
             </Button>
@@ -195,7 +195,7 @@ export default function DashboardContentFlowbite() {
               size="sm"
               color={timeRange === '30d' ? 'purple' : 'gray'}
               onClick={() => setTimeRange('30d')}
-              className={timeRange === '30d' ? 'bg-gradient-to-r from-purple-600 to-blue-600' : ''}
+              className={timeRange === '30d' ? 'bg-linear-to-r from-purple-600 to-blue-600' : ''}
             >
               30 Days
             </Button>
@@ -203,13 +203,13 @@ export default function DashboardContentFlowbite() {
               size="sm"
               color={timeRange === '90d' ? 'purple' : 'gray'}
               onClick={() => setTimeRange('90d')}
-              className={timeRange === '90d' ? 'bg-gradient-to-r from-purple-600 to-blue-600' : ''}
+              className={timeRange === '90d' ? 'bg-linear-to-r from-purple-600 to-blue-600' : ''}
             >
               90 Days
             </Button>
           </div>
         </div>
-        <div className="h-64 flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/10 dark:to-blue-900/10 rounded-lg">
+        <div className="h-64 flex items-center justify-center bg-linear-to-br from-purple-50 to-blue-50 dark:from-purple-900/10 dark:to-blue-900/10 rounded-lg">
           <div className="text-center">
             <HiChartBar className="h-16 w-16 mx-auto text-purple-600 mb-4" />
             <p className="text-base font-medium text-secondary mb-1">Chart visualization coming soon</p>
@@ -268,7 +268,7 @@ export default function DashboardContentFlowbite() {
       {/* AI Intelligence Widget */}
       <Card>
         <div className="flex items-center gap-3 mb-4">
-          <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-3 rounded-lg">
+          <div className="bg-linear-to-r from-purple-600 to-blue-600 text-white p-3 rounded-lg">
             <HiLightningBolt className="h-6 w-6" />
           </div>
           <div>

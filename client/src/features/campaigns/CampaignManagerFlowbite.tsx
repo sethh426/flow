@@ -359,7 +359,7 @@ export default function CampaignManagerFlowbite() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
             Campaigns
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
@@ -367,7 +367,7 @@ export default function CampaignManagerFlowbite() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleCreate} className="bg-gradient-to-r from-purple-600 to-blue-600">
+          <Button onClick={handleCreate} className="bg-linear-to-r from-purple-600 to-blue-600">
             <HiPlus className="mr-2 h-5 w-5" />
             New Campaign
           </Button>
@@ -531,7 +531,7 @@ export default function CampaignManagerFlowbite() {
       {/* Create/Edit Modal */}
       <Modal show={dialogOpen} onClose={() => setDialogOpen(false)} size="xl">
         <div className="p-6">
-          <h3 className="text-2xl font-bold mb-6 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <h3 className="text-2xl font-bold mb-6 bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
             {selectedCampaign ? 'Edit Campaign' : 'Create Campaign'}
           </h3>
           <div className="space-y-4">
@@ -587,7 +587,7 @@ export default function CampaignManagerFlowbite() {
             <Button color="gray" onClick={() => setDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave} className="bg-gradient-to-r from-purple-600 to-blue-600">
+            <Button onClick={handleSave} className="bg-linear-to-r from-purple-600 to-blue-600">
               Save Campaign
             </Button>
           </div>
@@ -730,7 +730,7 @@ export default function CampaignManagerFlowbite() {
               <Button onClick={() => {
                 setDetailsOpen(false);
                 handleEdit(selectedCampaign);
-              }} className="bg-gradient-to-r from-purple-600 to-blue-600">
+              }} className="bg-linear-to-r from-purple-600 to-blue-600">
                 Edit Campaign
               </Button>
             </div>

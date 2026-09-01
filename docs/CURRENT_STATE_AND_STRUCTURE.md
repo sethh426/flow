@@ -32,6 +32,8 @@ The right current label is **recovered engineering baseline with a publicly host
 
 Detailed command results are retained in [recovery validation](recovery/VALIDATION.md), and provenance is in the [recovery inventory](recovery/INVENTORY.md).
 
+The official application UI was smoke-tested and contrast-corrected on 2026-09-01 before Firebase Hosting version `0fd12c588300ed60` was promoted. See the [official app UI smoke-test report](testing/OFFICIAL_APP_SMOKE_TEST_2026-09-01.md) for the route matrix, viewport coverage, fixes, and remaining quality debt.
+
 The current live-project, endpoint, provider, and shared-host assessment is in the [endpoint and service audit](integration/ENDPOINT_AND_SERVICE_AUDIT.md). The detailed [`affiliateflow-abzfy` function review](integration/AFFILIATEFLOW_FUNCTION_REVIEW.md) records the ten deployed functions, the hardened candidate, and the backend activation sequence. These reports supersede historical `*_COMPLETE.md` claims when they conflict with current Firebase or source evidence.
 
 ## Logical architecture

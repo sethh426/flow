@@ -33,7 +33,11 @@ function PageLoader() {
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isPublicPage = pathname === '/' || pathname?.startsWith('/auth');
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+  const routePath = basePath && pathname?.startsWith(basePath)
+    ? pathname.slice(basePath.length) || '/'
+    : pathname;
+  const isPublicPage = routePath === '/' || routePath?.startsWith('/auth');
   const isPreviewMode = (process.env.NEXT_PUBLIC_API_MODE || 'mock') !== 'live';
 
   const [queryClient] = useState(() => new QueryClient({
@@ -70,7 +74,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                   Flow preview mode: screens and sample workflows are available, but external publishing, payments, and live automation are not connected.
                 </div>
               )}
-              <FlowBotOnboarding />
+              {!isPublicPage && <FlowBotOnboarding />}
               <Suspense fallback={<PageLoader />}>
                 {isPublicPage ? (
                   children
@@ -78,7 +82,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                   <AppShell>{children}</AppShell>
                 )}
               </Suspense>
-              <FlowAssistant />
+              {!isPublicPage && <FlowAssistant />}
               <Toaster
                 position="top-right"
                 toastOptions={{

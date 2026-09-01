@@ -202,7 +202,7 @@ export default function ProductAnalyticsDashboard() {
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
+        <div className="bg-linear-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
           <div className="flex items-center justify-between mb-2">
             <HiCurrencyDollar className="w-8 h-8" />
             <span className="text-sm opacity-90">Total Revenue</span>
@@ -211,7 +211,7 @@ export default function ProductAnalyticsDashboard() {
           <div className="text-sm opacity-75 mt-1">+12.5% from last period</div>
         </div>
 
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg">
+        <div className="bg-linear-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg">
           <div className="flex items-center justify-between mb-2">
             <HiTrendingUp className="w-8 h-8" />
             <span className="text-sm opacity-90">Total Profit</span>
@@ -222,7 +222,7 @@ export default function ProductAnalyticsDashboard() {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
+        <div className="bg-linear-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
           <div className="flex items-center justify-between mb-2">
             <HiShoppingCart className="w-8 h-8" />
             <span className="text-sm opacity-90">Total Sales</span>
@@ -231,7 +231,7 @@ export default function ProductAnalyticsDashboard() {
           <div className="text-sm opacity-75 mt-1">Across {analytics.products.length} products</div>
         </div>
 
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg">
+        <div className="bg-linear-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg">
           <div className="flex items-center justify-between mb-2">
             <HiChartBar className="w-8 h-8" />
             <span className="text-sm opacity-90">Conversion Rate</span>

@@ -300,7 +300,7 @@ export default function DesignEditor({ imageUrl, onSave, onCancel }: DesignEdito
     <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-7xl max-h-screen overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-4 flex items-center justify-between">
+        <div className="bg-linear-to-r from-blue-600 to-indigo-600 text-white px-6 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <HiPencil className="w-6 h-6" />
             <h2 className="text-2xl font-bold">Design Editor</h2>
@@ -390,7 +390,7 @@ export default function DesignEditor({ imageUrl, onSave, onCancel }: DesignEdito
                   <button
                     onClick={handleRemoveBackground}
                     disabled={removingBackground || backgroundRemoved}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-3 rounded-lg hover:from-purple-700 hover:to-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 font-semibold"
+                    className="w-full bg-linear-to-r from-purple-600 to-pink-600 text-white px-4 py-3 rounded-lg hover:from-purple-700 hover:to-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 font-semibold"
                   >
                     {removingBackground ? (
                       <>
@@ -610,7 +610,7 @@ export default function DesignEditor({ imageUrl, onSave, onCancel }: DesignEdito
             </button>
             <button
               onClick={handleSave}
-              className="flex items-center space-x-2 px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition shadow-lg"
+              className="flex items-center space-x-2 px-6 py-2 bg-linear-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition shadow-lg"
             >
               <HiCheck className="w-5 h-5" />
               <span>Save Design</span>

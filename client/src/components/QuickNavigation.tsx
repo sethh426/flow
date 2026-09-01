@@ -46,7 +46,7 @@ export default function QuickNavigation({ currentTab, onTabChange }: QuickNaviga
                 pill
                 className={`${
                   isActive 
-                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg shadow-purple-500/50' 
+                    ? 'bg-linear-to-r from-purple-600 to-blue-600 text-white shadow-lg shadow-purple-500/50'
                     : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                 } transition-all duration-300 transform hover:scale-110`}
               >
@@ -62,7 +62,7 @@ export default function QuickNavigation({ currentTab, onTabChange }: QuickNaviga
         onClick={() => setOpen(!open)}
         pill
         size="xl"
-        className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-2xl shadow-purple-500/50 transform hover:scale-110 transition-all duration-300"
+        className="bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-2xl shadow-purple-500/50 transform hover:scale-110 transition-all duration-300"
       >
         {open ? <HiX className="h-6 w-6" /> : <HiMenu className="h-6 w-6" />}
       </Button>

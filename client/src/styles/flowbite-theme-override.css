@@ -27,10 +27,8 @@ button:not([class*="bg-"]) {
 }
 
 /* Dark mode adjustments */
-@media (prefers-color-scheme: dark) {
-  button[class*="bg-gray"] {
-    color: var(--text-primary) !important;
-  }
+.dark button[class*="bg-gray"] {
+  color: var(--text-primary) !important;
 }
 
 /* Card components */
@@ -66,23 +64,6 @@ button:not([class*="bg-"]) {
    TAILWIND UTILITY CLASS PROTECTION
    Ensure Tailwind color utilities work correctly
    ============================================ */
-
-/* Protect Tailwind text color utilities from being overridden */
-.text-gray-700 {
-  color: rgb(55, 65, 81) !important;
-}
-
-.text-gray-900 {
-  color: rgb(17, 24, 39) !important;
-}
-
-.dark .dark\:text-gray-100 {
-  color: rgb(243, 244, 246) !important;
-}
-
-.dark .dark\:text-gray-300 {
-  color: rgb(209, 213, 219) !important;
-}
 
 /* Ensure gradient text works */
 .bg-clip-text {

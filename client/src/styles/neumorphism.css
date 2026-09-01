@@ -18,15 +18,13 @@
   --neu-surface: #f9fafb;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
+:root.dark {
     --neu-bg: #111827;
     --neu-shadow-dark: rgba(0, 0, 0, 0.5);
     --neu-shadow-light: rgba(55, 65, 81, 0.3);
     --neu-text: #f9fafb;
     --neu-text-secondary: #d1d5db;
     --neu-surface: #1f2937;
-  }
 }
 
 /* ============================================

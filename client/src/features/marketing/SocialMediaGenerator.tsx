@@ -154,7 +154,7 @@ export default function SocialMediaGenerator() {
               <button
                 onClick={generateSocialPosts}
                 disabled={generating || !productImage || !productTitle}
-                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-pink-600 hover:to-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 shadow-lg"
+                className="w-full bg-linear-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-pink-600 hover:to-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 shadow-lg"
               >
                 <HiSparkles className="w-5 h-5" />
                 <span>{generating ? 'Generating...' : 'Generate Posts'}</span>
@@ -163,7 +163,7 @@ export default function SocialMediaGenerator() {
           </div>
 
           {posts.length > 0 && (
-            <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-6">
+            <div className="bg-linear-to-br from-green-50 to-blue-50 rounded-xl p-6">
               <h3 className="font-bold text-gray-900 mb-2">✅ Posts Ready!</h3>
               <p className="text-sm text-gray-600">
                 Generated {posts.length} social media posts. Click on any post to copy the caption.
@@ -187,7 +187,7 @@ export default function SocialMediaGenerator() {
                 {posts.map((post, idx) => (
                   <div key={idx} className="border rounded-xl overflow-hidden hover:shadow-lg transition">
                     {/* Platform Header */}
-                    <div className={`bg-gradient-to-r ${getPlatformColor(post.platform)} text-white px-4 py-3 flex items-center justify-between`}>
+                    <div className={`bg-linear-to-r ${getPlatformColor(post.platform)} text-white px-4 py-3 flex items-center justify-between`}>
                       <div className="flex items-center space-x-2">
                         <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
                           <span className="text-xl">{

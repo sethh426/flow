@@ -117,7 +117,7 @@ export default function DashboardLayoutFlowbite({ children, currentTab, onTabCha
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <Button
               onClick={() => handleNavigation(4)}
-              className="group flex items-center gap-2 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-500/40 transition hover:shadow-xl"
+              className="group flex items-center gap-2 rounded-2xl bg-linear-to-r from-purple-600 via-indigo-600 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-500/40 transition hover:shadow-xl"
             >
               Trend Radar
               <HiArrowSmRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -169,7 +169,7 @@ export default function DashboardLayoutFlowbite({ children, currentTab, onTabCha
                 onClick={() => handleNavigation(item.id)}
                 className={`flex min-w-[220px] flex-col rounded-2xl px-4 py-3 text-left transition hover:-translate-y-0.5 hover:shadow-lg ${
                   isActive
-                    ? 'bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white shadow-xl'
+                    ? 'bg-linear-to-r from-purple-600 via-indigo-600 to-blue-600 text-white shadow-xl'
                     : 'bg-white text-slate-600 shadow-sm dark:bg-slate-900/80 dark:text-slate-300'
                 }`}
               >

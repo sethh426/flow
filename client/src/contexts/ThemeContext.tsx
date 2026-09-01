@@ -40,6 +40,13 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     }
   }, []);
 
+  // Keep Tailwind, Flowbite, MUI, and native controls on the same theme.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle('dark', mode === 'dark');
+    root.style.colorScheme = mode;
+  }, [mode]);
+
   // Listen to system theme changes
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');

@@ -163,7 +163,7 @@ export default function MainNav() {
         <div className="flex h-full flex-col">
           <div className="flex h-20 items-center justify-between px-6">
             <Link href="/" className="flex items-center gap-3" onClick={handleClose}>
-              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-purple-600 via-blue-500 to-indigo-500 shadow-lg shadow-purple-500/30">
+              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-linear-to-br from-purple-600 via-blue-500 to-indigo-500 shadow-lg shadow-purple-500/30">
                 <span className="text-lg font-semibold text-white">Flow</span>
               </div>
               <div>
@@ -216,7 +216,7 @@ export default function MainNav() {
                         onClick={handleClose}
                         className={`group block rounded-2xl border border-transparent bg-white/60 px-4 py-3 shadow-sm ring-1 ring-transparent transition-all duration-200 hover:-translate-y-[1px] hover:border-purple-200/60 hover:shadow-lg hover:ring-purple-500/20 dark:bg-slate-900/60 dark:hover:border-purple-500/40 ${
                           isActive
-                            ? 'border-purple-200/70 bg-gradient-to-r from-purple-600/90 via-indigo-600/90 to-purple-600/90 text-white shadow-xl ring-1 ring-purple-500/60 dark:border-purple-500/50'
+                            ? 'border-purple-200/70 bg-linear-to-r from-purple-600/90 via-indigo-600/90 to-purple-600/90 text-white shadow-xl ring-1 ring-purple-500/60 dark:border-purple-500/50'
                             : 'text-slate-700 dark:text-slate-200'
                         }`}
                       >
@@ -265,7 +265,7 @@ export default function MainNav() {
           </nav>
 
           <div className="border-t border-slate-200/70 p-6 dark:border-slate-800/70">
-            <div className="rounded-2xl bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 p-5 text-white shadow-xl">
+            <div className="rounded-2xl bg-linear-to-br from-slate-900 via-purple-900 to-indigo-900 p-5 text-white shadow-xl">
               <div className="flex items-center gap-3">
                 <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/15">
                   <HiBeaker className="h-5 w-5" />
@@ -298,7 +298,7 @@ export default function MainNav() {
               onClick={handleClose}
               className="mt-4 flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-3 transition hover:border-purple-200/70 hover:shadow-lg dark:border-slate-800/80 dark:bg-slate-900/80"
             >
-              <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-white">
+              <div className="grid h-9 w-9 place-items-center rounded-full bg-linear-to-br from-purple-500 to-indigo-500 text-white">
                 <HiUserGroup className="h-5 w-5" />
               </div>
               <div>

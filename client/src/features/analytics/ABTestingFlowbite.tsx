@@ -7,7 +7,7 @@ export default function ABTestingFlowbite() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-bold bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
           A/B Testing
         </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-1">
@@ -22,7 +22,7 @@ export default function ABTestingFlowbite() {
           <p className="text-gray-600 dark:text-gray-400 mb-6">
             Create and manage split tests for your campaigns
           </p>
-          <Button className="bg-gradient-to-r from-purple-600 to-blue-600">
+          <Button className="bg-linear-to-r from-purple-600 to-blue-600">
             Create Test
           </Button>
         </div>

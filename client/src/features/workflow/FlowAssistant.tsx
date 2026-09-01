@@ -223,33 +223,21 @@ export default function FlowAssistant({
           <Paper
             elevation={8}
             sx={{
+              display: { xs: 'none', md: 'block' },
               position: 'fixed',
               ...getPosition(),
               ...(position.includes('right') 
                 ? { right: 100, top: '50%', transform: 'translateY(-50%)' }
                 : { left: 100, top: '50%', transform: 'translateY(-50%)' }
               ),
-              maxWidth: 280,
+              maxWidth: 320,
               p: 2,
               borderRadius: 3,
-              bgcolor: 'rgba(255, 255, 255, 0.95)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(102, 126, 234, 0.2)',
+              bgcolor: 'background.paper',
+              color: 'text.primary',
+              border: '1px solid',
+              borderColor: 'divider',
               zIndex: 1301,
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                ...(position.includes('right') 
-                  ? { right: -8, top: '50%', transform: 'translateY(-50%)' }
-                  : { left: -8, top: '50%', transform: 'translateY(-50%)' }
-                ),
-                width: 0,
-                height: 0,
-                borderStyle: 'solid',
-                borderWidth: '8px 8px 8px 0',
-                borderColor: 'transparent rgba(255, 255, 255, 0.95) transparent transparent',
-                filter: 'drop-shadow(2px 0 4px rgba(0,0,0,0.1))',
-              },
             }}
           >
             <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.primary' }}>

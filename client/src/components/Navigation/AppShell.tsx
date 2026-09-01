@@ -108,7 +108,7 @@ export default function AppShell({ children }: AppShellProps) {
                   </button>
                   <button
                     type="button"
-                    className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-500/30 transition hover:shadow-xl"
+                    className="inline-flex items-center gap-2 rounded-2xl bg-linear-to-r from-purple-600 via-indigo-600 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-500/30 transition hover:shadow-xl"
                   >
                     <HiQuestionMarkCircle className="h-4 w-4" />
                     Flow Assistant

@@ -297,7 +297,7 @@ export default function ProductsPageFlowbite() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
             Products
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
@@ -307,14 +307,14 @@ export default function ProductsPageFlowbite() {
         <div className="flex gap-2">
           <Button 
             onClick={() => router.push('/dashboard/products/create-printify')}
-            className="bg-gradient-to-r from-purple-600 to-blue-600"
+            className="bg-linear-to-r from-purple-600 to-blue-600"
           >
             <HiShoppingBag className="mr-2 h-5 w-5" />
             Create Product
           </Button>
           <Button 
             onClick={() => router.push('/dashboard/products/bulk-create')}
-            className="bg-gradient-to-r from-yellow-500 to-orange-600"
+            className="bg-linear-to-r from-yellow-500 to-orange-600"
           >
             ⚡ Bulk Create
           </Button>
@@ -365,14 +365,14 @@ export default function ProductsPageFlowbite() {
             <Button
               color={viewMode === 'grid' ? 'purple' : 'gray'}
               onClick={() => setViewMode('grid')}
-              className={viewMode === 'grid' ? 'bg-gradient-to-r from-purple-600 to-blue-600' : ''}
+              className={viewMode === 'grid' ? 'bg-linear-to-r from-purple-600 to-blue-600' : ''}
             >
               <HiViewGrid className="h-5 w-5" />
             </Button>
             <Button
               color={viewMode === 'list' ? 'purple' : 'gray'}
               onClick={() => setViewMode('list')}
-              className={viewMode === 'list' ? 'bg-gradient-to-r from-purple-600 to-blue-600' : ''}
+              className={viewMode === 'list' ? 'bg-linear-to-r from-purple-600 to-blue-600' : ''}
             >
               <HiViewList className="h-5 w-5" />
             </Button>
@@ -565,7 +565,7 @@ export default function ProductsPageFlowbite() {
       {/* Edit/Create Modal */}
       <Modal show={dialogOpen} onClose={() => setDialogOpen(false)} size="xl">
         <div className="p-6">
-          <h3 className="text-2xl font-bold mb-6 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <h3 className="text-2xl font-bold mb-6 bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
             {selectedProduct ? 'Edit Product' : 'Add Product'}
           </h3>
           <div className="space-y-4">
@@ -648,7 +648,7 @@ export default function ProductsPageFlowbite() {
             <Button color="gray" onClick={() => setDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave} className="bg-gradient-to-r from-purple-600 to-blue-600">
+            <Button onClick={handleSave} className="bg-linear-to-r from-purple-600 to-blue-600">
               Save Product
             </Button>
           </div>
@@ -731,7 +731,7 @@ export default function ProductsPageFlowbite() {
                 </div>
                 <Button
                   onClick={() => window.open(selectedProduct.affiliateLink, '_blank')}
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600"
+                  className="w-full bg-linear-to-r from-purple-600 to-blue-600"
                 >
                   View Affiliate Link
                 </Button>

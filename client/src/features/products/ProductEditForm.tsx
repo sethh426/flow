@@ -305,7 +305,7 @@ export function ProductEditForm({ product }: ProductEditFormProps) {
                   type="submit"
                   disabled={isDeleting || isSubmitting}
                   color="purple"
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  className="bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                 >
                   {isSubmitting ? (
                     <>

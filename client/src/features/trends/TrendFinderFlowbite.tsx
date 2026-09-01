@@ -212,7 +212,7 @@ export default function TrendFinderFlowbite() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4" data-testid="trend-finder-header">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent" data-testid="trend-finder-title">
+          <h1 className="text-3xl font-bold bg-linear-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent" data-testid="trend-finder-title">
             Trend Finder
           </h1>
           <p className="text-gray-700 dark:text-gray-300 mt-1" data-testid="trend-finder-subtitle">
@@ -223,7 +223,7 @@ export default function TrendFinderFlowbite() {
           <Button onClick={fetchTrends} color="gray" disabled={loading} data-testid="refresh-trends-button">
             {loading ? <Spinner size="sm" data-testid="refresh-spinner" /> : <HiRefresh className="h-5 w-5" />}
           </Button>
-          <Button className="bg-gradient-to-r from-purple-600 to-blue-600" data-testid="set-alert-button">
+          <Button className="bg-linear-to-r from-purple-600 to-blue-600" data-testid="set-alert-button">
             <HiBell className="mr-2 h-5 w-5" />
             Set Alert
           </Button>
@@ -325,7 +325,7 @@ export default function TrendFinderFlowbite() {
               </div>
 
               {/* Trend Score */}
-              <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg p-4" data-testid={`trend-score-panel-${trend.id}`}>
+              <div className="bg-linear-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg p-4" data-testid={`trend-score-panel-${trend.id}`}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Trend Score</span>
                   <span className={`text-2xl font-bold ${getScoreColor(trend.score)}`} data-testid={`trend-score-value-${trend.id}`}>
@@ -386,7 +386,7 @@ export default function TrendFinderFlowbite() {
       </div>
 
       {/* Top Opportunities Banner */}
-      <Card className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+      <Card className="bg-linear-to-r from-purple-600 to-blue-600 text-white">
         <div className="flex items-center gap-4">
           <div className="bg-white/20 p-4 rounded-lg">
             <HiFire className="h-8 w-8" />
@@ -502,7 +502,7 @@ export default function TrendFinderFlowbite() {
               <Button color="gray" onClick={() => setDetailsOpen(false)}>
                 Close
               </Button>
-              <Button className="bg-gradient-to-r from-purple-600 to-blue-600">
+              <Button className="bg-linear-to-r from-purple-600 to-blue-600">
                 <HiPlus className="mr-2 h-5 w-5" />
                 Create Campaign
               </Button>

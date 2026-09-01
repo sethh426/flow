@@ -695,7 +695,7 @@ export default function PrintifyProductCreator() {
             </div>
 
             {/* NEW: Mockup Library Showcase */}
-            <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2 border-purple-200 dark:border-purple-800">
+            <Card className="bg-linear-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2 border-purple-200 dark:border-purple-800">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <span className="text-3xl">🎨</span>
@@ -1211,7 +1211,7 @@ export default function PrintifyProductCreator() {
             <h2 className="text-2xl font-bold mb-4">Select Variants & Set Prices</h2>
 
             {/* Variant Presets */}
-            <Card className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20">
+            <Card className="bg-linear-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20">
               <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                 <HiStar className="text-purple-600" />
                 Quick Selection Presets
@@ -1386,7 +1386,7 @@ export default function PrintifyProductCreator() {
             <h2 className="text-2xl font-bold mb-4">Product Details</h2>
 
             {/* Summary Stats Card */}
-            <Card className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
+            <Card className="bg-linear-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
               <h3 className="text-lg font-semibold mb-3">📊 Product Summary</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
@@ -1726,7 +1726,7 @@ export default function PrintifyProductCreator() {
         </div>
 
         {/* Keyboard Shortcuts Hint */}
-        <Card className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-200">
+        <Card className="bg-linear-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-purple-200">
           <div className="flex items-center gap-3 text-sm">
             <span className="text-xl">⌨️</span>
             <div className="flex flex-wrap gap-x-4 gap-y-1">

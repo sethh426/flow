@@ -215,8 +215,13 @@
 }
 
 .MuiInputLabel-root {
-  background-color: white !important;
+  background-color: var(--bg-paper) !important;
+  color: var(--text-secondary) !important;
   padding-inline: 4px !important;
+}
+
+.MuiInputLabel-root.Mui-focused {
+  color: var(--primary) !important;
 }
 
 /* ========== TOOLTIP FIXES ========== */
@@ -461,37 +466,35 @@
 
 /* ========== DARK MODE SUPPORT (Future) ========== */
 
-@media (prefers-color-scheme: dark) {
-  .MuiCard-root {
+.dark .MuiCard-root {
     background-color: rgba(255, 255, 255, 0.05) !important;
-  }
-  
-  .MuiDivider-root {
+}
+
+.dark .MuiDivider-root {
     border-color: rgba(255, 255, 255, 0.12) !important;
-  }
-  
-  ::-webkit-scrollbar-track {
+}
+
+.dark ::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.05);
-  }
-  
-  ::-webkit-scrollbar-thumb {
+}
+
+.dark ::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.3);
-  }
 }
 
 /* ========== ACCESSIBILITY IMPROVEMENTS ========== */
 
 /* Ensure sufficient color contrast */
 .MuiTypography-body2 {
-  color: rgba(0, 0, 0, 0.7) !important;
+  color: var(--text-secondary) !important;
 }
 
 .MuiTypography-caption {
-  color: rgba(0, 0, 0, 0.6) !important;
+  color: var(--text-tertiary) !important;
 }
 
 /* Keyboard navigation highlights */

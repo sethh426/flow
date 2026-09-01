@@ -318,7 +318,7 @@ export default function BulkProductCreator() {
         {/* Left Panel - Upload & Settings */}
         <div className="lg:col-span-1 space-y-6">
           {/* AI Tools */}
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl shadow-lg p-6">
+          <div className="bg-linear-to-br from-purple-50 to-pink-50 rounded-xl shadow-lg p-6">
             <h3 className="font-bold text-gray-900 mb-4 flex items-center">
               <HiSparkles className="w-5 h-5 mr-2 text-purple-600" />
               AI Power Tools
@@ -328,7 +328,7 @@ export default function BulkProductCreator() {
               <button
                 onClick={() => setShowAIModal(true)}
                 disabled={isProcessing || generatingDesign}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-3 rounded-lg hover:from-purple-700 hover:to-pink-700 transition disabled:opacity-50 flex items-center justify-center space-x-2 shadow-lg"
+                className="w-full bg-linear-to-r from-purple-600 to-pink-600 text-white px-4 py-3 rounded-lg hover:from-purple-700 hover:to-pink-700 transition disabled:opacity-50 flex items-center justify-center space-x-2 shadow-lg"
               >
                 <HiSparkles className="w-5 h-5" />
                 <span>Generate Design from Text</span>
@@ -336,7 +336,7 @@ export default function BulkProductCreator() {
 
               <button
                 onClick={() => setShowTrendScanner(true)}
-                className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-4 py-3 rounded-lg hover:from-blue-700 hover:to-cyan-700 transition flex items-center justify-center space-x-2 shadow-lg"
+                className="w-full bg-linear-to-r from-blue-600 to-cyan-600 text-white px-4 py-3 rounded-lg hover:from-blue-700 hover:to-cyan-700 transition flex items-center justify-center space-x-2 shadow-lg"
               >
                 <HiTrendingUp className="w-5 h-5" />
                 <span>Scan Trending Topics</span>
@@ -345,7 +345,7 @@ export default function BulkProductCreator() {
               <button
                 onClick={runAutoPilot}
                 disabled={autoPilotMode}
-                className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-4 py-3 rounded-lg hover:from-yellow-600 hover:to-orange-700 transition disabled:opacity-50 flex items-center justify-center space-x-2 shadow-lg font-bold"
+                className="w-full bg-linear-to-r from-yellow-500 to-orange-600 text-white px-4 py-3 rounded-lg hover:from-yellow-600 hover:to-orange-700 transition disabled:opacity-50 flex items-center justify-center space-x-2 shadow-lg font-bold"
               >
                 <HiLightningBolt className="w-5 h-5" />
                 <span>{autoPilotMode ? 'Running Auto-Pilot...' : '🤖 Auto-Pilot (5 Products)'}</span>
@@ -484,7 +484,7 @@ export default function BulkProductCreator() {
           </div>
 
           {/* Status Summary */}
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6">
+          <div className="bg-linear-to-br from-blue-50 to-indigo-50 rounded-xl p-6">
             <h3 className="font-bold text-gray-900 mb-4">Status Summary</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
@@ -508,7 +508,7 @@ export default function BulkProductCreator() {
             <button
               onClick={processAllProducts}
               disabled={items.length === 0 || isProcessing || pendingCount === 0}
-              className="w-full mt-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 shadow-lg"
+              className="w-full mt-4 bg-linear-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 shadow-lg"
             >
               <HiLightningBolt className="w-5 h-5" />
               <span>{isProcessing ? 'Processing...' : `Create ${pendingCount} Products`}</span>
@@ -664,7 +664,7 @@ export default function BulkProductCreator() {
                 <button
                   onClick={generateAIDesign}
                   disabled={generatingDesign || !aiDesignPrompt}
-                  className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg hover:from-purple-700 hover:to-pink-700 transition disabled:opacity-50 flex items-center justify-center space-x-2"
+                  className="flex-1 bg-linear-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg hover:from-purple-700 hover:to-pink-700 transition disabled:opacity-50 flex items-center justify-center space-x-2"
                 >
                   {generatingDesign ? (
                     <>
@@ -701,7 +701,7 @@ export default function BulkProductCreator() {
               </button>
             </div>
 
-            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 p-6 rounded-lg mb-6">
+            <div className="bg-linear-to-r from-blue-50 to-cyan-50 p-6 rounded-lg mb-6">
               <h3 className="font-bold text-gray-900 mb-4">🔥 Hot Topics Right Now:</h3>
               <div className="space-y-4">
                 <div className="bg-white p-4 rounded-lg shadow">
