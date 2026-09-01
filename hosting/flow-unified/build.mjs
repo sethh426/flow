@@ -10,9 +10,30 @@ const earlyDir = join(repoRoot, 'flow-early-adopters');
 const investorDir = join(repoRoot, 'flowinvestorglance-temp');
 const clientDir = join(repoRoot, 'client');
 const npmCli = process.env.npm_execpath;
+const apiMode = process.argv.includes('--live') ? 'live' : (process.env.FLOW_API_MODE || 'mock');
+const apiUrl = (process.env.FLOW_API_URL || '').replace(/\/$/, '');
 
 if (!npmCli) {
   throw new Error('Run this builder through `npm run build` so npm_execpath is available.');
+}
+
+if (apiMode === 'live') {
+  const requiredVariables = [
+    'NEXT_PUBLIC_FIREBASE_API_KEY',
+    'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
+    'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+    'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
+    'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
+    'NEXT_PUBLIC_FIREBASE_APP_ID',
+  ];
+  const missingVariables = requiredVariables.filter((name) => !process.env[name]);
+
+  if (!apiUrl) {
+    throw new Error('FLOW_API_URL is required for a live build.');
+  }
+  if (missingVariables.length > 0) {
+    throw new Error(`Missing live Firebase web configuration: ${missingVariables.join(', ')}`);
+  }
 }
 
 function run(command, args, cwd, env = {}) {
@@ -48,7 +69,8 @@ mkdirSync(outputDir, { recursive: true });
 run(process.execPath, [npmCli, 'run', 'build'], earlyDir);
 run(process.execPath, [npmCli, 'run', 'build'], clientDir, {
   NEXT_PUBLIC_BASE_PATH: '/app',
-  NEXT_PUBLIC_API_MODE: 'mock',
+  NEXT_PUBLIC_API_MODE: apiMode,
+  NEXT_PUBLIC_API_URL: apiUrl,
   NEXT_PUBLIC_APP_URL: 'https://flowearlyadopters.web.app/app/',
 });
 
@@ -69,7 +91,8 @@ const buildInfo = {
     investors: '/investors/',
     application: '/app/',
   },
-  apiMode: 'mock',
+  apiMode,
+  apiOrigin: apiUrl || null,
 };
 
 writeFileSync(

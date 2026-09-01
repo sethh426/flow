@@ -1,17 +1,46 @@
 import { onRequest } from 'firebase-functions/v2/https';
 import * as logger from 'firebase-functions/logger';
 import { Firestore } from '@google-cloud/firestore';
-import { NeuralOrchestrator } from './index';
+import { DecodedIdToken } from 'firebase-admin/auth';
+import type { NeuralOrchestrator } from './index';
+import {
+  handleCors,
+  isAdmin,
+  isLiveAiEnabled,
+  requireFirebaseUser,
+  requireLiveAi,
+} from './http-security';
 
 const db = new Firestore();
 let orchestrator: NeuralOrchestrator | null = null;
 
-function getOrchestrator(): NeuralOrchestrator {
+async function getOrchestrator(): Promise<NeuralOrchestrator> {
   if (!orchestrator) {
     const projectId = process.env.GCP_PROJECT || process.env.GCLOUD_PROJECT || 'affiliateflow-abzfy';
+    const { NeuralOrchestrator } = await import('./index');
     orchestrator = new NeuralOrchestrator(projectId);
   }
   return orchestrator;
+}
+
+function boundedString(value: unknown, maxLength: number): string {
+  return typeof value === 'string' ? value.trim().slice(0, maxLength) : '';
+}
+
+function timestampValue(value: any): number {
+  if (value?.toMillis) return value.toMillis();
+  const parsed = new Date(value || 0).getTime();
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function canManageDocument(data: any, user: DecodedIdToken): boolean {
+  return data?.userId === user.uid || isAdmin(user);
+}
+
+function withoutProtectedFields(body: any): Record<string, unknown> {
+  const source = body && typeof body === 'object' ? body : {};
+  const { id, userId, createdAt, updatedAt, ...safe } = source;
+  return safe;
 }
 
 /**
@@ -19,84 +48,114 @@ function getOrchestrator(): NeuralOrchestrator {
  * This replaces the Next.js API routes that were moved to _api_backup
  */
 export const api = onRequest({
-  timeoutSeconds: 540,
-  memory: '2GiB',
-  maxInstances: 100,
-  cors: true,
+  timeoutSeconds: 120,
+  memory: '512MiB',
+  maxInstances: 10,
+  concurrency: 40,
+  cors: false,
 }, async (req, res) => {
+  if (handleCors(req, res)) return;
+
   const path = req.path;
   const method = req.method;
 
-  logger.info(`API Request: ${method} ${path}`, { 
-    body: req.body,
-    query: req.query,
+  if (path === '/api/health') {
+    if (method !== 'GET') {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    return res.json({
+      status: 'ok',
+      service: 'affiliateflow-api',
+      version: '2026-09-01',
+      authentication: 'Firebase ID token required outside this health route',
+      aiEnabled: isLiveAiEnabled(),
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  const user = await requireFirebaseUser(req, res);
+  if (!user) {
+    return;
+  }
+
+  logger.info('Authenticated API request', {
+    method,
+    path,
+    userId: user.uid,
   });
 
   try {
     // Route to appropriate handler
     if (path.startsWith('/api/flowbot')) {
-      return await handleFlowbot(req, res);
+      return await handleFlowbot(req, res, user);
     } else if (path.startsWith('/api/analytics')) {
-      return await handleAnalytics(req, res);
+      return await handleAnalytics(req, res, user);
     } else if (path.startsWith('/api/campaigns')) {
-      return await handleCampaigns(req, res);
+      return await handleCampaigns(req, res, user);
     } else if (path.startsWith('/api/products')) {
-      return await handleProducts(req, res);
+      return await handleProducts(req, res, user);
     } else if (path.startsWith('/api/intelligence')) {
-      return await handleIntelligence(req, res);
+      return await handleIntelligence(req, res, user);
     } else if (path.startsWith('/api/workflows')) {
-      return await handleWorkflows(req, res);
-    } else if (path.startsWith('/api/content')) {
-      return await handleContent(req, res);
+      return await handleWorkflows(req, res, user);
+    } else if (path.startsWith('/api/content') || path === '/api/generate-content') {
+      return await handleContent(req, res, user);
     } else if (path.startsWith('/api/trends')) {
-      return await handleTrends(req, res);
-    } else if (path.startsWith('/api/health')) {
-      return res.json({ status: 'ok', timestamp: new Date().toISOString() });
+      return await handleTrends(req, res, user);
+    } else if (
+      path.startsWith('/api/ab-tests') ||
+      path.startsWith('/api/social-') ||
+      path.startsWith('/api/messages') ||
+      path.startsWith('/api/image')
+    ) {
+      return res.status(501).json({
+        error: 'This operation is not implemented in the live API.',
+        code: 'NOT_IMPLEMENTED',
+        path,
+      });
     } else {
       return res.status(404).json({ error: 'API endpoint not found', path });
     }
   } catch (error: any) {
     logger.error(`API Error: ${method} ${path}`, error);
-    return res.status(500).json({ 
-      error: 'Internal server error',
-      message: error.message,
-    });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 /**
  * Handle Flowbot chat requests
  */
-async function handleFlowbot(req: any, res: any) {
+async function handleFlowbot(req: any, res: any, user: DecodedIdToken) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { question, history, userId } = req.body;
+  if (!requireLiveAi(res)) return;
+
+  const question = boundedString(req.body?.question || req.body?.message, 8000);
+  const history = Array.isArray(req.body?.history) ? req.body.history.slice(-20) : [];
 
   if (!question) {
     return res.status(400).json({ error: 'Question is required' });
   }
 
   // Use neural orchestrator for intelligent routing
-  const result = await getOrchestrator().execute({
+  const result = await (await getOrchestrator()).execute({
     type: 'conversational',
     complexity: 'complex',
     context: `${history ? 'Previous conversation:\n' + JSON.stringify(history) + '\n\n' : ''}User question: ${question}`,
     priority: 'quality',
   });
 
-  // Save to memory if userId provided
-  if (userId) {
-    await db.collection('flowbot_conversations').add({
-      userId,
-      question,
-      answer: result.text,
-      timestamp: new Date(),
-      model: result.model,
-      cost: result.cost,
-    });
-  }
+  await db.collection('flowbot_conversations').add({
+    userId: user.uid,
+    question,
+    answer: result.text,
+    timestamp: new Date(),
+    model: result.model,
+    cost: result.cost,
+  });
 
   return res.json({
     answer: result.text,
@@ -109,45 +168,38 @@ async function handleFlowbot(req: any, res: any) {
 /**
  * Handle Analytics requests
  */
-async function handleAnalytics(req: any, res: any) {
+async function handleAnalytics(req: any, res: any, user: DecodedIdToken) {
   const path = req.path;
 
   // GET /api/analytics - get analytics data
   if (req.method === 'GET' && path === '/api/analytics') {
-    const { timeRange = '7d', userId } = req.query;
+    const { timeRange = '7d' } = req.query;
 
     // Calculate date range
     const endDate = new Date();
     const startDate = new Date();
-    const days = parseInt(timeRange.replace('d', '')) || 7;
+    const days = Math.min(Math.max(parseInt(String(timeRange).replace('d', '')) || 7, 1), 90);
     startDate.setDate(startDate.getDate() - days);
 
-    // Query analytics from Firestore
-    let query = db.collection('analytics')
-      .where('timestamp', '>=', startDate)
-      .where('timestamp', '<=', endDate)
-      .orderBy('timestamp', 'desc');
-
-    if (userId) {
-      query = query.where('userId', '==', userId);
-    }
-
-    const snapshot = await query.limit(1000).get();
-    const analytics = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const snapshot = await db.collection('analytics')
+      .where('userId', '==', user.uid)
+      .limit(1000)
+      .get();
+    const analytics = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter((item: any) => {
+        const timestamp = timestampValue(item.timestamp);
+        return timestamp >= startDate.getTime() && timestamp <= endDate.getTime();
+      })
+      .sort((a: any, b: any) => timestampValue(b.timestamp) - timestampValue(a.timestamp));
 
     return res.json({ success: true, data: analytics });
   }
 
   // GET /api/analytics/summary - get summary stats
   if (req.method === 'GET' && path === '/api/analytics/summary') {
-    const { userId } = req.query;
-
-    // Get summary stats from Firestore aggregations
     const summaryDoc = await db.collection('analytics_summary')
-      .doc(userId || 'global')
+      .doc(user.uid)
       .get();
 
     if (!summaryDoc.exists) {
@@ -171,38 +223,38 @@ async function handleAnalytics(req: any, res: any) {
 /**
  * Handle Campaign requests
  */
-async function handleCampaigns(req: any, res: any) {
+async function handleCampaigns(req: any, res: any, user: DecodedIdToken) {
   // GET /api/campaigns - list campaigns
   if (req.method === 'GET' && req.path === '/api/campaigns') {
-    const { userId, status } = req.query;
-
-    let query = db.collection('campaigns');
-
-    if (userId) {
-      query = query.where('userId', '==', userId) as any;
-    }
-    if (status) {
-      query = query.where('status', '==', status) as any;
-    }
-
-    const snapshot = await query.orderBy('createdAt', 'desc').limit(100).get();
-    const campaigns = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const status = boundedString(req.query?.status, 40);
+    const snapshot = await db.collection('campaigns')
+      .where('userId', '==', user.uid)
+      .limit(100)
+      .get();
+    const campaigns = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter((item: any) => !status || item.status === status)
+      .sort((a: any, b: any) => timestampValue(b.createdAt) - timestampValue(a.createdAt));
 
     return res.json({ success: true, data: campaigns });
   }
 
   // POST /api/campaigns - create campaign
   if (req.method === 'POST' && req.path === '/api/campaigns') {
-    const campaignData = req.body;
+    const campaignData = withoutProtectedFields(req.body);
+    const name = boundedString((campaignData as any).name, 160);
+
+    if (!name) {
+      return res.status(400).json({ error: 'Campaign name is required.' });
+    }
 
     const docRef = await db.collection('campaigns').add({
       ...campaignData,
+      name,
+      userId: user.uid,
       createdAt: new Date(),
       updatedAt: new Date(),
-      status: campaignData.status || 'draft',
+      status: boundedString((campaignData as any).status, 40) || 'draft',
     });
 
     const doc = await docRef.get();
@@ -222,6 +274,10 @@ async function handleCampaigns(req: any, res: any) {
       return res.status(404).json({ error: 'Campaign not found' });
     }
 
+    if (!canManageDocument(doc.data(), user)) {
+      return res.status(403).json({ error: 'Access denied.' });
+    }
+
     return res.json({
       success: true,
       data: { id: doc.id, ...doc.data() },
@@ -231,7 +287,16 @@ async function handleCampaigns(req: any, res: any) {
   // PATCH /api/campaigns/[id] - update campaign
   if (req.method === 'PATCH' && idMatch) {
     const campaignId = idMatch[1];
-    const updates = req.body;
+    const existing = await db.collection('campaigns').doc(campaignId).get();
+
+    if (!existing.exists) {
+      return res.status(404).json({ error: 'Campaign not found' });
+    }
+    if (!canManageDocument(existing.data(), user)) {
+      return res.status(403).json({ error: 'Access denied.' });
+    }
+
+    const updates = withoutProtectedFields(req.body);
 
     await db.collection('campaigns').doc(campaignId).update({
       ...updates,
@@ -248,6 +313,15 @@ async function handleCampaigns(req: any, res: any) {
   // DELETE /api/campaigns/[id] - delete campaign
   if (req.method === 'DELETE' && idMatch) {
     const campaignId = idMatch[1];
+    const existing = await db.collection('campaigns').doc(campaignId).get();
+
+    if (!existing.exists) {
+      return res.status(404).json({ error: 'Campaign not found' });
+    }
+    if (!canManageDocument(existing.data(), user)) {
+      return res.status(403).json({ error: 'Access denied.' });
+    }
+
     await db.collection('campaigns').doc(campaignId).delete();
 
     return res.json({ success: true, message: 'Campaign deleted' });
@@ -259,38 +333,43 @@ async function handleCampaigns(req: any, res: any) {
 /**
  * Handle Product requests
  */
-async function handleProducts(req: any, res: any) {
+async function handleProducts(req: any, res: any, user: DecodedIdToken) {
   // GET /api/products - list products
   if (req.method === 'GET' && req.path === '/api/products') {
-    const { userId, category, status } = req.query;
-
-    let query = db.collection('products');
-
-    if (userId) {
-      query = query.where('userId', '==', userId) as any;
-    }
-    if (category) {
-      query = query.where('category', '==', category) as any;
-    }
-    if (status) {
-      query = query.where('status', '==', status) as any;
-    }
-
-    const snapshot = await query.orderBy('createdAt', 'desc').limit(100).get();
-    const products = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const category = boundedString(req.query?.category, 80);
+    const status = boundedString(req.query?.status, 40);
+    const snapshot = await db.collection('products').limit(200).get();
+    const products = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter((item: any) => !item.userId || item.userId === user.uid || isAdmin(user))
+      .filter((item: any) => !category || item.category === category)
+      .filter((item: any) => !status || item.status === status)
+      .sort((a: any, b: any) => {
+        const aTime = timestampValue(a.createdAt || a.timestamp);
+        const bTime = timestampValue(b.createdAt || b.timestamp);
+        return bTime - aTime;
+      })
+      .slice(0, 100);
 
     return res.json({ success: true, data: products });
   }
 
   // POST /api/products - create product
   if (req.method === 'POST' && req.path === '/api/products') {
-    const productData = req.body;
+    const productData = withoutProtectedFields(req.body);
+    const name = boundedString(
+      (productData as any).name || (productData as any).title,
+      200,
+    );
+
+    if (!name) {
+      return res.status(400).json({ error: 'Product name is required.' });
+    }
 
     const docRef = await db.collection('products').add({
       ...productData,
+      name,
+      userId: user.uid,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -316,6 +395,11 @@ async function handleProducts(req: any, res: any) {
         return res.status(404).json({ error: 'Product not found' });
       }
 
+      const productData = doc.data();
+      if (productData?.userId && !canManageDocument(productData, user)) {
+        return res.status(403).json({ error: 'Access denied.' });
+      }
+
       return res.json({
         success: true,
         data: { id: doc.id, ...doc.data() },
@@ -324,7 +408,16 @@ async function handleProducts(req: any, res: any) {
 
     // PATCH /api/products/[id]
     if (req.method === 'PATCH' && !subPath) {
-      const updates = req.body;
+      const existing = await db.collection('products').doc(productId).get();
+
+      if (!existing.exists) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
+      if (!canManageDocument(existing.data(), user)) {
+        return res.status(403).json({ error: 'Only the product owner can update it.' });
+      }
+
+      const updates = withoutProtectedFields(req.body);
 
       await db.collection('products').doc(productId).update({
         ...updates,
@@ -340,6 +433,15 @@ async function handleProducts(req: any, res: any) {
 
     // DELETE /api/products/[id]
     if (req.method === 'DELETE' && !subPath) {
+      const existing = await db.collection('products').doc(productId).get();
+
+      if (!existing.exists) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
+      if (!canManageDocument(existing.data(), user)) {
+        return res.status(403).json({ error: 'Only the product owner can delete it.' });
+      }
+
       await db.collection('products').doc(productId).delete();
       return res.json({ success: true, message: 'Product deleted' });
     }
@@ -351,10 +453,12 @@ async function handleProducts(req: any, res: any) {
 /**
  * Handle Intelligence/AI requests
  */
-async function handleIntelligence(req: any, res: any) {
+async function handleIntelligence(req: any, res: any, user: DecodedIdToken) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  if (!requireLiveAi(res)) return;
 
   const path = req.path;
 
@@ -362,7 +466,7 @@ async function handleIntelligence(req: any, res: any) {
   if (path === '/api/intelligence/ai-router') {
     const { prompt, taskType, priority } = req.body;
 
-    const result = await getOrchestrator().execute({
+    const result = await (await getOrchestrator()).execute({
       type: taskType || 'general',
       complexity: 'complex',
       context: prompt,
@@ -384,7 +488,7 @@ async function handleIntelligence(req: any, res: any) {
 
     const prompt = `Analyze the following data and detect trends:\n\nData: ${JSON.stringify(data)}\nTime Range: ${timeRange || '30 days'}`;
 
-    const result = await getOrchestrator().execute({
+    const result = await (await getOrchestrator()).execute({
       type: 'analytical',
       complexity: 'complex',
       context: prompt,
@@ -404,7 +508,7 @@ async function handleIntelligence(req: any, res: any) {
 
     const prompt = `Predict the performance of this content on ${platform}:\n\n${content}`;
 
-    const result = await getOrchestrator().execute({
+    const result = await (await getOrchestrator()).execute({
       type: 'analytical',
       complexity: 'medium',
       context: prompt,
@@ -424,7 +528,7 @@ async function handleIntelligence(req: any, res: any) {
 
     const prompt = `Forecast revenue for the next ${timeframe} based on this historical data:\n\n${JSON.stringify(historicalData)}`;
 
-    const result = await getOrchestrator().execute({
+    const result = await (await getOrchestrator()).execute({
       type: 'analytical',
       complexity: 'complex',
       context: prompt,
@@ -444,32 +548,33 @@ async function handleIntelligence(req: any, res: any) {
 /**
  * Handle Workflow requests
  */
-async function handleWorkflows(req: any, res: any) {
+async function handleWorkflows(req: any, res: any, user: DecodedIdToken) {
   // GET /api/workflows - list workflows
   if (req.method === 'GET' && req.path === '/api/workflows') {
-    const { userId } = req.query;
-
-    let query = db.collection('workflows');
-
-    if (userId) {
-      query = query.where('userId', '==', userId) as any;
-    }
-
-    const snapshot = await query.orderBy('createdAt', 'desc').limit(100).get();
-    const workflows = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const snapshot = await db.collection('workflows')
+      .where('userId', '==', user.uid)
+      .limit(100)
+      .get();
+    const workflows = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .sort((a: any, b: any) => timestampValue(b.createdAt) - timestampValue(a.createdAt));
 
     return res.json({ success: true, data: workflows });
   }
 
   // POST /api/workflows - create workflow
   if (req.method === 'POST' && req.path === '/api/workflows') {
-    const workflowData = req.body;
+    const workflowData = withoutProtectedFields(req.body);
+    const name = boundedString((workflowData as any).name, 160);
+
+    if (!name) {
+      return res.status(400).json({ error: 'Workflow name is required.' });
+    }
 
     const docRef = await db.collection('workflows').add({
       ...workflowData,
+      name,
+      userId: user.uid,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -483,23 +588,9 @@ async function handleWorkflows(req: any, res: any) {
 
   // POST /api/workflows/execute - execute a workflow
   if (req.method === 'POST' && req.path === '/api/workflows/execute') {
-    const { workflowId, input } = req.body;
-
-    // Create execution record
-    const executionRef = await db.collection('workflow_executions').add({
-      workflowId,
-      input,
-      status: 'running',
-      startedAt: new Date(),
-    });
-
-    // Execute workflow (simplified - would call actual workflow executor)
-    logger.info(`Executing workflow ${workflowId}`, { executionId: executionRef.id });
-
-    return res.json({
-      success: true,
-      executionId: executionRef.id,
-      status: 'running',
+    return res.status(501).json({
+      error: 'Workflow execution is not implemented in the live API.',
+      code: 'WORKFLOW_EXECUTOR_NOT_CONNECTED',
     });
   }
 
@@ -509,17 +600,19 @@ async function handleWorkflows(req: any, res: any) {
 /**
  * Handle Content generation requests
  */
-async function handleContent(req: any, res: any) {
+async function handleContent(req: any, res: any, user: DecodedIdToken) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  if (req.path === '/api/content/generate') {
+  if (!requireLiveAi(res)) return;
+
+  if (req.path === '/api/content/generate' || req.path === '/api/generate-content') {
     const { productName, description, platform, tone } = req.body;
 
     const prompt = `Generate ${platform} content for this product:\n\nProduct: ${productName}\nDescription: ${description}\nTone: ${tone || 'professional'}`;
 
-    const result = await getOrchestrator().execute({
+    const result = await (await getOrchestrator()).execute({
       type: 'creative',
       complexity: 'medium',
       context: prompt,
@@ -540,17 +633,19 @@ async function handleContent(req: any, res: any) {
 /**
  * Handle Trends discovery requests
  */
-async function handleTrends(req: any, res: any) {
+async function handleTrends(req: any, res: any, user: DecodedIdToken) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  if (!requireLiveAi(res)) return;
 
   if (req.path === '/api/trends/discover') {
     const { category, timeRange } = req.body;
 
     const prompt = `Discover current trending topics in the ${category} category over the ${timeRange || 'past 7 days'}`;
 
-    const result = await getOrchestrator().execute({
+    const result = await (await getOrchestrator()).execute({
       type: 'analytical',
       complexity: 'medium',
       context: prompt,
@@ -559,6 +654,7 @@ async function handleTrends(req: any, res: any) {
 
     // Store trends in Firestore
     await db.collection('trends').add({
+      userId: user.uid,
       category,
       trends: result.text,
       timestamp: new Date(),

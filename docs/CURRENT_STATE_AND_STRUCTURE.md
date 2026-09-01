@@ -1,6 +1,6 @@
 # Flow: current state and structure
 
-- Assessment date: 2026-08-31
+- Assessment date: 2026-09-01
 - Inventory baseline commit: `fb8f0d0dd844ea8c70af75051f7e35ea472d4a3c` on `main`; the report and Firebase build guard were added afterward
 - Repository: <https://github.com/sethh426/flow>
 
@@ -8,9 +8,9 @@
 
 Flow is now preserved in one clean repository and the main web client can be installed and built. It is a substantial recovered product, not an empty prototype: the repository contains the user interface, AI and automation services, Firebase functions and hosting configuration, infrastructure definitions, an early-adopter site, tests, documentation, and curated historical source.
 
-It is not yet safe to describe the whole platform as production-ready. The client build passes only because TypeScript and ESLint failures are ignored by the Next.js build configuration. The backend is a collection of overlapping service generations rather than one verified deployment unit. Several recovered endpoints need authentication and authorization before any backend deployment. Dependency audits also contain high and critical advisories.
+It is not yet safe to describe the whole platform as production-ready. The client build passes only because TypeScript and ESLint failures are ignored by the Next.js build configuration. The official application UI is publicly hosted, but it remains in configuration/mock mode while the selected backend project has billing disabled. The backend is still a collection of overlapping service generations rather than one verified deployment unit, and dependency audits outside the hardened function package still contain high and critical advisories.
 
-The right current label is **recovered engineering baseline with a buildable frontend**. The source recovery is complete enough to move forward without relying on the scattered archives, but the application needs a deliberate stabilization phase before public launch.
+The right current label is **recovered engineering baseline with a publicly hosted configuration-mode frontend**. The source recovery is complete enough to move forward without relying on the scattered archives, but the application needs a deliberate endpoint-by-endpoint stabilization phase before real automation is enabled.
 
 ## Status at a glance
 
@@ -22,17 +22,17 @@ The right current label is **recovered engineering baseline with a buildable fro
 | Client type check | Failing | 158 errors in 38 files. Main clusters are Genkit drift, missing or relocated UI modules, incomplete domain types, and historical test dependencies. |
 | Client lint | Failing | 1,736 findings: 1,022 errors and 714 warnings. The canonical config, preview server, intelligence hook, and content-prediction component pass focused lint. |
 | Automated tests | Present, not established as green | Eight Playwright specifications cover major UI areas, but the recovered baseline does not have a recorded passing end-to-end run. The root test script is a placeholder that exits with failure. |
-| Backend services | Recovered, only partially verified | Multiple Node.js, TypeScript, Python, Java, Express, Flask, WebSocket, and Firebase services are present. They were not all installed, built, integrated, or deployed during recovery. |
+| Backend services | Recovered; one hardened candidate | Multiple runtimes are present. The selected Firebase `api` candidate now builds, requires Firebase identity outside health, scopes data by user, and fails closed for AI/unimplemented routes; it is not deployed because `affiliateflow-abzfy` billing is disabled. |
 | Early-adopter site source | Build passing | The static site's local build succeeds. Its current source no longer embeds a Gemini key and disables the legacy client-side admin flow. |
-| Live early-adopter deployment | Online but needs remediation | `flowearlyadopters.web.app` returned HTTP 200 during recovery, but the deployed HTML differs from the safe local source and contained an old browser-side Gemini key. Rotate the key before redeploying. |
-| Unified Hosting preview | Passing | A Firebase preview channel serves Early Adopters at `/`, the investor presentation at `/investors/`, and the 46-route application export below `/app/`. The application is visibly labeled preview mode; the production channel is unchanged. |
+| Unified Hosting production | Passing | `flowearlyadopters.web.app` serves Early Adopters at `/`, the investor presentation at `/investors/`, and the 46-route official application below `/app/`. The application visibly identifies its configuration/mock state. |
+| Unified Hosting preview | Passing | The matching Firebase preview channel remains available until 2026-09-08. The removed legacy admin/configuration files return `404` on preview and production. |
 | CI | Passing, narrow scope | The `Recovery integrity` GitHub Action scans common secret formats, checks recovered backend entry points, installs/checks Trend Finder, and installs/builds the client. It does not run type checking, linting, end-to-end tests, dependency-policy enforcement, or the other service builds. |
 | Deployment automation | Contained | Imported Firebase, Cloud Run, and Terraform workflows are manual-only (`workflow_dispatch`). Their destinations and credentials still require review. |
 | Dependency security | Needs work | Client audit: 61 advisories (1 low, 31 moderate, 23 high, 6 critical). Early-adopter audit: 5 (1 moderate, 2 high, 2 critical). |
 
 Detailed command results are retained in [recovery validation](recovery/VALIDATION.md), and provenance is in the [recovery inventory](recovery/INVENTORY.md).
 
-The current live-project, endpoint, provider, and shared-host assessment is in the [endpoint and service audit](integration/ENDPOINT_AND_SERVICE_AUDIT.md). It supersedes historical `*_COMPLETE.md` claims when they conflict with current Firebase or source evidence.
+The current live-project, endpoint, provider, and shared-host assessment is in the [endpoint and service audit](integration/ENDPOINT_AND_SERVICE_AUDIT.md). The detailed [`affiliateflow-abzfy` function review](integration/AFFILIATEFLOW_FUNCTION_REVIEW.md) records the ten deployed functions, the hardened candidate, and the backend activation sequence. These reports supersede historical `*_COMPLETE.md` claims when they conflict with current Firebase or source evidence.
 
 ## Logical architecture
 
@@ -153,22 +153,22 @@ No real `.env`, `terraform.tfvars`, Terraform state, service-account JSON, or ra
 
 `flow-early-adopters/` is a standalone static site for Firebase project `flowearlyadopters`. It contains the public landing page, waitlist integration source, an audio/logo asset, Firestore rules, a Node-based minification build, and Firebase Hosting configuration.
 
-The safe local source and the live deployment are not the same:
+The safe local source is now the basis of the live unified deployment:
 
 - the local source expects optional deployment configuration in ignored `public/config.js`, based on `config.example.js`;
 - it no longer contains the recovered browser-side Gemini secret;
 - its old `get-signups.html` client-side admin behavior is explicitly disabled until Firebase Authentication and server authorization are implemented;
-- the live site was reachable during recovery, but its deployed HTML contained an old Gemini key and must be treated as compromised until that key is revoked.
+- the prior live deployment contained an old Gemini key; that key is no longer served by Hosting but must still be treated as compromised until it is revoked.
 
-Do not deploy the consolidated repository over the live site until the key is rotated, the Firebase project is confirmed, and a deployment preview has been reviewed.
+The Firebase project was confirmed and the unified build was previewed before promotion. Future changes should continue to use a preview channel before production.
 
-The shared-host preview created on 2026-08-31 is available at <https://flowearlyadopters--shared-host-preview-l3mszyo2.web.app> until 2026-09-07. HTTP and Edge checks confirmed the root landing page, `/investors/`, `/app/`, `/app/dashboard/`, Firebase's reserved initialization script, and representative application assets. The old `get-signups.html` and `config.example.js` files return `404`. This preview is not the live production channel.
+The unified site is live at <https://flowearlyadopters.web.app>. The root Early Adopters page, `/investors/`, `/app/`, `/app/dashboard/`, and Firebase's reserved initialization script all return `200`; the old `get-signups.html` and `config.example.js` paths return `404`. The official application is currently a visible configuration/mock-mode build because the separate `affiliateflow-abzfy` backend project has billing disabled and its repaired API has not been deployed. A matching preview remains available at <https://flowearlyadopters--shared-host-preview-l3mszyo2.web.app> until 2026-09-08.
 
 ## Security and deployment blockers
 
 The committed tree passes the repository's known-secret-format scanner, but credential scrubbing is only one layer.
 
-Source controls completed on 2026-08-31:
+Source controls completed through 2026-09-01:
 
 - removed the `GET /apify-token` endpoint and its Secret Manager dependency from Trend Finder;
 - required a verified Firebase ID token for the billable `/find` operation and recorded the requesting user on new trend documents;
@@ -176,12 +176,13 @@ Source controls completed on 2026-08-31:
 - replaced permissive CORS with an explicit `ALLOWED_ORIGINS` list in the recovered function API;
 - replaced active MCP, launch, and Java-setup personal Windows paths and credential locations with repository-relative or optional environment configuration;
 - moved Trend Finder to Application Default Credentials/workload identity conventions, Node.js 20, locked dependencies, bounded JSON/query input, and matching health/readiness endpoints.
+- hardened the selected `affiliateflow-abzfy` API with Firebase ID-token verification, user ownership, restricted CORS, AI fail-closed behavior, private direct AI invokers, and bounded function resources.
 
 Immediate deployment blockers that remain:
 
 1. **Rotate exposed credentials.** Revoke the Gemini key found in the live early-adopter HTML and every service-account key that appeared in the old repository or archives.
-2. **Provision and test access control.** Set trusted admin custom claims, configure allowed origins, and update service callers to send Firebase ID tokens before enabling the hardened endpoints.
-3. **Audit the selected backend.** The controls above cover the specifically identified recovered endpoints, not every service. The eventual canonical backend still needs systematic authentication, authorization, rate-limit, validation, and CORS review.
+2. **Deploy and test access control.** Authorized domains, allowed origins, and browser token forwarding are configured in source; deploy the candidate and test real users plus trusted admin custom claims before enabling data or AI features.
+3. **Continue the selected-backend audit.** The chosen gateway has a secure baseline, but request-schema validation, per-user rate limits, and endpoint-specific emulator/integration tests remain.
 4. **Review Firebase rules and project IDs.** Recovered configurations reference several projects and generations. Confirm ownership, least privilege, billing protections, and environment separation before running any workflow.
 5. **Resolve service dependency debt.** Trend Finder installs reproducibly but reports 12 advisories (10 moderate, 2 high); upgrade and retest before deployment.
 6. **Keep deployment workflows manual.** Do not enable push-triggered deployment until the runtime topology and credentials are settled.
@@ -210,7 +211,7 @@ What is not yet proven:
 - working authentication, Firestore rules, payments, publishing, Printify, AI calls, or automation with real environments;
 - independent builds/tests for every Node, Python, Java, and Firebase service;
 - an end-to-end path from onboarding through product selection, content generation, scheduling, publishing, and analytics;
-- safe production deployment or rollback.
+- safe backend production deployment or rollback; static Hosting preview, production deployment, and rollback history are established.
 
 The integrity workflow now covers the recovered backend entry points and Trend Finder in addition to the client. It should still be expanded in stages: type checking, a controlled lint baseline, remaining unit/service builds, dependency policy, Firebase emulator tests, then a small Playwright smoke suite. Enabling every historical check at once would produce too much noise to be actionable.
 
@@ -222,17 +223,17 @@ The repository root includes many historical documents with names such as `ALL_S
 
 ## Recommended stabilization plan
 
-### P0: before any backend or early-adopter deployment
+### P0: before backend activation
 
 1. Rotate/revoke the exposed Gemini and historical service-account credentials.
-2. Configure and integration-test the new identity, admin-claim, allowed-origin, and workload-identity paths; the direct source flaws are closed.
+2. Deploy and integration-test the identity, admin-claim, allowed-origin, and workload-identity paths; the direct source flaws are closed.
 3. Confirm Firebase/GCP project ownership, billing limits, secret storage, Firestore rules, and deploy identities.
-4. Back up the currently deployed early-adopter site, build the safe local source, preview it, then redeploy intentionally.
+4. **Completed:** build the safe unified Hosting source, verify it in a preview channel, and promote it intentionally.
 
 ### P1: establish one runnable product
 
 1. **Completed:** use the sole `next.config.mjs` configuration for static Firebase Hosting plus Functions and the local export preview server.
-2. Select one canonical AI/backend request path and define which services are required for the MVP.
+2. **Selected:** use the authenticated unified `api` function as the browser request path; define which internal AI/services are required for the MVP before enabling them.
 3. Create a service matrix with start command, port, environment variables, health endpoint, owner, deploy target, and test command.
 4. Fix the 158 TypeScript errors, starting with active routes and excluding/archive-marking `_api_backup` and dead prototypes.
 5. **Partially completed:** the static-generation relative API request is fixed; run the eight Playwright specifications against a known local environment.

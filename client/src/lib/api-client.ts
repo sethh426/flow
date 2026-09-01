@@ -3,6 +3,7 @@
 
 import { campaignService } from '@/services/mockCampaignService';
 import { trendsService } from '@/services/mockTrendsService';
+import { auth } from '@/lib/firebase-config';
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -314,7 +315,17 @@ export async function apiFetch(
     const targetUrl = apiBaseUrl && url.startsWith('/api/')
       ? `${apiBaseUrl}${url}`
       : url;
-    const response = await fetchImplementation(targetUrl, options);
+    const headers = new Headers(options?.headers);
+
+    if (auth?.currentUser && !headers.has('Authorization')) {
+      const idToken = await auth.currentUser.getIdToken();
+      headers.set('Authorization', `Bearer ${idToken}`);
+    }
+
+    const response = await fetchImplementation(targetUrl, {
+      ...options,
+      headers,
+    });
     return response;
   } catch (error) {
     // Return a generic error response

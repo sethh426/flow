@@ -2,16 +2,23 @@ import { onRequest } from 'firebase-functions/v2/https';
 import { onMessagePublished } from 'firebase-functions/v2/pubsub';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import * as logger from 'firebase-functions/logger';
-import { NeuralOrchestrator } from './index';
+import type { NeuralOrchestrator } from './index';
+import {
+  handleCors,
+  isLiveAiEnabled,
+  requireFirebaseUser,
+  requireLiveAi,
+} from './http-security';
 
 // Export the unified API handler
 export { api } from './api-handler';
 
 let orchestrator: NeuralOrchestrator | null = null;
 
-function getOrchestrator(): NeuralOrchestrator {
+async function getOrchestrator(): Promise<NeuralOrchestrator> {
   if (!orchestrator) {
     const projectId = process.env.GCP_PROJECT || process.env.GCLOUD_PROJECT || 'affiliateflow-abzfy';
+    const { NeuralOrchestrator } = await import('./index');
     orchestrator = new NeuralOrchestrator(projectId);
   }
   return orchestrator;
@@ -23,18 +30,24 @@ function getOrchestrator(): NeuralOrchestrator {
  * Body: AIRequest
  */
 export const aiRoute = onRequest({
-  timeoutSeconds: 540,
+  timeoutSeconds: 120,
   memory: '2GiB',
-  maxInstances: 100,
-  cors: true,
+  maxInstances: 10,
+  invoker: 'private',
+  cors: false,
 }, async (req, res) => {
+  if (handleCors(req, res)) return;
+
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
   }
 
+  const user = await requireFirebaseUser(req, res);
+  if (!user || !requireLiveAi(res)) return;
+
   try {
-    logger.info('AI Route request received', { body: req.body });
+    logger.info('AI route request received', { userId: user.uid });
     const request = req.body;
     
     if (!request.type || !request.complexity || !request.context || !request.priority) {
@@ -44,7 +57,7 @@ export const aiRoute = onRequest({
       return;
     }
 
-    const result = await getOrchestrator().execute(request);
+    const result = await (await getOrchestrator()).execute(request);
     
     res.json({
       success: true,
@@ -53,10 +66,7 @@ export const aiRoute = onRequest({
     });
   } catch (error: any) {
     logger.error('AI routing error:', error);
-    res.status(500).json({ 
-      error: 'AI processing failed',
-      message: error.message,
-    });
+    res.status(500).json({ error: 'AI processing failed' });
   }
 });
 
@@ -65,14 +75,21 @@ export const aiRoute = onRequest({
  * POST /aiAnalyze
  */
 export const aiAnalyze = onRequest({
-  timeoutSeconds: 300,
+  timeoutSeconds: 120,
   memory: '1GiB',
-  cors: true,
+  maxInstances: 10,
+  invoker: 'private',
+  cors: false,
 }, async (req, res) => {
+  if (handleCors(req, res)) return;
+
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
   }
+
+  const user = await requireFirebaseUser(req, res);
+  if (!user || !requireLiveAi(res)) return;
 
   try {
     const { content, analysisType = 'general', priority = 'quality' } = req.body;
@@ -82,7 +99,7 @@ export const aiAnalyze = onRequest({
       return;
     }
 
-    const result = await getOrchestrator().execute({
+    const result = await (await getOrchestrator()).execute({
       type: 'analytical',
       complexity: 'complex',
       context: `Perform ${analysisType} analysis on this content:\n\n${content}`,
@@ -101,7 +118,7 @@ export const aiAnalyze = onRequest({
     });
   } catch (error: any) {
     logger.error('Analysis error:', error);
-    res.status(500).json({ error: 'Analysis failed', message: error.message });
+    res.status(500).json({ error: 'Analysis failed' });
   }
 });
 
@@ -110,14 +127,21 @@ export const aiAnalyze = onRequest({
  * POST /aiGenerate
  */
 export const aiGenerate = onRequest({
-  timeoutSeconds: 300,
+  timeoutSeconds: 120,
   memory: '1GiB',
-  cors: true,
+  maxInstances: 10,
+  invoker: 'private',
+  cors: false,
 }, async (req, res) => {
+  if (handleCors(req, res)) return;
+
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
   }
+
+  const user = await requireFirebaseUser(req, res);
+  if (!user || !requireLiveAi(res)) return;
 
   try {
     const { 
@@ -139,7 +163,7 @@ export const aiGenerate = onRequest({
       'long': 'complex',
     };
 
-    const result = await getOrchestrator().execute({
+    const result = await (await getOrchestrator()).execute({
       type: 'creative',
       complexity: (complexityMap[length as keyof typeof complexityMap] || 'medium') as any,
       context: `Generate ${format} content with ${tone} tone:\n\n${prompt}`,
@@ -158,7 +182,7 @@ export const aiGenerate = onRequest({
     });
   } catch (error: any) {
     logger.error('Generation error:', error);
-    res.status(500).json({ error: 'Generation failed', message: error.message });
+    res.status(500).json({ error: 'Generation failed' });
   }
 });
 
@@ -167,14 +191,21 @@ export const aiGenerate = onRequest({
  * POST /aiCode
  */
 export const aiCode = onRequest({
-  timeoutSeconds: 300,
+  timeoutSeconds: 120,
   memory: '2GiB',
-  cors: true,
+  maxInstances: 5,
+  invoker: 'private',
+  cors: false,
 }, async (req, res) => {
+  if (handleCors(req, res)) return;
+
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
   }
+
+  const user = await requireFirebaseUser(req, res);
+  if (!user || !requireLiveAi(res)) return;
 
   try {
     const { task, language, framework, context } = req.body;
@@ -193,7 +224,7 @@ ${context ? `Additional Context: ${context}` : ''}
 Provide complete, production-ready code with explanations.
     `.trim();
 
-    const result = await getOrchestrator().execute({
+    const result = await (await getOrchestrator()).execute({
       type: 'coding',
       complexity: 'complex',
       context: fullContext,
@@ -212,7 +243,7 @@ Provide complete, production-ready code with explanations.
     });
   } catch (error: any) {
     logger.error('Code generation error:', error);
-    res.status(500).json({ error: 'Code generation failed', message: error.message });
+    res.status(500).json({ error: 'Code generation failed' });
   }
 });
 
@@ -221,15 +252,21 @@ Provide complete, production-ready code with explanations.
  * POST /aiBatch
  */
 export const aiBatch = onRequest({
-  timeoutSeconds: 540,
+  timeoutSeconds: 120,
   memory: '4GiB',
-  maxInstances: 10,
-  cors: true,
+  maxInstances: 3,
+  invoker: 'private',
+  cors: false,
 }, async (req, res) => {
+  if (handleCors(req, res)) return;
+
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
   }
+
+  const user = await requireFirebaseUser(req, res);
+  if (!user || !requireLiveAi(res)) return;
 
   try {
     const { requests } = req.body;
@@ -245,7 +282,7 @@ export const aiBatch = onRequest({
     }
 
     logger.info(`Processing batch of ${requests.length} requests`);
-    const results = await getOrchestrator().executeBatch(requests);
+    const results = await (await getOrchestrator()).executeBatch(requests);
 
     const totalCost = results.reduce((sum, r) => sum + r.cost, 0);
     const totalTokens = results.reduce((sum, r) => sum + r.tokensUsed, 0);
@@ -264,7 +301,7 @@ export const aiBatch = onRequest({
     });
   } catch (error: any) {
     logger.error('Batch processing error:', error);
-    res.status(500).json({ error: 'Batch processing failed', message: error.message });
+    res.status(500).json({ error: 'Batch processing failed' });
   }
 });
 
@@ -275,25 +312,23 @@ export const aiBatch = onRequest({
 export const aiHealth = onRequest({
   timeoutSeconds: 60,
   memory: '512MiB',
-  cors: true,
+  maxInstances: 3,
+  invoker: 'private',
+  cors: false,
 }, async (req, res) => {
-  try {
-    const health = await getOrchestrator().getHealthMetrics();
-    
-    res.json({
-      success: true,
-      status: 'healthy',
-      metrics: health,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error: any) {
-    logger.error('Health check error:', error);
-    res.status(500).json({ 
-      success: false,
-      status: 'degraded',
-      error: error.message,
-    });
+  if (handleCors(req, res)) return;
+
+  if (req.method !== 'GET') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
   }
+
+  res.json({
+    success: true,
+    status: 'healthy',
+    aiEnabled: isLiveAiEnabled(),
+    timestamp: new Date().toISOString(),
+  });
 });
 
 /**
@@ -306,9 +341,19 @@ export const aiEventProcessor = onMessagePublished({
 }, async (event) => {
   try {
     const request = event.data.message.json;
-    logger.info('Processing async AI request', { request });
+    if (!isLiveAiEnabled()) {
+      logger.warn('Skipping async AI request because live AI is disabled', {
+        requestId: request?.requestId,
+      });
+      return;
+    }
+
+    logger.info('Processing async AI request', {
+      requestId: request?.requestId,
+      type: request?.type,
+    });
     
-    const result = await getOrchestrator().execute(request);
+    const result = await (await getOrchestrator()).execute(request);
     
     // Publish result to response topic
     const { PubSub } = await import('@google-cloud/pubsub');
@@ -322,9 +367,14 @@ export const aiEventProcessor = onMessagePublished({
       },
     });
     
-    logger.info('Async AI request completed', { result });
+    logger.info('Async AI request completed', {
+      requestId: request?.requestId,
+      model: result.model,
+      cost: result.cost,
+    });
   } catch (error: any) {
     logger.error('Async processing error:', error);
+    throw error;
   }
 });
 
@@ -351,6 +401,7 @@ export const cleanupScheduled = onSchedule({
     const oldCache = await firestore
       .collection('routing_cache')
       .where('timestamp', '<', oneDayAgo)
+      .limit(450)
       .get();
     
     const batch = firestore.batch();
@@ -366,7 +417,9 @@ export const cleanupScheduled = onSchedule({
     const oldDecisions = await firestore
       .collection('routing_decisions')
       .where('timestamp', '<', sevenDaysAgo)
-      .limit(1000)
+      // Each document uses two writes (archive plus delete). Staying below
+      // 250 documents keeps the batch under Firestore's 500-write limit.
+      .limit(225)
       .get();
     
     const archiveBatch = firestore.batch();
@@ -382,6 +435,7 @@ export const cleanupScheduled = onSchedule({
     logger.info(`Archived ${oldDecisions.size} old routing decisions`);
   } catch (error: any) {
     logger.error('Cleanup error:', error);
+    throw error;
   }
 });
 
@@ -435,8 +489,13 @@ export const aggregateMetrics = onSchedule({
       .collection('performance_aggregates')
       .add(aggregated);
     
-    logger.info('Metrics aggregated', { aggregated });
+    logger.info('Metrics aggregated', {
+      totalRequests: aggregated.totalRequests,
+      totalCost: aggregated.totalCost,
+      modelCount: Object.keys(aggregated.models).length,
+    });
   } catch (error: any) {
     logger.error('Aggregation error:', error);
+    throw error;
   }
 });

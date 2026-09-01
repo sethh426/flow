@@ -1,12 +1,12 @@
 # Flow endpoint and service audit
 
-- Assessment date: 2026-08-31
+- Assessment date: 2026-09-01
 - Target host: `flowearlyadopters.web.app`
-- Deployment plan: keep Early Adopters at `/`, add the investor page at `/investors/`, and publish the recovered application preview at `/app/`
+- Deployment result: Early Adopters remains at `/`, the investor page is at `/investors/`, and the official application is live in configuration/mock mode at `/app/`
 
 ## Executive result
 
-Firebase Hosting for `flowearlyadopters` is still reachable with the existing Firebase CLI identity and can accept preview-channel deployments. It is a suitable shared static host for the three web surfaces.
+Firebase Hosting for `flowearlyadopters` is reachable with the existing Firebase CLI identity and now serves the three web surfaces from one production site.
 
 The recovered Flow application is not connected to a production backend. It currently behaves as a UI preview because most browser API calls are served by an in-browser mock interceptor. The last deployed backend for the main Flow project is unavailable, project billing is disabled, no provider secrets are configured in Secret Manager, and several active UI routes have no matching backend handler.
 
@@ -19,13 +19,15 @@ The safe deployment shape is therefore:
 | `/app/` | Main Flow product | Static-exported preview with a visible preview-mode notice and local sample responses |
 | `/api/**` | Product backend | Not exposed on the shared host until authentication, billing, secrets, and handler coverage are repaired |
 
+The detailed ten-function review, hardening work, activation order, and current production result are recorded in [`AFFILIATEFLOW_FUNCTION_REVIEW.md`](AFFILIATEFLOW_FUNCTION_REVIEW.md).
+
 ## Live Firebase findings
 
 ### `flowearlyadopters`
 
 - Hosting is online and managed by Firebase Hosting.
 - The current live release was deployed with the Firebase CLI by the signed-in account.
-- The live page and the recovered safe source differ. The old deployment contains a browser-side Gemini key and an unauthenticated client-side signup viewer. The unified build excludes the old admin page and does not publish a configuration template.
+- The safe unified source is now the live deployment. It does not contain the recovered browser-side Gemini key, excludes the old client-side signup viewer, and does not publish the configuration template.
 - The project has no deployed API function. `/api/health` returns `404`.
 - The project is on the no-cost plan, so it should remain a static host unless billing and an intentional backend design are added.
 
@@ -53,20 +55,20 @@ The application contains many historical or alternate route strings. The table b
 
 | Browser endpoint | Matching recovered backend | Preview behavior | Production status |
 | --- | --- | --- | --- |
-| `GET /api/products` | Yes | Mock product list | Backend query needs schema repair and authentication |
-| `POST /api/products` | Yes | Mock create | Unauthenticated mutation in the selected backend; unsafe to expose |
-| `GET/PATCH/DELETE /api/products/:id` | Yes | Mock/sample behavior where defined | Unauthenticated access/mutations; unsafe to expose |
-| `POST /api/generate-content` | No exact match | Mock generated content | Backend uses `/api/content/generate`; client/server contract must be unified |
+| `GET /api/products` | Yes | Mock product list | Candidate requires authentication and supports both historical `timestamp` and current `createdAt` records; production data smoke test remains |
+| `POST /api/products` | Yes | Mock create | Candidate requires authentication and assigns ownership server-side; emulator and production data tests remain |
+| `GET/PATCH/DELETE /api/products/:id` | Yes | Mock/sample behavior where defined | Candidate enforces shared-record visibility and owner/admin mutation checks; integration tests remain |
+| `POST /api/generate-content` | Yes, through an alias | Mock generated content | Candidate accepts this browser route but returns `503` until live AI is configured |
 | `POST /api/intelligence/analyze-competitors` | Yes | Mock/sample response | Requires a working AI provider, authorization, limits, and secrets |
 | `POST /api/intelligence/predict-content` | Yes | Mock/sample response | Same blockers as above |
 | `POST /api/intelligence/optimize-audience` | Yes | Mock/sample response | Same blockers as above |
 | `POST /api/intelligence/detect-trends` | Yes | Mock/sample response | Same blockers as above |
-| `GET /api/workflows` | Yes | Mock/sample response | Read path exists but is not verified end to end |
-| `POST /api/workflows/execute` | Partial | Mock execution result | Backend creates a `running` record but does not execute a workflow |
+| `GET /api/workflows` | Yes | Mock/sample response | Candidate requires authentication and scopes reads to the user; not verified end to end |
+| `POST /api/workflows/execute` | Explicitly incomplete | Mock execution result | Candidate returns `501` instead of creating a false forever-running record |
 | `GET /api/social-platforms` | No | Mock platform list | Missing backend contract |
 | `POST /api/social-auth` | No | Mock connection result | Missing secure OAuth implementation and token storage |
 | `/api/ab-tests` and `/api/ab-tests/:id` | No | Explicit preview-mode `503` when unmocked | Missing backend implementation |
-| `POST /api/flowbot` | Yes | Mock response where used | Real provider path is unverified and unauthenticated |
+| `POST /api/flowbot` | Yes | Mock response where used | Candidate requires authentication and live-AI enablement; provider path remains unverified |
 | `/api/image/*` | No canonical handler in selected API | Mock/sample behavior | Image service exists separately but is not wired to this contract |
 | `/api/messages/*` | No canonical handler in selected API | Mock/sample behavior | Missing backend persistence and authorization |
 
@@ -77,19 +79,19 @@ The API interceptor now has two explicit modes:
 
 ## Selected backend handler inventory
 
-`services/neural-orchestrator/src/api-handler.ts` currently includes handlers for:
+`services/neural-orchestrator/src/api-handler.ts` currently includes hardened candidate handlers for:
 
 - Flowbot;
 - analytics and analytics summary;
 - campaigns CRUD;
 - products CRUD;
 - four intelligence operations;
-- workflow listing/creation and a placeholder execute operation;
-- content generation at `/api/content/generate`;
+- authenticated workflow listing/creation and an explicit `501` execute response;
+- content generation at `/api/content/generate` and `/api/generate-content`;
 - trend discovery at `/api/trends/discover`;
 - health checks.
 
-Separate Firebase functions cover AI routing, analysis, generation, code generation, batching, health, event processing, cleanup, and metrics aggregation. Those functions are not evidence of a working complete product path: current health requests fail, provider configuration is absent, and billing is disabled.
+Separate Firebase functions cover AI routing, analysis, generation, code generation, batching, health, event processing, cleanup, and metrics aggregation. The six direct AI HTTP functions are now private at Cloud Run IAM and in the candidate source. Those functions are not evidence of a working complete product path: current deployed requests fail, provider configuration is absent, and billing is disabled.
 
 ## Plugins, APIs, and services
 
@@ -119,21 +121,21 @@ No Codex plugin is required to run the product. The integrations above are appli
 
 ## Critical blockers before a live API
 
-1. **Authentication and authorization:** the selected neural API enables open CORS and does not authenticate several reads or mutations.
+1. **Deployment and identity smoke tests:** authentication, ownership checks, and restricted CORS are implemented in the candidate but are not yet deployed or tested with a real signed-in production user.
 2. **Secrets:** provider secrets are absent from Secret Manager, while some browser environment names imply that private tokens could be exposed in a static bundle. `NEXT_PUBLIC_PRINTIFY_API_TOKEN`, `NEXT_PUBLIC_NEURAL_AI_KEY`, and any private AI/provider token must not be used client-side.
 3. **Billing and availability:** the main project's billing-disabled state is already causing scheduled-function failures and the public API is unhealthy.
-4. **Contract gaps:** content generation has a route-name mismatch; A/B testing, social platform/auth, messaging, and the canonical image API are missing; workflow execution is only a status stub.
-5. **Data schema mismatch:** the backend orders products by `createdAt`, while the existing recovered product documents use `timestamp`.
+4. **Contract gaps:** the content-generation alias is repaired, but A/B testing, social platform/auth, messaging, the canonical image API, and real workflow execution remain unimplemented and return `501` in the candidate.
+5. **Data migration:** the candidate reads both `createdAt` and historical `timestamp`, but the product collection still needs a documented canonical schema and migration.
 6. **Quality gates:** the static build completes only because TypeScript and ESLint enforcement are bypassed. The current baseline has 158 TypeScript errors and 1,736 lint findings.
 7. **Firestore exposure:** the recovered Early Adopters rules permit broad read/create access. Hosting-only deployment does not repair those rules.
 8. **Credential remediation:** revoke the Gemini key embedded in the old live Early Adopters HTML before relying on any associated quota or account security.
 
 ## Recommended consolidation order
 
-1. Publish and review the unified static preview. Keep the main application visibly labeled as preview mode.
-2. Replace the old Early Adopters live files only after confirming the root page and waitlist initialization in the Firebase preview channel.
-3. Select `affiliateflow-abzfy` as the sole application backend/data project; keep `flowearlyadopters` as the shared public static host.
-4. Establish one authenticated API gateway/Functions surface and a versioned request/response contract.
+1. **Completed:** publish and review the unified static preview with a visible configuration-mode notice.
+2. **Completed:** replace the old Early Adopters live files after checking the preview and waitlist initialization.
+3. **Selected:** use `affiliateflow-abzfy` as the application backend/data project and `flowearlyadopters` as the shared public static host.
+4. Deploy and integration-test the hardened authenticated `api` gateway after the account owner enables billing and budget alerts.
 5. Repair the product schema and implement one complete workflow: sign in, select a product, generate content, approve it, and schedule/publish through one provider.
 6. Add Stripe and additional social/provider integrations only after that core path has tests, observability, cost limits, and rollback.
 7. Retire duplicate hosting projects only after backups and DNS/link checks; do not delete the historical Firebase projects during consolidation.
@@ -149,7 +151,7 @@ No Codex plugin is required to run the product. The integrations above are appli
 
 ## Preview verification result
 
-Firebase Hosting preview URL: <https://flowearlyadopters--shared-host-preview-l3mszyo2.web.app> (expires 2026-09-07).
+Firebase Hosting preview URL: <https://flowearlyadopters--shared-host-preview-l3mszyo2.web.app> (expires 2026-09-08).
 
 | Check | Result |
 | --- | --- |
@@ -164,4 +166,18 @@ Firebase Hosting preview URL: <https://flowearlyadopters--shared-host-preview-l3
 | `/api/health` | `404`, as expected for the static shared host |
 | recovered Google API-key pattern in the root HTML/deploy output | no match |
 
-The production channel was deliberately left unchanged. Before a live release, review the investor claims, revoke the historically exposed key, and decide whether the preview-only application is appropriate for the public navigation.
+## Production Hosting result
+
+The verified unified static build was promoted to Firebase Hosting production on 2026-09-01 as version `63ef30ad3b1aa6d9`.
+
+| Production route | Result |
+| --- | --- |
+| <https://flowearlyadopters.web.app/> | `200`; Early Adopters landing page |
+| <https://flowearlyadopters.web.app/investors/> | `200`; investor overview |
+| <https://flowearlyadopters.web.app/app/> | `200`; official Affiliate Flow application in visible configuration/mock mode |
+| <https://flowearlyadopters.web.app/app/dashboard/> | `200`; application dashboard |
+| `/__/firebase/init.js` | `200` |
+| `/get-signups.html` | `404` |
+| `/config.example.js` | `404` |
+
+The application UI is now live, but the `affiliateflow-abzfy` API is deliberately not connected. Its billing remains disabled, and a broken live-mode bundle would make the public application less usable while bypassing the endpoint activation checks documented above.
