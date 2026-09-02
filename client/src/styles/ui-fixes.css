@@ -32,7 +32,8 @@
 
 /* Ensure dialogs have proper spacing */
 .MuiDialog-paper {
-  overflow: visible !important;
+  max-height: calc(100dvh - 32px) !important;
+  overflow: hidden !important;
 }
 
 .MuiDialogTitle-root {
@@ -260,7 +261,7 @@
 
 /* Prevent horizontal overflow */
 .MuiBox-root {
-  overflow-x: visible !important;
+  min-width: 0;
 }
 
 /* Grid items should have proper spacing */
@@ -426,6 +427,19 @@
 /* ========== RESPONSIVE IMPROVEMENTS ========== */
 
 @media (max-width: 600px) {
+  .flow-assistant-dialog.MuiDialog-paperFullScreen {
+    width: 100vw !important;
+    max-width: none !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .MuiDialog-paper.MuiDialog-paperFullScreen {
+    max-height: 100dvh !important;
+  }
+
   .MuiCardContent-root {
     padding: 16px !important;
   }

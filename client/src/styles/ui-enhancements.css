@@ -19,9 +19,7 @@ body {
 /* ========== FLOWBITE BUTTON IMPROVEMENTS ========== */
 
 /* Fix button padding and heights */
-.btn,
-button[class*="bg-"],
-[class*="Button"] {
+.btn {
   min-height: 40px !important;
   padding: 0.625rem 1.25rem !important;
   font-weight: 600 !important;
@@ -329,30 +327,22 @@ aside nav button.active {
 
 /* ========== MODAL/DIALOG IMPROVEMENTS ========== */
 
-.modal,
-[class*="Modal"],
-[class*="Dialog"] {
+.modal {
   border-radius: 0.75rem !important;
   overflow: hidden !important;
   max-width: 90vw !important;
 }
 
-.modal-header,
-[class*="ModalHeader"],
-[class*="DialogHeader"] {
+.modal-header {
   padding: 1.5rem !important;
   border-bottom: 1px solid var(--border-light) !important;
 }
 
-.modal-body,
-[class*="ModalBody"],
-[class*="DialogBody"] {
+.modal-body {
   padding: 1.5rem !important;
 }
 
-.modal-footer,
-[class*="ModalFooter"],
-[class*="DialogFooter"] {
+.modal-footer {
   padding: 1rem 1.5rem !important;
   border-top: 1px solid var(--border-light) !important;
   display: flex !important;

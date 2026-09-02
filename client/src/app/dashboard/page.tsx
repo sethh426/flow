@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { Spinner } from 'flowbite-react';
 import DashboardLayoutFlowbite from '@/core/layout/DashboardLayoutFlowbite';
 import DashboardContentFlowbite from '@/core/layout/DashboardContentFlowbite';
@@ -16,34 +15,10 @@ import FlowCoinsFlowbite from '@/features/workflow/FlowCoinsFlowbite';
 import WorkflowBuilderFlowbite from '@/features/workflow/WorkflowBuilderFlowbite';
 import ContentSchedulerFlowbite from '@/features/content-studio/ContentSchedulerFlowbite';
 import PrintifyStudioFlowbite from '@/features/printify-studio/PrintifyStudioFlowbite';
-import AuthDialog from '@/features/auth/AuthDialog';
-import QuickNavigation from '@/components/QuickNavigation';
 
 export default function DashboardPage() {
-  const router = useRouter();
   const [currentTab, setCurrentTab] = useState(0);
-  const [authDialogOpen, setAuthDialogOpen] = useState(false);
-  const [user, setUser] = useState<any>({ email: 'demo@affiliateflow.com', uid: 'demo-user' });
-  const [loading, setLoading] = useState(false);
-
-  // Bypass auth check - set demo user immediately
-  useEffect(() => {
-    console.log('Dashboard loaded with demo user');
-  }, [router]);
-
-  // Show loading while checking auth
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Spinner size="xl" className="fill-purple-600" />
-      </div>
-    );
-  }
-
-  // Don't render dashboard if no user (should never happen due to redirect, but just in case)
-  if (!user) {
-    return null;
-  }
+  const [user] = useState({ email: 'demo@affiliateflow.com', uid: 'demo-user' });
 
   const renderTabContent = () => {
     switch (currentTab) {
@@ -66,7 +41,7 @@ export default function DashboardPage() {
       case 8:
         return <FlowCoinsFlowbite />;
       case 9:
-        return <WorkflowBuilderFlowbite onSave={(workflow: any) => console.log('Saving workflow:', workflow)} onExecute={(workflow: any) => console.log('Executing workflow:', workflow)} />;
+        return <WorkflowBuilderFlowbite onSave={(workflow: unknown) => console.log('Saving workflow:', workflow)} onExecute={(workflow: unknown) => console.log('Executing workflow:', workflow)} />;
       case 10:
         return <ContentSchedulerFlowbite />;
       case 11:
@@ -77,15 +52,9 @@ export default function DashboardPage() {
   };
 
   return (
-    <>
-      <DashboardLayoutFlowbite currentTab={currentTab} onTabChange={setCurrentTab} user={user}>
-        {renderTabContent()}
-      </DashboardLayoutFlowbite>
-      
-      <QuickNavigation currentTab={currentTab} onTabChange={setCurrentTab} />
-      
-      <AuthDialog open={authDialogOpen} onClose={() => setAuthDialogOpen(false)} />
-    </>
+    <DashboardLayoutFlowbite currentTab={currentTab} onTabChange={setCurrentTab} user={user}>
+      {renderTabContent()}
+    </DashboardLayoutFlowbite>
   );
 }
 

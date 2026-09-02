@@ -24,7 +24,6 @@ import {
   Button,
   IconButton,
   Typography,
-  Drawer,
   List,
   ListItem,
   ListItemButton,
@@ -435,7 +434,6 @@ export default function WorkflowBuilder({
   const { user } = useAuth();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-  const [drawerOpen, setDrawerOpen] = useState(true);
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const [recommendedTemplates, setRecommendedTemplates] = useState<string[]>([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
@@ -1297,23 +1295,33 @@ export default function WorkflowBuilder({
 
   return (
 
-    <Box sx={{ height: '100vh', display: 'flex' }}>
+    <Box
+      sx={{
+        display: { xs: 'block', md: 'flex' },
+        width: '100%',
+        minWidth: 0,
+        height: { xs: 'auto', md: 'min(760px, calc(100dvh - 180px))' },
+        minHeight: { md: 620 },
+        overflow: 'hidden',
+        border: '1px solid rgba(148,163,184,0.18)',
+        borderRadius: 3,
+        backgroundColor: '#020617',
+        boxShadow: '0 24px 60px rgba(2,6,23,0.24)',
+      }}
+    >
       {/* Left Sidebar - Node Palette */}
-      <Drawer
-        variant="persistent"
-        anchor="left"
-        open={drawerOpen}
+      <Box
+        component="aside"
         sx={{
-          width: 280,
+          width: { xs: '100%', md: 280 },
           flexShrink: 0,
-          zIndex: 1300,
-          '& .MuiDrawer-paper': {
-            width: 280,
-            boxSizing: 'border-box',
-            backgroundColor: '#1e293b',
-            color: 'white',
-            zIndex: 1300,
-          },
+          maxHeight: { xs: 520, md: 'none' },
+          overflowY: 'auto',
+          boxSizing: 'border-box',
+          borderRight: { md: '1px solid rgba(148,163,184,0.18)' },
+          borderBottom: { xs: '1px solid rgba(148,163,184,0.18)', md: 0 },
+          backgroundColor: '#1e293b',
+          color: 'white',
         }}
       >
         <Box sx={{ p: 2 }}>
@@ -1358,7 +1366,7 @@ export default function WorkflowBuilder({
             Load Template
           </Button>
 
-          <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 1, mb: 3 }}>
             <Button
               fullWidth
               variant="outlined"
@@ -1478,12 +1486,13 @@ export default function WorkflowBuilder({
             </ListItem>
           </List>
         </Box>
-      </Drawer>
+      </Box>
 
       {/* Main Canvas */}
       <Box sx={{ 
-        flexGrow: 1, 
-        height: '100vh',
+        flexGrow: 1,
+        minWidth: 0,
+        height: { xs: 640, md: '100%' },
         '& .react-flow__handle': {
           width: '12px',
           height: '12px',

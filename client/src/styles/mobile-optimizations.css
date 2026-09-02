@@ -53,11 +53,6 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
   }
 
-  /* Simplify borders */
-  * {
-    border-radius: min(8px, var(--border-radius, 8px)) !important;
-  }
-
   /* Optimize images for mobile */
   img {
     content-visibility: auto;
@@ -91,14 +86,4 @@
   }
 }
 
-/* Reduce paint areas */
-body {
-  contain: layout style paint;
-}
-
-/* Optimize repaints */
-.MuiDrawer-root,
-.MuiDialog-root,
-.MuiModal-root {
-  contain: layout style paint;
-}
+/* Fixed navigation, assistants, and dialogs must remain viewport-relative. */

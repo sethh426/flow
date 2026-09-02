@@ -64,7 +64,7 @@ export default function WorkflowsPage() {
   };
 
   return (
-    <Box sx={{ height: '100vh', width: '100vw' }}>
+    <Box sx={{ width: '100%', minWidth: 0 }}>
       <WorkflowBuilder onSave={handleSave} onExecute={handleExecute} />
     </Box>
   );

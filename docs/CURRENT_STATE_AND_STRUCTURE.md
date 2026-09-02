@@ -1,6 +1,6 @@
 # Flow: current state and structure
 
-- Assessment date: 2026-09-01
+- Assessment date: 2026-09-02
 - Inventory baseline commit: `fb8f0d0dd844ea8c70af75051f7e35ea472d4a3c` on `main`; the report and Firebase build guard were added afterward
 - Repository: <https://github.com/sethh426/flow>
 
@@ -24,7 +24,7 @@ The right current label is **recovered engineering baseline with a publicly host
 | Automated tests | Present, not established as green | Eight Playwright specifications cover major UI areas, but the recovered baseline does not have a recorded passing end-to-end run. The root test script is a placeholder that exits with failure. |
 | Backend services | Recovered; one hardened candidate | Multiple runtimes are present. The selected Firebase `api` candidate now builds, requires Firebase identity outside health, scopes data by user, and fails closed for AI/unimplemented routes; it is not deployed because `affiliateflow-abzfy` billing is disabled. |
 | Early-adopter site source | Build passing | The static site's local build succeeds. Its current source no longer embeds a Gemini key and disables the legacy client-side admin flow. |
-| Unified Hosting production | Passing | `flowearlyadopters.web.app` serves Early Adopters at `/`, the investor presentation at `/investors/`, and the 46-route official application below `/app/`. The application visibly identifies its configuration/mock state. |
+| Unified Hosting production | Passing | `flowearlyadopters.web.app` serves Early Adopters at `/`, the investor presentation at `/investors/`, and the 46-route official application below `/app/`. Hosting version `4e1942fae6250fc4` contains the responsive dashboard, contained workflow builder, and optimized mock-mode assistant. |
 | Unified Hosting preview | Passing | The matching Firebase preview channel remains available until 2026-09-08. The removed legacy admin/configuration files return `404` on preview and production. |
 | CI | Passing, narrow scope | The `Recovery integrity` GitHub Action scans common secret formats, checks recovered backend entry points, installs/checks Trend Finder, and installs/builds the client. It does not run type checking, linting, end-to-end tests, dependency-policy enforcement, or the other service builds. |
 | Deployment automation | Contained | Imported Firebase, Cloud Run, and Terraform workflows are manual-only (`workflow_dispatch`). Their destinations and credentials still require review. |
@@ -33,6 +33,8 @@ The right current label is **recovered engineering baseline with a publicly host
 Detailed command results are retained in [recovery validation](recovery/VALIDATION.md), and provenance is in the [recovery inventory](recovery/INVENTORY.md).
 
 The official application UI was smoke-tested and contrast-corrected on 2026-09-01 before Firebase Hosting version `0fd12c588300ed60` was promoted. See the [official app UI smoke-test report](testing/OFFICIAL_APP_SMOKE_TEST_2026-09-01.md) for the route matrix, viewport coverage, fixes, and remaining quality debt.
+
+The dashboard shell, navigation, workflow control page, and Flow Assistant received a second responsive audit on 2026-09-02. The verified artifact was promoted as Hosting version `4e1942fae6250fc4`; see the [dashboard and assistant UI audit](testing/DASHBOARD_AND_ASSISTANT_UI_AUDIT_2026-09-02.md).
 
 The current live-project, endpoint, provider, and shared-host assessment is in the [endpoint and service audit](integration/ENDPOINT_AND_SERVICE_AUDIT.md). The detailed [`affiliateflow-abzfy` function review](integration/AFFILIATEFLOW_FUNCTION_REVIEW.md) records the ten deployed functions, the hardened candidate, and the backend activation sequence. These reports supersede historical `*_COMPLETE.md` claims when they conflict with current Firebase or source evidence.
 

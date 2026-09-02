@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Card, Button, Spinner, Badge } from 'flowbite-react';
+import { Card, Button, Spinner } from 'flowbite-react';
 import {
   HiTrendingUp,
   HiCurrencyDollar,
@@ -12,7 +12,6 @@ import {
   HiRefresh,
   HiSparkles,
   HiPlus,
-  HiSearch,
   HiChartBar,
   HiLightningBolt
 } from 'react-icons/hi';
@@ -73,28 +72,28 @@ export default function DashboardContentFlowbite() {
       description: 'Create a new marketing campaign',
       icon: HiPlus,
       action: () => router.push('/dashboard/campaigns'),
-      color: 'purple',
+      accent: 'bg-purple-100 text-purple-700 dark:bg-purple-900/35 dark:text-purple-200',
     },
     {
       title: 'Add Product',
       description: 'Add a product to promote',
       icon: HiShoppingCart,
       action: () => router.push('/dashboard/products'),
-      color: 'blue',
+      accent: 'bg-blue-100 text-blue-700 dark:bg-blue-900/35 dark:text-blue-200',
     },
     {
       title: 'Find Trends',
       description: 'Discover trending products',
       icon: HiTrendingUp,
       action: () => router.push('/dashboard/trends'),
-      color: 'green',
+      accent: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/35 dark:text-emerald-200',
     },
     {
       title: 'AI Content',
       description: 'Generate marketing content',
       icon: HiSparkles,
       action: () => router.push('/dashboard/content-studio'),
-      color: 'orange',
+      accent: 'bg-orange-100 text-orange-700 dark:bg-orange-900/35 dark:text-orange-200',
     },
   ];
 
@@ -136,18 +135,17 @@ export default function DashboardContentFlowbite() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-display text-gradient mb-2">
-            Dashboard Overview
-          </h1>
-          <p className="text-lg text-secondary leading-relaxed">
-            Welcome back! Here's what's happening today.
+          <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">Today at a glance</h2>
+          <p className="mt-2 text-base leading-relaxed text-slate-500 dark:text-slate-400">
+            Welcome back! Here’s what’s happening today.
           </p>
         </div>
         <div className="flex gap-2">
           <Button color="gray" onClick={handleRefresh} disabled={isRefreshing}>
             {isRefreshing ? <Spinner size="sm" /> : <HiRefresh className="h-5 w-5" />}
+            <span className="sr-only">Refresh dashboard</span>
           </Button>
         </div>
       </div>
@@ -180,9 +178,9 @@ export default function DashboardContentFlowbite() {
 
       {/* Time Range Selector */}
       <Card>
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-h2 font-bold">Revenue Overview</h2>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               size="sm"
               color={timeRange === '7d' ? 'purple' : 'gray'}
@@ -229,7 +227,7 @@ export default function DashboardContentFlowbite() {
             return (
               <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={action.action}>
                 <div className="text-center">
-                  <div className={`bg-${action.color}-50 dark:bg-${action.color}-900/20 text-${action.color}-600 p-4 rounded-lg inline-flex mb-3`}>
+                  <div className={`mb-3 inline-flex rounded-xl p-4 ${action.accent}`}>
                     <Icon className="h-8 w-8" />
                   </div>
                   <h3 className="text-h4 font-semibold mb-2">{action.title}</h3>
@@ -246,7 +244,7 @@ export default function DashboardContentFlowbite() {
         <h2 className="text-h2 font-bold mb-4">Recent Activity</h2>
         <div className="space-y-4">
           {recentActivity.map((activity, index) => (
-            <div key={index} className="flex items-start gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-0 last:pb-0">
+            <div key={index} className="flex items-start gap-3 border-b border-gray-200 pb-4 sm:gap-4 dark:border-gray-700 last:border-0 last:pb-0">
               <div className="bg-purple-50 dark:bg-purple-900/20 text-purple-600 p-2 rounded-lg">
                 {activity.type === 'campaign' && <HiSpeakerphone className="h-5 w-5" />}
                 {activity.type === 'product' && <HiShoppingCart className="h-5 w-5" />}
@@ -257,7 +255,7 @@ export default function DashboardContentFlowbite() {
                 <h3 className="font-semibold text-base text-gray-900 dark:text-white mb-1">{activity.title}</h3>
                 <p className="text-sm text-secondary leading-relaxed">{activity.description}</p>
               </div>
-              <span className="text-xs text-tertiary whitespace-nowrap">
+              <span className="hidden whitespace-nowrap text-xs text-tertiary sm:inline">
                 {activity.time}
               </span>
             </div>
@@ -294,7 +292,7 @@ export default function DashboardContentFlowbite() {
               <div>
                 <h3 className="font-semibold text-base text-purple-900 dark:text-purple-100 mb-1">Content Suggestion</h3>
                 <p className="text-sm text-purple-800 dark:text-purple-200 leading-relaxed">
-                  Your "Summer Sale" campaign could benefit from fresh social media content.
+                  Your “Summer Sale” campaign could benefit from fresh social media content.
                 </p>
               </div>
             </div>

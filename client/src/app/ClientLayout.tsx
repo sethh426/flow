@@ -69,7 +69,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               {isPreviewMode && (
                 <div
                   role="status"
-                  className="sticky top-0 z-[10000] border-b border-amber-300 bg-amber-50 px-4 py-2 text-center text-sm font-semibold text-amber-950 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100"
+                  className="sticky top-0 z-[1400] flex h-20 items-center justify-center border-b border-amber-300 bg-amber-50 px-4 text-center text-sm font-semibold leading-5 text-amber-950 sm:h-10 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100"
                 >
                   Flow preview mode: screens and sample workflows are available, but external publishing, payments, and live automation are not connected.
                 </div>
@@ -79,7 +79,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                 {isPublicPage ? (
                   children
                 ) : (
-                  <AppShell>{children}</AppShell>
+                  <AppShell previewMode={isPreviewMode}>{children}</AppShell>
                 )}
               </Suspense>
               {!isPublicPage && <FlowAssistant />}
