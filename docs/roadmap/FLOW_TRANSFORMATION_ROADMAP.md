@@ -3,8 +3,9 @@
 - Assessment date: 2026-09-06
 - Live product: <https://flowearlyadopters.web.app/app/dashboard/>
 - Repository: <https://github.com/sethh426/flow>
-- Current Hosting version: `4e1942fae6250fc4`
+- Current Hosting release: 2026-09-06 16:44:28 EDT (`build-info.generatedAt`: `2026-09-06T20:42:00.018Z`)
 - Current operating mode: public configuration/mock-mode frontend; production automation is not enabled
+- Canonical Firebase target: `flowearlyadopters`; see the [Firebase consolidation report](../integration/FIREBASE_CONSOLIDATION_2026-09-06.md)
 
 ## Executive direction
 
@@ -62,6 +63,8 @@ The September 6 audit found the following concrete issues:
 - The live static host has no working `/api/**` backend. The selected `affiliateflow-abzfy` function candidate is hardened but not deployed, and key automation, social, testing, and image operations remain incomplete.
 
 These details should be read with the [current-state report](../CURRENT_STATE_AND_STRUCTURE.md), [endpoint audit](../integration/ENDPOINT_AND_SERVICE_AUDIT.md), and [`affiliateflow-abzfy` function review](../integration/AFFILIATEFLOW_FUNCTION_REVIEW.md).
+
+The Firebase inventory found that the Product Mapper's 52 product documents are field-for-field duplicates of the records in `affiliateflow-abzfy`, the intended investor deck is already present at `/investors/`, and `appy-32f2xp` contains only an unverified historical connector plus small reference artifacts. None should become another frontend or be merged blindly. The long-term consolidation target is the existing `flowearlyadopters` project, with selected backend resources migrated only after rules, identity, contracts, and rollback have been verified.
 
 ## North-star experience: the Flow Plan
 
@@ -282,6 +285,8 @@ Remotion is a strong fit for the first renderer because it can render React comp
 Dates below are planning ranges, not promises. Each phase has an outcome gate; incomplete foundations should not be hidden by starting more surface features.
 
 ### Phase 0 — Restore product truth and coherence (1–2 weeks)
+
+Status on 2026-09-06: the first Phase 0 release is live. The primary Create route now opens the canonical editor; the legacy dashboard creator route shares it; campaigns no longer hang without Firebase Auth; the default campaign collection is empty; and dashboard revenue, click, conversion, activity, and recommendation claims were replaced with honest setup states. Video templates are explicitly labeled as framing previews until a storyboard, timeline, captions, audio, and renderer exist.
 
 **Outcome:** A user can distinguish demo from live behavior, navigate one route per job, and never hit a silent blank screen.
 

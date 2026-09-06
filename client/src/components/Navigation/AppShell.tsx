@@ -33,8 +33,8 @@ const SECTION_COPY: Record<string, { title: string; subtitle: string }> = {
     subtitle: 'Trigger Flow automations, stage assets, and coordinate releases.',
   },
   'content-studio': {
-    title: 'Content Studio',
-    subtitle: 'Generate creative assets, copy variations, and social drops instantly.',
+    title: 'Campaign Creator',
+    subtitle: 'Turn one campaign idea into branded, reviewable content for every channel.',
   },
   products: {
     title: 'Product Intelligence',
@@ -63,6 +63,30 @@ const SECTION_COPY: Record<string, { title: string; subtitle: string }> = {
   'ab-testing': {
     title: 'Experiment Control',
     subtitle: 'Compare creative and offer variants without losing sight of significance.',
+  },
+  'social-media': {
+    title: 'Channel Connections',
+    subtitle: 'Prepare channel access and review which publishing capabilities are connected.',
+  },
+  social: {
+    title: 'Channel Performance',
+    subtitle: 'Review channel readiness, audience signals, and publishing performance.',
+  },
+  'image-editor': {
+    title: 'Image Editor',
+    subtitle: 'Refine campaign imagery while keeping brand and channel requirements visible.',
+  },
+  'flow-a-gram': {
+    title: 'Flow-A-Gram',
+    subtitle: 'Shape reusable social content packs from approved campaign ideas.',
+  },
+  onboarding: {
+    title: 'Workspace Setup',
+    subtitle: 'Define the business, audience, goals, and guardrails Flow should work from.',
+  },
+  profile: {
+    title: 'Account & Settings',
+    subtitle: 'Manage workspace identity, preferences, integrations, and safety controls.',
   },
   default: {
     title: 'Unified Workspace',

@@ -720,6 +720,8 @@ const DEFAULT_BRAND_KITS: BrandKit[] = [
   },
 ];
 
+const isPreviewMode = (process.env.NEXT_PUBLIC_API_MODE || 'mock') !== 'live';
+
 export default function ContentStudioPremium() {
   // State
   const [selectedTemplate, setSelectedTemplate] = useState<Template>(TEMPLATES[0]);
@@ -1237,7 +1239,11 @@ Each set should have 4-6 trending hashtags. Return as a simple numbered list.`;
     setLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
-      showSnackbar(`Scheduled for ${scheduledPlatform} on ${scheduledDate} at ${scheduledTime}`);
+      showSnackbar(
+        isPreviewMode
+          ? `Schedule preview checked for ${scheduledPlatform}. Nothing was published.`
+          : `Scheduled for ${scheduledPlatform} on ${scheduledDate} at ${scheduledTime}`,
+      );
       setScheduleDialogOpen(false);
       setScheduledPlatform('');
       setScheduledDate('');
@@ -1357,34 +1363,40 @@ Each set should have 4-6 trending hashtags. Return as a simple numbered list.`;
     <Box sx={{ 
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       minHeight: '100vh',
-      p: 3,
+      borderRadius: { xs: 2, sm: 3 },
+      overflow: 'hidden',
+      p: { xs: 1.5, sm: 2, lg: 3 },
     }}>
       {/* Header */}
       <Box sx={{ 
         display: 'flex', 
+        flexDirection: { xs: 'column', lg: 'row' },
         justifyContent: 'space-between', 
-        alignItems: 'center', 
+        alignItems: { xs: 'stretch', lg: 'center' },
+        gap: 2,
         mb: 3,
-        background: 'rgba(255, 255, 255, 0.95)',
+        backgroundColor: 'background.paper',
         backdropFilter: 'blur(10px)',
         borderRadius: 3,
         p: 2.5,
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+        border: '1px solid',
+        borderColor: 'divider',
       }}>
-        <Box>
+        <Box sx={{ minWidth: 0 }}>
           <Typography variant="h4" fontWeight={800} sx={{ 
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             mb: 0.5,
           }}>
-            Content Studio
+            Creative Workspace
           </Typography>
           <Typography variant="body2" color="text.secondary" fontWeight={500}>
-            Create stunning content with AI-powered tools
+            Design campaign assets with reusable templates, brand kits, and AI-assisted copy.
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
           <Button
             variant="contained"
             size="medium"
@@ -1409,6 +1421,7 @@ Each set should have 4-6 trending hashtags. Return as a simple numbered list.`;
             onClick={() => setBrandKitDialogOpen(true)}
             data-testid="brand-kit-button"
             aria-label="Open brand kit"
+            sx={{ color: 'text.primary', borderColor: 'divider' }}
           >
             Brand Kit
           </Button>
@@ -1417,6 +1430,7 @@ Each set should have 4-6 trending hashtags. Return as a simple numbered list.`;
             size="medium"
             startIcon={<ImageIcon />}
             onClick={() => setStockPhotoGalleryOpen(true)}
+            sx={{ color: 'text.primary', borderColor: 'divider' }}
           >
             Stock
           </Button>
@@ -1425,6 +1439,7 @@ Each set should have 4-6 trending hashtags. Return as a simple numbered list.`;
             size="medium"
             startIcon={<ImageIcon />}
             onClick={() => setMediaLibraryOpen(true)}
+            sx={{ color: 'text.primary', borderColor: 'divider' }}
           >
             <Badge badgeContent={mediaAssets.length} color="primary">
               Media
@@ -1448,9 +1463,37 @@ Each set should have 4-6 trending hashtags. Return as a simple numbered list.`;
         </Box>
       </Box>
 
-      <Box sx={{ display: 'flex', gap: 3, flexDirection: { xs: 'column', md: 'row' } }}>
+      {isPreviewMode && (
+        <Alert
+          severity="info"
+          data-testid="creator-preview-notice"
+          sx={{ mb: 3, borderRadius: 2.5, alignItems: 'center' }}
+        >
+          <strong>Creator preview:</strong> edits and versions stay in this browser session. Image downloads work, but account storage and direct publishing are not connected yet.
+        </Alert>
+      )}
+
+      {selectedTemplate.type === 'video' && (
+        <Alert
+          severity="warning"
+          data-testid="video-framing-notice"
+          sx={{ mb: 3, borderRadius: 2.5, alignItems: 'center' }}
+        >
+          This template sets the video frame and safe area only. The storyboard, timeline, captions, audio, and MP4 renderer are the next creator milestone.
+        </Alert>
+      )}
+
+      <Box sx={{
+        display: 'grid',
+        gridTemplateColumns: 'minmax(0, 1fr)',
+        gap: 3,
+        alignItems: 'start',
+        '@media (min-width: 1360px)': {
+          gridTemplateColumns: 'minmax(230px, 280px) minmax(340px, 1fr) minmax(270px, 320px)',
+        },
+      }}>
         {/* Left Panel - Templates & Tools */}
-        <Box sx={{ width: { xs: '100%', md: '320px' } }}>
+        <Box sx={{ width: '100%', minWidth: 0 }}>
           {/* Template Gallery */}
           <Card sx={{ 
             mb: 2.5, 
@@ -1461,10 +1504,11 @@ Each set should have 4-6 trending hashtags. Return as a simple numbered list.`;
             border: '1px solid rgba(255, 255, 255, 0.5)',
           }}>
             <CardContent sx={{ p: 2 }}>
-              <Typography variant="h6" fontWeight={700} gutterBottom sx={{
+              <Typography variant="h6" fontWeight={700} sx={{
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
+                mb: 2,
               }}>
                 Templates
               </Typography>
@@ -1661,7 +1705,7 @@ Each set should have 4-6 trending hashtags. Return as a simple numbered list.`;
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}>
-                  Live Preview
+                  Design Preview
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1.5 }}>
                   <Tooltip title="Edit in Canvas">
@@ -1781,7 +1825,7 @@ Each set should have 4-6 trending hashtags. Return as a simple numbered list.`;
         </Box>
 
         {/* Right Panel - Editor Controls */}
-        <Box sx={{ width: { xs: '100%', md: '340px' } }}>
+        <Box sx={{ width: '100%', minWidth: 0 }}>
           <Card sx={{ 
             borderRadius: 3,
             background: 'rgba(255, 255, 255, 0.95)',
@@ -2422,13 +2466,15 @@ Each set should have 4-6 trending hashtags. Return as a simple numbered list.`;
         <DialogTitle>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Schedule />
-            Schedule Post
+            {isPreviewMode ? 'Preview Schedule' : 'Schedule Post'}
           </Box>
         </DialogTitle>
         <DialogContent>
           <Box sx={{ p: 2 }}>
             <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 3 }}>
-              Schedule this content to be posted automatically
+              {isPreviewMode
+                ? 'Check how this post would be prepared. Preview mode will not publish it.'
+                : 'Schedule this content to be posted automatically.'}
             </Typography>
 
             {/* Platform Selection */}
@@ -2498,7 +2544,7 @@ Each set should have 4-6 trending hashtags. Return as a simple numbered list.`;
             {scheduledPlatform && scheduledDate && scheduledTime && (
               <Box sx={{ p: 2, bgcolor: 'success.50', borderRadius: 2, border: '1px solid', borderColor: 'success.200' }}>
                 <Typography variant="body2" color="success.dark" fontWeight={600}>
-                  ✓ Will post to {scheduledPlatform} on {scheduledDate} at {scheduledTime}
+                  {isPreviewMode ? 'Preview only:' : 'Will post:'} {scheduledPlatform} on {scheduledDate} at {scheduledTime}
                 </Typography>
               </Box>
             )}
@@ -2507,7 +2553,7 @@ Each set should have 4-6 trending hashtags. Return as a simple numbered list.`;
               <Box sx={{ mt: 3 }}>
                 <LinearProgress />
                 <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', textAlign: 'center' }}>
-                  Scheduling your post...
+                  {isPreviewMode ? 'Checking schedule preview...' : 'Scheduling your post...'}
                 </Typography>
               </Box>
             )}
@@ -2520,7 +2566,7 @@ Each set should have 4-6 trending hashtags. Return as a simple numbered list.`;
             onClick={schedulePost}
             disabled={loading || !scheduledPlatform || !scheduledDate || !scheduledTime}
           >
-            Schedule Post
+            {isPreviewMode ? 'Check Schedule' : 'Schedule Post'}
           </Button>
         </DialogActions>
       </Dialog>

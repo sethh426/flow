@@ -33,7 +33,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { id: 0, label: 'Overview', description: 'Growth pulse & revenue snapshot', icon: HiHome },
-  { id: 1, label: 'Campaigns', description: 'Launch cadence & pipeline health', icon: HiSpeakerphone, badge: 'Live' },
+  { id: 1, label: 'Campaigns', description: 'Launch cadence & pipeline health', icon: HiSpeakerphone, badge: 'Preview' },
   { id: 2, label: 'Products', description: 'Catalog insights & supply signals', icon: HiShoppingCart },
   { id: 3, label: 'AI Studio', description: 'Creative automation & asset library', icon: HiSparkles },
   { id: 4, label: 'Trends', description: 'Market velocity & opportunity radar', icon: HiTrendingUp },
@@ -58,10 +58,10 @@ const ROUTES: Record<number, string> = {
 };
 
 const METRICS = [
-  { label: 'MRR', value: '$128.4K', delta: '+12.6%', positive: true },
-  { label: 'Conversion', value: '8.4%', delta: '+1.2%', positive: true },
-  { label: 'Launch velocity', value: '19 campaigns', delta: '+4', positive: false },
-  { label: 'Active workflows', value: '27', delta: '+6 automated', positive: true },
+  { label: 'Live data', value: 'Not connected', delta: 'Setup required', positive: false },
+  { label: 'Published campaigns', value: '0 verified', delta: 'No provider', positive: false },
+  { label: 'Automation', value: 'Approval only', delta: 'Safe preview', positive: true },
+  { label: 'Recommendations', value: 'Awaiting evidence', delta: 'No invented scores', positive: true },
 ];
 
 export default function DashboardLayoutFlowbite({ children, currentTab, onTabChange, user }: DashboardLayoutProps) {
@@ -89,7 +89,7 @@ export default function DashboardLayoutFlowbite({ children, currentTab, onTabCha
               {activeNav.description}
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500 dark:text-slate-400">
-              Hello {user?.email?.split('@')[0] ?? 'operator'}, your mock workspace is ready for safe UI configuration and endpoint setup.
+              Hello {user?.email?.split('@')[0] ?? 'operator'}, this configuration workspace is ready for endpoint setup. Metrics remain empty until verified data is connected.
             </p>
           </div>
           <div className="flex w-full flex-col gap-3 sm:flex-row xl:w-auto xl:shrink-0">

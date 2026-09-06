@@ -8,7 +8,7 @@
 
 Flow is now preserved in one clean repository and the main web client can be installed and built. It is a substantial recovered product, not an empty prototype: the repository contains the user interface, AI and automation services, Firebase functions and hosting configuration, infrastructure definitions, an early-adopter site, tests, documentation, and curated historical source.
 
-It is not yet safe to describe the whole platform as production-ready. The client build passes only because TypeScript and ESLint failures are ignored by the Next.js build configuration. The official application UI is publicly hosted, but it remains in configuration/mock mode while the selected backend project has billing disabled. The backend is still a collection of overlapping service generations rather than one verified deployment unit, and dependency audits outside the hardened function package still contain high and critical advisories.
+It is not yet safe to describe the whole platform as production-ready. The client build passes only because TypeScript and ESLint failures are ignored by the Next.js build configuration. The official application UI is publicly hosted, but it remains in configuration/preview mode while its backend is being consolidated. The backend is still a collection of overlapping service generations rather than one verified deployment unit, and dependency audits outside the hardened function package still contain high and critical advisories.
 
 The right current label is **recovered engineering baseline with a publicly hosted configuration-mode frontend**. The source recovery is complete enough to move forward without relying on the scattered archives, but the application needs a deliberate endpoint-by-endpoint stabilization phase before real automation is enabled.
 
@@ -24,8 +24,8 @@ The right current label is **recovered engineering baseline with a publicly host
 | Automated tests | Present, not established as green | Eight Playwright specifications cover major UI areas, but the recovered baseline does not have a recorded passing end-to-end run. The root test script is a placeholder that exits with failure. |
 | Backend services | Recovered; one hardened candidate | Multiple runtimes are present. The selected Firebase `api` candidate now builds, requires Firebase identity outside health, scopes data by user, and fails closed for AI/unimplemented routes; it is not deployed because `affiliateflow-abzfy` billing is disabled. |
 | Early-adopter site source | Build passing | The static site's local build succeeds. Its current source no longer embeds a Gemini key and disables the legacy client-side admin flow. |
-| Unified Hosting production | Passing | `flowearlyadopters.web.app` serves Early Adopters at `/`, the investor presentation at `/investors/`, and the 46-route official application below `/app/`. Hosting version `4e1942fae6250fc4` contains the responsive dashboard, contained workflow builder, and optimized mock-mode assistant. |
-| Unified Hosting preview | Passing | The matching Firebase preview channel remains available until 2026-09-08. The removed legacy admin/configuration files return `404` on preview and production. |
+| Unified Hosting production | Passing | `flowearlyadopters.web.app` serves Early Adopters at `/`, the investor presentation at `/investors/`, and the 46-route official application below `/app/`. The 2026-09-06 16:44:28 EDT release adds the canonical Campaign Creator and replaces the most prominent fabricated dashboard and campaign data with honest empty/setup states. |
+| Unified Hosting preview | Passing | The matching Firebase preview channel is available until 2026-09-13. The removed legacy admin/configuration files return `404` on preview and production. |
 | CI | Passing, narrow scope | The `Recovery integrity` GitHub Action scans common secret formats, checks recovered backend entry points, installs/checks Trend Finder, and installs/builds the client. It does not run type checking, linting, end-to-end tests, dependency-policy enforcement, or the other service builds. |
 | Deployment automation | Contained | Imported Firebase, Cloud Run, and Terraform workflows are manual-only (`workflow_dispatch`). Their destinations and credentials still require review. |
 | Dependency security | Needs work | Client audit: 61 advisories (1 low, 31 moderate, 23 high, 6 critical). Early-adopter audit: 5 (1 moderate, 2 high, 2 critical). |
@@ -34,9 +34,11 @@ Detailed command results are retained in [recovery validation](recovery/VALIDATI
 
 The official application UI was smoke-tested and contrast-corrected on 2026-09-01 before Firebase Hosting version `0fd12c588300ed60` was promoted. See the [official app UI smoke-test report](testing/OFFICIAL_APP_SMOKE_TEST_2026-09-01.md) for the route matrix, viewport coverage, fixes, and remaining quality debt.
 
-The dashboard shell, navigation, workflow control page, and Flow Assistant received a second responsive audit on 2026-09-02. The verified artifact was promoted as Hosting version `4e1942fae6250fc4`; see the [dashboard and assistant UI audit](testing/DASHBOARD_AND_ASSISTANT_UI_AUDIT_2026-09-02.md).
+The dashboard shell, navigation, workflow control page, and Flow Assistant received a second responsive audit on 2026-09-02; see the [dashboard and assistant UI audit](testing/DASHBOARD_AND_ASSISTANT_UI_AUDIT_2026-09-02.md). On 2026-09-06, the first transformation release superseded that artifact with truthful dashboard/campaign states and a canonical creator. Its static production build exported 46 routes, its focused Chromium suite passed 8/8 tests, and browser checks found no horizontal overflow at a 1270-pixel viewport.
 
 The current live-project, endpoint, provider, and shared-host assessment is in the [endpoint and service audit](integration/ENDPOINT_AND_SERVICE_AUDIT.md). The detailed [`affiliateflow-abzfy` function review](integration/AFFILIATEFLOW_FUNCTION_REVIEW.md) records the ten deployed functions, the hardened candidate, and the backend activation sequence. These reports supersede historical `*_COMPLETE.md` claims when they conflict with current Firebase or source evidence.
+
+The September 6 [Firebase consolidation report](integration/FIREBASE_CONSOLIDATION_2026-09-06.md) designates `flowearlyadopters` as the canonical destination. It also proves that Product Mapper's product records require no copy, classifies the standalone investor host as a retirement candidate, and preserves the only `appy-32f2xp` connector record as unverified historical reference.
 
 The prioritized product direction, consolidated information architecture, recommendation contract, proposed Video Studio, target data model, and phased delivery plan are in the [Flow transformation roadmap](roadmap/FLOW_TRANSFORMATION_ROADMAP.md).
 
@@ -168,7 +170,7 @@ The safe local source is now the basis of the live unified deployment:
 
 The Firebase project was confirmed and the unified build was previewed before promotion. Future changes should continue to use a preview channel before production.
 
-The unified site is live at <https://flowearlyadopters.web.app>. The root Early Adopters page, `/investors/`, `/app/`, `/app/dashboard/`, and Firebase's reserved initialization script all return `200`; the old `get-signups.html` and `config.example.js` paths return `404`. The official application is currently a visible configuration/mock-mode build because the separate `affiliateflow-abzfy` backend project has billing disabled and its repaired API has not been deployed. A matching preview remains available at <https://flowearlyadopters--shared-host-preview-l3mszyo2.web.app> until 2026-09-08.
+The unified site is live at <https://flowearlyadopters.web.app>. The root Early Adopters page, `/investors/`, `/app/`, `/app/dashboard/`, `/app/campaigns/`, and `/app/content-studio/` return `200`; the old `get-signups.html` and `config.example.js` paths return `404`. The official application remains a visible configuration-mode build: performance data is unverified, external publishing/payments/automation are disconnected, and creator/campaign changes are browser-session previews. A matching preview remains available at <https://flowearlyadopters--shared-host-preview-l3mszyo2.web.app> until 2026-09-13.
 
 ## Security and deployment blockers
 

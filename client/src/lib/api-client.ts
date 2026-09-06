@@ -133,14 +133,23 @@ const mockResponses: Record<string, (body?: any) => Promise<any>> = {
   },
 
   // Content Generation
-  '/api/generate-content': async (body) => ({
-    content: {
-      title: 'Amazing Product Review',
-      body: `Check out this incredible ${body?.productName || 'product'}! It's perfect for anyone looking for quality and value. With its outstanding features and competitive pricing, this is a must-have item. #affiliate #review #recommended`,
-      hashtags: ['affiliate', 'review', 'recommended', 'shopping'],
-      imagePrompt: 'Professional product photography, clean background, modern aesthetic',
-    },
-  }),
+  '/api/generate-content': async (body) => {
+    const title = 'Campaign-ready product story';
+    const text = `Meet ${body?.productName || 'the product'}: a practical choice for shoppers who value quality, clarity, and a strong offer. Review the claims, add your affiliate disclosure, and tailor this draft to your audience before publishing.`;
+    const imagePrompt = body?.prompt || 'Professional product photography, clean background, modern aesthetic';
+
+    return {
+      mode: 'preview',
+      text,
+      imageUrl: null,
+      content: {
+        title,
+        body: text,
+        hashtags: ['affiliate', 'review', 'recommended', 'shopping'],
+        imagePrompt,
+      },
+    };
+  },
 
   // Social Media
   '/api/social-platforms': async () => ({

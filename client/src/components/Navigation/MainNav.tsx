@@ -11,7 +11,6 @@ import {
   HiSparkles,
   HiTrendingUp,
   HiChartBar,
-  HiCog,
   HiPrinter,
   HiMenu,
   HiX,
@@ -31,7 +30,6 @@ type NavItemKey =
   | 'content-studio'
   | 'products'
   | 'printify-studio'
-  | 'workflows'
   | 'flowtime';
 
 interface NavItem {
@@ -73,16 +71,16 @@ const NAV_ITEMS: Record<NavItemKey, NavItem> = {
   },
   automation: {
     icon: HiLightningBolt,
-    label: 'Automation',
+    label: 'Workflows',
     href: '/dashboard/workflows',
-    description: 'Automated workflows',
+    description: 'Build and preview guarded workflows',
     badge: 'Live',
   },
   'content-studio': {
     icon: HiSparkles,
-    label: 'Content Studio',
+    label: 'Create',
     href: '/content-studio',
-    description: 'Creative assets and copy',
+    description: 'Campaign assets, copy, and video framing',
   },
   products: {
     icon: HiShoppingCart,
@@ -96,12 +94,6 @@ const NAV_ITEMS: Record<NavItemKey, NavItem> = {
     href: '/dashboard/printify',
     description: 'Merch and fulfillment',
   },
-  workflows: {
-    icon: HiCog,
-    label: 'Workflows',
-    href: '/workflows',
-    description: 'Visual automation builder',
-  },
   flowtime: {
     icon: HiClock,
     label: 'FlowTime',
@@ -113,7 +105,7 @@ const NAV_ITEMS: Record<NavItemKey, NavItem> = {
 const NAV_SECTIONS: { title: string; items: NavItemKey[] }[] = [
   { title: 'Overview', items: ['dashboard', 'analytics'] },
   { title: 'Growth', items: ['campaigns', 'trends', 'automation'] },
-  { title: 'Create', items: ['content-studio', 'products', 'printify-studio', 'workflows'] },
+  { title: 'Create', items: ['content-studio', 'products', 'printify-studio'] },
   { title: 'Operate', items: ['flowtime'] },
 ];
 
@@ -174,7 +166,14 @@ export default function MainNav({ previewMode = false }: MainNavProps) {
                 </p>
               </div>
             </Link>
-            <span className="ml-auto hidden h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(52,211,153,0.12)] lg:block" aria-label="System stable" />
+            <span
+              className={`ml-auto hidden h-2.5 w-2.5 shrink-0 rounded-full lg:block ${
+                previewMode
+                  ? 'bg-amber-400 shadow-[0_0_0_4px_rgba(251,191,36,0.14)]'
+                  : 'bg-emerald-400 shadow-[0_0_0_4px_rgba(52,211,153,0.12)]'
+              }`}
+              aria-label={previewMode ? 'Preview workspace' : 'Connected workspace'}
+            />
           </div>
 
           <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4" aria-label="Primary navigation">
@@ -210,7 +209,7 @@ export default function MainNav({ previewMode = false }: MainNavProps) {
                         <span className="min-w-0 flex-1 truncate">{item.label}</span>
                         {item.badge ? (
                           <span className={`rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide ${isActive ? 'bg-white/15 text-white' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'}`}>
-                            {item.badge}
+                            {previewMode && item.badge === 'Live' ? 'Preview' : item.badge}
                           </span>
                         ) : null}
                         <span className="sr-only">{item.description}</span>

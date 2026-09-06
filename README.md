@@ -4,7 +4,7 @@ Flow is an affiliate-selling and marketing automation platform recovered from th
 
 The repository is a recovery baseline and engineering source of truth. It preserves the work without pretending every historical service is currently production-ready.
 
-For the evidence-based assessment of what currently works, how the code is organized, deployment blockers, and the stabilization sequence, read [Flow: current state and structure](docs/CURRENT_STATE_AND_STRUCTURE.md). The live Firebase, endpoint, and provider findings are recorded in the [endpoint and service audit](docs/integration/ENDPOINT_AND_SERVICE_AUDIT.md).
+For the evidence-based assessment of what currently works, how the code is organized, deployment blockers, and the stabilization sequence, read [Flow: current state and structure](docs/CURRENT_STATE_AND_STRUCTURE.md). The live Firebase, endpoint, and provider findings are recorded in the [endpoint and service audit](docs/integration/ENDPOINT_AND_SERVICE_AUDIT.md), and the safe one-project direction is recorded in the [Firebase consolidation report](docs/integration/FIREBASE_CONSOLIDATION_2026-09-06.md).
 
 ## Current surfaces
 

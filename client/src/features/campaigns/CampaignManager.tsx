@@ -24,6 +24,7 @@ import {
   LinearProgress,
   Skeleton,
   FormHelperText,
+  Alert,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -36,6 +37,8 @@ import {
 } from '@mui/icons-material';
 import EmptyState from '@/components/EmptyState';
 import { createCampaignSchema, validateInput } from '@/schemas/validation';
+
+const isPreviewMode = (process.env.NEXT_PUBLIC_API_MODE || 'mock') !== 'live';
 
 export default function CampaignManager() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -58,10 +61,21 @@ export default function CampaignManager() {
   // Get current user
   useEffect(() => {
     const unsubscribe = onAuthChange((user) => {
-      setCurrentUser(user);
       if (user) {
+        setCurrentUser(user);
         loadCampaigns(user.uid);
+        return;
       }
+
+      if (isPreviewMode) {
+        const previewUser = { uid: 'demo-user', isPreview: true };
+        setCurrentUser(previewUser);
+        loadCampaigns(previewUser.uid);
+        return;
+      }
+
+      setCurrentUser(null);
+      setLoading(false);
     });
     return () => unsubscribe();
   }, []);
@@ -298,8 +312,13 @@ export default function CampaignManager() {
       {/* Main content */}
       {currentUser && (
         <>
+      {isPreviewMode && (
+        <Alert severity="info" sx={{ mb: 3 }} data-testid="campaign-preview-notice">
+          Preview workspace: campaigns created here last only for this browser session. They do not launch ads, publish content, or spend money.
+        </Alert>
+      )}
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, justifyContent: 'space-between', alignItems: { xs: 'stretch', sm: 'center' }, mb: 3 }}>
         <Box>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
             Campaign Manager
@@ -525,7 +544,7 @@ export default function CampaignManager() {
             <EmptyState
               icon={CampaignIcon}
               title="No campaigns yet"
-              description="Create your first affiliate campaign to start earning with AI-powered content generation and trend discovery."
+              description="Create a draft campaign with a real product, audience, offer, and measurable goal. Preview campaigns are not published."
               actionLabel="Create Your First Campaign"
               onAction={handleCreateCampaign}
               actionIcon={<AddIcon />}

@@ -1,13 +1,15 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Content Studio', () => {
+  test.describe.configure({ mode: 'serial' });
+  test.setTimeout(120_000);
+
   test.beforeEach(async ({ page }) => {
     await page.goto('/content-studio');
+    await expect(page.getByTestId('content-studio-tabs')).toBeVisible({ timeout: 30_000 });
   });
 
   test('should load content studio', async ({ page }) => {
-    await page.waitForLoadState('networkidle');
-    
     // Use test ID for content studio tabs
     await expect(page.getByTestId('content-studio-tabs')).toBeVisible();
     await expect(page.getByTestId('content-tab')).toBeVisible();
@@ -33,6 +35,8 @@ test.describe('Content Studio', () => {
     // Check for toolbar elements using test IDs
     await expect(page.getByTestId('format-bold-button')).toBeVisible();
     await expect(page.getByTestId('align-center-button')).toBeVisible();
+
+    await page.getByTestId('pro-tools-button').click();
     await expect(page.getByTestId('auto-enhance-image-button')).toBeVisible();
   });
 });

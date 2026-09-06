@@ -1,0 +1,22 @@
+{
+  "source": {
+    "projectId": "appy-32f2xp",
+    "databaseId": "(default)",
+    "collection": "connectors",
+    "documentId": "Nordstrom",
+    "capturedAt": "2026-09-06"
+  },
+  "status": "historical-unverified",
+  "activationPolicy": "Do not activate without validating current site terms, selectors, affiliate authorization, rate limits, and server-side safety controls.",
+  "record": {
+    "network": "Nordstrom",
+    "baseurl": "\thttps://shop.nordstrom.com/sr/",
+    "queryParam": "sr=true&q=",
+    "itemSelector": ".product-card",
+    "titleSelector": ".product-card__title",
+    "priceSelector": ".product-card__price",
+    "imageSelector": ".product-card__image@src",
+    "urlSelector": ".product-card__link@href",
+    "itemNumberSelector": ".product-card[data-sku]@data-sku"
+  }
+}

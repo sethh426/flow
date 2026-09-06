@@ -18,53 +18,7 @@ export interface Campaign {
 }
 
 // Mock data
-const mockCampaigns: Campaign[] = [
-  {
-    id: 'campaign-1',
-    name: 'Summer Fashion Collection 2025',
-    description: 'Promote trending summer fashion items from Nordstrom',
-    status: 'active',
-    category: 'fashion',
-    affiliateNetwork: 'nordstrom',
-    createdAt: new Date('2025-06-01'),
-    analytics: {
-      impressions: 12500,
-      clicks: 890,
-      conversions: 45,
-      revenue: 2340.50,
-    },
-  },
-  {
-    id: 'campaign-2',
-    name: 'Tech Gadgets for Home Office',
-    description: 'Best tech products for remote workers',
-    status: 'active',
-    category: 'tech',
-    affiliateNetwork: 'amazon',
-    createdAt: new Date('2025-05-15'),
-    analytics: {
-      impressions: 18200,
-      clicks: 1240,
-      conversions: 78,
-      revenue: 4567.80,
-    },
-  },
-  {
-    id: 'campaign-3',
-    name: 'Beauty Essentials Guide',
-    description: 'Curated beauty products for daily routines',
-    status: 'paused',
-    category: 'beauty',
-    affiliateNetwork: 'sephora',
-    createdAt: new Date('2025-04-20'),
-    analytics: {
-      impressions: 9500,
-      clicks: 620,
-      conversions: 32,
-      revenue: 1890.25,
-    },
-  },
-];
+const mockCampaigns: Campaign[] = [];
 
 // Simulate API calls with delays
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
