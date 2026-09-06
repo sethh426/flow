@@ -38,6 +38,8 @@ The dashboard shell, navigation, workflow control page, and Flow Assistant recei
 
 The current live-project, endpoint, provider, and shared-host assessment is in the [endpoint and service audit](integration/ENDPOINT_AND_SERVICE_AUDIT.md). The detailed [`affiliateflow-abzfy` function review](integration/AFFILIATEFLOW_FUNCTION_REVIEW.md) records the ten deployed functions, the hardened candidate, and the backend activation sequence. These reports supersede historical `*_COMPLETE.md` claims when they conflict with current Firebase or source evidence.
 
+The prioritized product direction, consolidated information architecture, recommendation contract, proposed Video Studio, target data model, and phased delivery plan are in the [Flow transformation roadmap](roadmap/FLOW_TRANSFORMATION_ROADMAP.md).
+
 ## Logical architecture
 
 ```mermaid
