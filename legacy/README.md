@@ -13,9 +13,9 @@ This directory preserves unique historical Flow source without mixing older vari
 | `standalone-sites/flow-early-adopters-2025-11-22/` | Standalone early-adopter site variant | 18 |
 | `standalone-sites/flow-pitch-2025-11-21/` | Separate pitch/investor site | 14 |
 | `design-reference/FLOW-PICS/` | Images and saved Firebase Studio reference page | 59 |
+| `design-reference/external-drive-2026/` | Additional Flow-branded design discovered during the 2026-09-24 external-drive audit | 1 |
 | `documents/FLOW-Documents-text-only/` | Project notes exported as Markdown | 2 |
 | `loose-artifacts/` | Six related HTML, PDF, image, workflow, and note files | 6 |
 | `editor-recovery/` | Latest VS Code/Cursor snapshots for missing original files | 284 |
 
-Credential files, `.env` entries, SSH data, shell history, nested `.git` directories, dependencies, caches, and generated build output were excluded. The original sources and complete editor history remain untouched at their local locations. See [the recovery inventory](../docs/recovery/INVENTORY.md) for exact provenance and archive hashes.
-
+Credential files, `.env` entries, SSH data, shell history, nested `.git` directories, dependencies, caches, and generated build output were excluded. The original sources and complete editor history remain untouched at their local locations. See [the recovery inventory](../docs/recovery/INVENTORY.md) for exact provenance and archive hashes, and [the 2026 external-drive audit](../docs/recovery/EXTERNAL_DRIVE_AUDIT_2026-09-24.md) for the follow-up verification.
