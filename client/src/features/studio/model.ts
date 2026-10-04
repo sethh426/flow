@@ -246,7 +246,7 @@ export const productionJobSchema = z.object({
   jobId: z.string().uuid(),
   projectId: z.string(),
   status: z.enum(["running", "completed", "failed", "canceled"]),
-  stage: z.enum(["queued", "preparing", "ready_for_render", "rendering", "packaging", "awaiting_approval", "completed", "failed", "canceled"]),
+  stage: z.enum(["queued", "preparing", "generating_narration", "ready_for_render", "rendering", "packaging", "awaiting_approval", "completed", "failed", "canceled"]),
   progress: z.number().min(0).max(100),
   artifact: z.object({
     kind: z.literal("local-bundle"),
