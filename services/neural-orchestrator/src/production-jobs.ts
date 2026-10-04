@@ -1,11 +1,15 @@
 import { getFirestore } from "firebase-admin/firestore";
 import { getFunctions } from "firebase-admin/functions";
+import { getStorage } from "firebase-admin/storage";
 import { z } from "zod";
 import type { Request, Response } from "express";
 
 export const productionJobCreateSchema = z.object({
   jobId: z.string().uuid(),
   projectId: z.string().trim().min(1).max(128),
+  production: z.object({
+    generateNarration: z.boolean(),
+  }).strict(),
   project: z.object({
     brief: z.object({
       platform: z.string().min(1).max(80),
@@ -73,6 +77,7 @@ function publicJob(jobId: string, data: Record<string, unknown>) {
     updatedAt: data.updatedAt instanceof Date ? data.updatedAt.toISOString() : data.updatedAt,
     artifact: data.artifact ?? null,
     manifest: data.manifest ?? null,
+    narration: data.narration ?? null,
     failure: data.failure ?? null,
   };
 }
@@ -88,7 +93,7 @@ async function createJob(req: Request, res: Response, userId: string) {
     res.status(400).json({ error: "Provide a valid Flow project and job identifier." });
     return;
   }
-  const { jobId, projectId, project } = parsed.data;
+  const { jobId, projectId, project, production } = parsed.data;
   const ref = jobRef(userId, jobId);
   const db = getFirestore();
   const result = await db.runTransaction(async (transaction) => {
@@ -106,7 +111,7 @@ async function createJob(req: Request, res: Response, userId: string) {
         stage: "queued" as JobStage,
         progress: 2,
         failure: null,
-        projectSnapshot: project,
+        projectSnapshot: { ...project, production },
         updatedAt: new Date(),
       };
       transaction.set(ref, retry, { merge: true });
@@ -119,7 +124,7 @@ async function createJob(req: Request, res: Response, userId: string) {
       status: "running" as JobStatus,
       stage: "queued" as JobStage,
       progress: 2,
-      projectSnapshot: project,
+      projectSnapshot: { ...project, production },
       createdAt: now,
       updatedAt: now,
       artifact: null,
@@ -179,7 +184,7 @@ export async function handleProductionJobRequest(
 
   const normalized = path.replace(/^\/api\/studio/, "");
   const root = normalized === "/jobs" || normalized === "/jobs/";
-  const match = /^\/jobs\/([0-9a-f-]{36})(?:\/(progress|complete|fail|cancel))?$/.exec(normalized);
+  const match = /^\/jobs\/([0-9a-f-]{36})(?:\/(progress|complete|fail|cancel|narration))?$/.exec(normalized);
 
   if (root && req.method === "POST") {
     await createJob(req, res, userId);
@@ -195,6 +200,30 @@ export async function handleProductionJobRequest(
     const job = await readJob(userId, jobId);
     if (!job) res.status(404).json({ error: "Production job not found." });
     else res.json({ job });
+    return true;
+  }
+  if (action === "narration" && req.method === "GET") {
+    const snapshot = await jobRef(userId, jobId).get();
+    if (!snapshot.exists) {
+      res.status(404).json({ error: "Production job not found." });
+      return true;
+    }
+    const narration = snapshot.get("narration") as
+      | { bucket?: string; object?: string; mediaType?: string }
+      | undefined;
+    if (!narration?.bucket || !narration.object) {
+      res.status(404).json({ error: "AI narration is not available for this production job." });
+      return true;
+    }
+    try {
+      const [bytes] = await getStorage().bucket(narration.bucket).file(narration.object).download();
+      res.set("Cache-Control", "private, no-store");
+      res.set("Content-Type", narration.mediaType || "audio/mpeg");
+      res.set("Content-Length", String(bytes.length));
+      res.status(200).send(bytes);
+    } catch {
+      res.status(503).json({ error: "Flow could not load the generated narration." });
+    }
     return true;
   }
   if (req.method !== "POST") {
