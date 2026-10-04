@@ -447,3 +447,123 @@ test("production worker prepares a real server manifest before local rendering",
     for (const stub of stubs.reverse()) stub.mock.restore();
   }
 });
+
+
+test("queue failure is recorded and the same job id can retry without duplication", async () => {
+  const jobId = "33333333-3333-4333-8333-333333333333";
+  const store = new Map();
+  const stubs = [];
+  let enqueueCalls = 0;
+  try {
+    stubs.push(mock.method(getFirestore(), "collection", () => ({
+      doc() {
+        return {
+          collection() {
+            return {
+              doc(id) {
+                return {
+                  id,
+                  async set(value, options) {
+                    const current = store.get(id) || {};
+                    store.set(id, options?.merge ? { ...current, ...value } : value);
+                  },
+                };
+              },
+            };
+          },
+        };
+      },
+    })));
+    stubs.push(mock.method(getFirestore(), "runTransaction", async (run) => run({
+      async get(ref) {
+        return { exists: store.has(ref.id), data: () => store.get(ref.id) };
+      },
+      set(ref, value, options) {
+        const current = store.get(ref.id) || {};
+        store.set(ref.id, options?.merge ? { ...current, ...value } : value);
+      },
+    })));
+    stubs.push(mock.method(getFunctions(), "taskQueue", () => ({
+      async enqueue() {
+        enqueueCalls++;
+        if (enqueueCalls === 1) throw new Error("queue unavailable");
+      },
+    })));
+
+    let res = response();
+    await handleProductionJobRequest(
+      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-3", project: productionProject } },
+      res,
+      "verified-owner",
+    );
+    assert.equal(res.code, 503);
+    assert.equal(store.get(jobId).status, "failed");
+    assert.equal(store.get(jobId).failure.code, "queue_unavailable");
+
+    res = response();
+    await handleProductionJobRequest(
+      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-3", project: productionProject } },
+      res,
+      "verified-owner",
+    );
+    assert.equal(res.code, 201);
+    assert.equal(enqueueCalls, 2);
+    assert.equal(store.get(jobId).status, "running");
+    assert.equal(store.get(jobId).stage, "queued");
+    assert.equal(store.get(jobId).failure, null);
+  } finally {
+    for (const stub of stubs.reverse()) stub.mock.restore();
+  }
+});
+
+test("production worker records invalid server snapshot as non-retryable preparation failure", async () => {
+  const jobId = "44444444-4444-4444-8444-444444444444";
+  const store = new Map([[jobId, {
+    userId: "verified-owner",
+    projectId: "project-4",
+    status: "running",
+    stage: "queued",
+    progress: 2,
+    projectSnapshot: { broken: true },
+  }]]);
+  const stubs = [];
+  try {
+    stubs.push(mock.method(getFirestore(), "collection", () => ({
+      doc() {
+        return {
+          collection() {
+            return {
+              doc(id) {
+                return {
+                  id,
+                  async set(value, options) {
+                    const current = store.get(id) || {};
+                    store.set(id, options?.merge ? { ...current, ...value } : value);
+                  },
+                };
+              },
+            };
+          },
+        };
+      },
+    })));
+    stubs.push(mock.method(getFirestore(), "runTransaction", async (run) => run({
+      async get(ref) {
+        return { exists: store.has(ref.id), data: () => store.get(ref.id) };
+      },
+      set(ref, value, options) {
+        const current = store.get(ref.id) || {};
+        store.set(ref.id, options?.merge ? { ...current, ...value } : value);
+      },
+    })));
+
+    await prepareProductionJob({ userId: "verified-owner", jobId });
+    const failed = store.get(jobId);
+    assert.equal(failed.status, "failed");
+    assert.equal(failed.stage, "failed");
+    assert.equal(failed.failure.code, "server_prepare_failed");
+    assert.equal(failed.failure.retryable, false);
+  } finally {
+    for (const stub of stubs.reverse()) stub.mock.restore();
+  }
+});
