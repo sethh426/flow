@@ -43,6 +43,7 @@ export interface Project {
   source: "starter" | "ai";
   brief: Brief;
   creative: Creative;
+  productionJobId?: string;
 }
 
 export const palettes: Record<
@@ -175,6 +176,7 @@ export const projectSchema = z.object({
     look: z.enum(["ember", "ocean", "orchid"]),
   }),
   // Persist unfinished edits too; final exports use the stricter schema above.
+  productionJobId: z.string().uuid().optional(),
   creative: creativeSchema.extend({
     caption: z.string().max(2200),
     scenes: z
@@ -235,6 +237,101 @@ export async function generateCreative(
   if (!envelope.success)
     throw new Error("The creative response was incomplete. Please try again.");
   return envelope.data.creative;
+}
+
+
+export const productionJobSchema = z.object({
+  jobId: z.string().uuid(),
+  projectId: z.string(),
+  status: z.enum(["running", "completed", "failed", "canceled"]),
+  stage: z.enum(["validated", "rendering", "packaging", "awaiting_approval", "completed", "failed", "canceled"]),
+  progress: z.number().min(0).max(100),
+  artifact: z.object({
+    kind: z.literal("local-bundle"),
+    fileName: z.string(),
+    mediaType: z.string(),
+    sizeBytes: z.number(),
+  }).nullable().optional(),
+  failure: z.object({
+    code: z.string(),
+    retryable: z.boolean(),
+  }).nullable().optional(),
+});
+export type ProductionJob = z.infer<typeof productionJobSchema>;
+
+async function productionJobRequest(
+  path: string,
+  token: string,
+  init: RequestInit = {},
+): Promise<ProductionJob> {
+  const response = await fetch(path, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      ...(init.headers || {}),
+    },
+  });
+  if (!response.headers.get("content-type")?.includes("application/json"))
+    throw new Error("Production tracking is unavailable in this environment.");
+  const body: unknown = await response.json();
+  const parsed = z.object({ job: productionJobSchema }).safeParse(body);
+  if (!response.ok) {
+    const failure = z.object({ error: z.string() }).safeParse(body);
+    throw new Error(failure.success ? failure.data.error : "Flow could not update the production job.");
+  }
+  if (!parsed.success) throw new Error("Flow received an invalid production job response.");
+  return parsed.data.job;
+}
+
+export function createProductionJob(projectId: string, jobId: string, token: string) {
+  return productionJobRequest("/api/studio/jobs", token, {
+    method: "POST",
+    body: JSON.stringify({ projectId, jobId }),
+  });
+}
+
+export function getProductionJob(jobId: string, token: string) {
+  return productionJobRequest(`/api/studio/jobs/${jobId}`, token);
+}
+
+export function updateProductionJob(
+  jobId: string,
+  token: string,
+  stage: "rendering" | "packaging" | "awaiting_approval",
+  progress: number,
+) {
+  return productionJobRequest(`/api/studio/jobs/${jobId}/progress`, token, {
+    method: "POST",
+    body: JSON.stringify({ stage, progress }),
+  });
+}
+
+export function completeProductionJob(
+  jobId: string,
+  token: string,
+  artifact: { kind: "local-bundle"; fileName: string; mediaType: string; sizeBytes: number },
+) {
+  return productionJobRequest(`/api/studio/jobs/${jobId}/complete`, token, {
+    method: "POST",
+    body: JSON.stringify({ artifact }),
+  });
+}
+
+export function failProductionJob(
+  jobId: string,
+  token: string,
+  code: "render_failed" | "packaging_failed" | "aborted",
+  retryable: boolean,
+) {
+  return productionJobRequest(`/api/studio/jobs/${jobId}/fail`, token, {
+    method: "POST",
+    body: JSON.stringify({ code, retryable }),
+  });
+}
+
+export function cancelProductionJob(jobId: string, token: string) {
+  return productionJobRequest(`/api/studio/jobs/${jobId}/cancel`, token, { method: "POST" });
 }
 
 export function downloadFile(blob: Blob, filename: string) {

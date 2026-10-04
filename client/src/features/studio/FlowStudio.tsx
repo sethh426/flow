@@ -30,6 +30,12 @@ import {
   creativeSchema,
   downloadFile,
   generateCreative,
+  createProductionJob,
+  getProductionJob,
+  updateProductionJob,
+  completeProductionJob,
+  failProductionJob,
+  cancelProductionJob,
   loadProjects,
   palettes,
   projectSchema,
@@ -163,6 +169,29 @@ export default function FlowStudio() {
     drawFrame(canvas.current, project, time, { images });
   }, [project, time, images]);
   useEffect(() => {
+    if (!project?.productionJobId || !user || rendering) return;
+    let active = true;
+    void user.getIdToken()
+      .then((token) => getProductionJob(project.productionJobId!, token))
+      .then((job) => {
+        if (!active) return;
+        const labels: Record<string, string> = {
+          validated: "Ready to render",
+          rendering: `Rendering video · ${job.progress}%`,
+          packaging: `Packaging files · ${job.progress}%`,
+          awaiting_approval: "Awaiting approval",
+          completed: "Completed and recorded",
+          failed: "Last production run failed",
+          canceled: "Last production run canceled",
+        };
+        setWorkflowStage(labels[job.stage] || "");
+      })
+      .catch(() => {
+        if (active) setWorkflowStage("");
+      });
+    return () => { active = false; };
+  }, [project?.productionJobId, user, rendering]);
+  useEffect(() => {
     if (!playing || !project) return;
     let frame = 0;
     const start = performance.now() - timeRef.current * 1000;
@@ -292,10 +321,32 @@ export default function FlowStudio() {
     setPlaying(false);
     const controller = new AbortController();
     abortRef.current = controller;
+    let token: string | null = null;
+    let jobId: string | null = null;
+    let reachedPackaging = false;
     try {
+      if (user) {
+        try {
+          token = await user.getIdToken();
+          jobId = crypto.randomUUID();
+          await createProductionJob(project.id, jobId, token);
+          const tracked = { ...project, productionJobId: jobId };
+          setProject(tracked);
+          persist(tracked);
+        } catch {
+          token = null;
+          jobId = null;
+          setNotice("Flow is running locally. Server progress tracking is unavailable.");
+        }
+      }
+
       setWorkflowStage("Rendering video");
+      if (jobId && token) await updateProductionJob(jobId, token, "rendering", 10);
       const video = await renderVideo(project, images, audio, controller.signal, setProgress);
+
+      reachedPackaging = true;
       setWorkflowStage("Packaging files");
+      if (jobId && token) await updateProductionJob(jobId, token, "packaging", 85);
       const text = (value: string) => new Blob([value], { type: "text/plain;charset=utf-8" });
       const bundle = await createBundle([
         { name: `video.${video.type.includes("mp4") ? "mp4" : "webm"}`, data: video },
@@ -306,11 +357,36 @@ export default function FlowStudio() {
         { name: "README.txt", data: text("Flow completed this local workflow: validate draft, render video, package creative files.\nNo posts were published or external actions performed.\nThe voiceover script is text, not generated speech. Uploaded audio is included in the video when supplied.\nImport creative.json in Flow to restore the editable draft; source media must be attached again.\nReview claims, rights, disclosures and platform requirements before publishing.") },
       ], controller.signal);
       controller.signal.throwIfAborted();
-      downloadFile(bundle, `flow-${project.id.slice(0, 8)}-ready.zip`);
-      setWorkflowStage("Completed locally");
+
+      const fileName = `flow-${project.id.slice(0, 8)}-ready.zip`;
+      downloadFile(bundle, fileName);
+      if (jobId && token) {
+        await completeProductionJob(jobId, token, {
+          kind: "local-bundle",
+          fileName,
+          mediaType: bundle.type || "application/zip",
+          sizeBytes: bundle.size,
+        });
+      }
+      setWorkflowStage(jobId ? "Completed and recorded" : "Completed locally");
       setNotice("Workflow complete. Your video and creative files are in one ZIP download.");
     } catch (failure) {
       setWorkflowStage("");
+      if (jobId && token) {
+        try {
+          if (failure instanceof Error && failure.name === "AbortError")
+            await cancelProductionJob(jobId, token);
+          else
+            await failProductionJob(
+              jobId,
+              token,
+              reachedPackaging ? "packaging_failed" : "render_failed",
+              true,
+            );
+        } catch {
+          // The local error remains primary. Server tracking can recover on the next run.
+        }
+      }
       if (failure instanceof Error && failure.name !== "AbortError") setError(failure.message);
     } finally {
       setRendering(false);

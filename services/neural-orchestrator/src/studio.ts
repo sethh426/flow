@@ -7,6 +7,7 @@ import * as logger from "firebase-functions/logger";
 import OpenAI from "openai";
 import { z } from "zod";
 import type { Request, Response } from "express";
+import { handleProductionJobRequest } from "./production-jobs";
 
 const studioKey = defineSecret("FLOW_STUDIO_OPENAI_KEY");
 export const briefSchema = z
@@ -92,18 +93,18 @@ export async function studioHandler(
     });
     return;
   }
-  if (req.method !== "POST") {
+  const productionPath =
+    (req.path || "").startsWith("/api/studio/jobs") ||
+    (req.path || "").startsWith("/jobs");
+  if (req.method !== "POST" && !(req.method === "GET" && productionPath)) {
     res.status(405).json({ error: "Use POST to create a draft." });
     return;
   }
-  if (!["/api/studio/create", "/create"].includes(req.path)) {
-    res.status(404).json({ error: "Studio action not found." });
-    return;
-  }
+
   if (!getApps().length) initializeApp();
   const token = /^Bearer (.+)$/.exec(req.get("Authorization") || "")?.[1];
   if (!token) {
-    res.status(401).json({ error: "Sign in to create with AI." });
+    res.status(401).json({ error: "Sign in to use connected Studio actions." });
     return;
   }
   let userId: string;
@@ -111,6 +112,13 @@ export async function studioHandler(
     userId = (await getAuth().verifyIdToken(token, true)).uid;
   } catch {
     res.status(401).json({ error: "Your session expired. Sign in again." });
+    return;
+  }
+
+  if (await handleProductionJobRequest(req, res, userId)) return;
+
+  if (!["/api/studio/create", "/create"].includes(req.path)) {
+    res.status(404).json({ error: "Studio action not found." });
     return;
   }
   const parsed = briefSchema.safeParse(req.body);

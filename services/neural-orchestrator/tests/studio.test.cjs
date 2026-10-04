@@ -12,6 +12,12 @@ const { Firestore } = require("@google-cloud/firestore");
 const { getAuth } = require("firebase-admin/auth");
 const { getFirestore } = require("firebase-admin/firestore");
 const OpenAI = require("openai").default;
+const {
+  productionJobCreateSchema,
+  productionJobProgressSchema,
+  productionJobCompleteSchema,
+  handleProductionJobRequest,
+} = require("../dist/production-jobs");
 
 const brief = {
   prompt: "A coffee mug launch",
@@ -213,5 +219,115 @@ test("authenticated AI creation validates the provider response and releases its
     else process.env.FLOW_STUDIO_MODEL = savedModel;
     if (savedKey === undefined) delete process.env.FLOW_STUDIO_OPENAI_KEY;
     else process.env.FLOW_STUDIO_OPENAI_KEY = savedKey;
+  }
+});
+
+
+test("production job contracts reject client-owned identity and malformed progress", () => {
+  const jobId = "11111111-1111-4111-8111-111111111111";
+  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1" }).success, true);
+  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1", userId: "other" }).success, false);
+  assert.equal(productionJobProgressSchema.safeParse({ stage: "rendering", progress: 50 }).success, true);
+  assert.equal(productionJobProgressSchema.safeParse({ stage: "published", progress: 101 }).success, false);
+  assert.equal(productionJobCompleteSchema.safeParse({
+    artifact: { kind: "local-bundle", fileName: "flow.zip", mediaType: "application/zip", sizeBytes: 1234 },
+  }).success, true);
+});
+
+test("production jobs are idempotent, persisted and terminal states reject regression", async () => {
+  const jobId = "11111111-1111-4111-8111-111111111111";
+  const store = new Map();
+  const stubs = [];
+  try {
+    stubs.push(mock.method(getFirestore(), "collection", (name) => {
+      assert.equal(name, "studio_users");
+      return {
+        doc(userId) {
+          assert.equal(userId, "verified-owner");
+          return {
+            collection(child) {
+              assert.equal(child, "production_jobs");
+              return {
+                doc(id) {
+                  return {
+                    id,
+                    async get() {
+                      return {
+                        exists: store.has(id),
+                        data: () => store.get(id),
+                      };
+                    },
+                  };
+                },
+              };
+            },
+          };
+        },
+      };
+    }));
+    stubs.push(mock.method(getFirestore(), "runTransaction", async (run) => run({
+      async get(ref) {
+        return {
+          exists: store.has(ref.id),
+          data: () => store.get(ref.id),
+        };
+      },
+      set(ref, value, options) {
+        const current = store.get(ref.id) || {};
+        store.set(ref.id, options?.merge ? { ...current, ...value } : value);
+      },
+    })));
+
+    let res = response();
+    await handleProductionJobRequest(
+      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-1" } },
+      res,
+      "verified-owner",
+    );
+    assert.equal(res.code, 201);
+    assert.equal(res.body.job.status, "running");
+    assert.equal(res.body.job.stage, "validated");
+
+    res = response();
+    await handleProductionJobRequest(
+      { method: "POST", path: `/api/studio/jobs/${jobId}/progress`, body: { stage: "rendering", progress: 40 } },
+      res,
+      "verified-owner",
+    );
+    assert.equal(res.code, 200);
+    assert.equal(res.body.job.progress, 40);
+
+    res = response();
+    await handleProductionJobRequest(
+      {
+        method: "POST",
+        path: `/api/studio/jobs/${jobId}/complete`,
+        body: { artifact: { kind: "local-bundle", fileName: "flow.zip", mediaType: "application/zip", sizeBytes: 1234 } },
+      },
+      res,
+      "verified-owner",
+    );
+    assert.equal(res.code, 200);
+    assert.equal(res.body.job.status, "completed");
+    assert.equal(res.body.job.progress, 100);
+
+    res = response();
+    await handleProductionJobRequest(
+      { method: "POST", path: `/api/studio/jobs/${jobId}/progress`, body: { stage: "packaging", progress: 90 } },
+      res,
+      "verified-owner",
+    );
+    assert.equal(res.code, 409);
+
+    res = response();
+    await handleProductionJobRequest(
+      { method: "GET", path: `/api/studio/jobs/${jobId}`, body: {} },
+      res,
+      "verified-owner",
+    );
+    assert.equal(res.code, 200);
+    assert.equal(res.body.job.artifact.fileName, "flow.zip");
+  } finally {
+    for (const stub of stubs.reverse()) stub.mock.restore();
   }
 });
