@@ -77,7 +77,18 @@ function publicJob(jobId: string, data: Record<string, unknown>) {
     updatedAt: data.updatedAt instanceof Date ? data.updatedAt.toISOString() : data.updatedAt,
     artifact: data.artifact ?? null,
     manifest: data.manifest ?? null,
-    narration: data.narration ?? null,
+    narration:
+      typeof data.narration === "object" && data.narration !== null
+        ? {
+            kind: (data.narration as Record<string, unknown>).kind,
+            provider: (data.narration as Record<string, unknown>).provider,
+            model: (data.narration as Record<string, unknown>).model,
+            voice: (data.narration as Record<string, unknown>).voice,
+            mediaType: (data.narration as Record<string, unknown>).mediaType,
+            sizeBytes: (data.narration as Record<string, unknown>).sizeBytes,
+            disclosureRequired: (data.narration as Record<string, unknown>).disclosureRequired,
+          }
+        : null,
     failure: data.failure ?? null,
   };
 }
