@@ -12,7 +12,8 @@
     "setup": "npm ci --prefix client && npm ci --prefix services/neural-orchestrator",
     "start:scraper": "node scrape.js",
     "start:api": "node server.js",
-    "seed": "node scripts/seed-demo-data.js"
+    "seed": "node scripts/seed-demo-data.js",
+    "intelligence:check": "node scripts/intelligence/validate-registry.mjs"
   },
   "keywords": [],
   "author": "",
