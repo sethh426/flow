@@ -56,7 +56,7 @@ export const productionJobFailureSchema = z.object({
 }).strict();
 
 type JobStatus = "running" | "completed" | "failed" | "canceled";
-type JobStage = "queued" | "preparing" | "ready_for_render" | "rendering" | "packaging" | "awaiting_approval" | "completed" | "failed" | "canceled";
+type JobStage = "queued" | "preparing" | "generating_narration" | "ready_for_render" | "rendering" | "packaging" | "awaiting_approval" | "completed" | "failed" | "canceled";
 
 function jobRef(userId: string, jobId: string) {
   return getFirestore()
