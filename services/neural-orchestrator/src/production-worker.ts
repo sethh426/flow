@@ -21,6 +21,25 @@ function jobRef(userId: string, jobId: string) {
     .doc(jobId);
 }
 
+export async function markProductionJobRetriesExhausted(payload: unknown): Promise<void> {
+  const parsed = taskSchema.safeParse(payload);
+  if (!parsed.success) return;
+  const ref = jobRef(parsed.data.userId, parsed.data.jobId);
+  const db = getFirestore();
+  await db.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(ref);
+    if (!snapshot.exists) return;
+    const current = snapshot.data() || {};
+    if (["completed", "failed", "canceled"].includes(String(current.status))) return;
+    transaction.set(ref, {
+      status: "failed",
+      stage: "failed",
+      failure: { code: "worker_retries_exhausted", retryable: true },
+      updatedAt: new Date(),
+    }, { merge: true });
+  });
+}
+
 export async function prepareProductionJob(payload: unknown): Promise<void> {
   const task = taskSchema.parse(payload);
   const ref = jobRef(task.userId, task.jobId);
@@ -255,7 +274,13 @@ export const productionWorker = onTaskDispatched(
     } catch (error) {
       logger.error("Production preparation failed", {
         category: error instanceof z.ZodError ? "invalid-task" : "worker-error",
+        retryCount: request.retryCount,
       });
+      if (request.retryCount >= 2) {
+        await markProductionJobRetriesExhausted(request.data).catch(() =>
+          logger.error("Could not mark exhausted production job"),
+        );
+      }
       throw error;
     }
   },
