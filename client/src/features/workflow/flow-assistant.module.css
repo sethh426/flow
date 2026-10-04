@@ -1,0 +1,41 @@
+.avatar {
+  position: fixed;
+  z-index: 50;
+  border: 3px solid #f6f2ff;
+  border-radius: 50%;
+  padding: 4px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  box-shadow: 0 12px 32px #667eea66;
+  animation: breathe 3s ease-in-out infinite;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  pointer-events: none;
+}
+.avatar:hover { border-color: #d6b5ff; }
+.avatar:active { cursor: grabbing; }
+.avatar:focus-visible { outline: 3px solid #d6b5ff; outline-offset: 6px; }
+.working { background: linear-gradient(135deg, #f093fb, #f5576c); }
+.activity {
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: #d6b5ff;
+  animation: spin 1s linear infinite;
+  pointer-events: none;
+}
+@keyframes breathe {
+  0%, 100% { box-shadow: 0 12px 32px #667eea66, 0 0 0 0 #667eea22; }
+  50% { box-shadow: 0 12px 40px #764ba288, 0 0 0 12px #667eea00; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .avatar, .activity { animation: none; }
+}

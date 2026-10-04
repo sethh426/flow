@@ -2,6 +2,8 @@ import { onRequest } from 'firebase-functions/v2/https';
 import * as logger from 'firebase-functions/logger';
 import { Firestore } from '@google-cloud/firestore';
 import { NeuralOrchestrator } from './index';
+import { verifiedUser } from './auth';
+import type { Request, Response } from 'express';
 
 const db = new Firestore();
 let orchestrator: NeuralOrchestrator | null = null;
@@ -18,21 +20,32 @@ function getOrchestrator(): NeuralOrchestrator {
  * Unified API endpoint - handles all /api/* requests
  * This replaces the Next.js API routes that were moved to _api_backup
  */
-export const api = onRequest({
-  timeoutSeconds: 540,
-  memory: '2GiB',
-  maxInstances: 100,
-  cors: true,
-}, async (req, res) => {
+export const apiHandler = async (req: Request, res: Response) => {
   const path = req.path;
   const method = req.method;
 
-  logger.info(`API Request: ${method} ${path}`, { 
-    body: req.body,
-    query: req.query,
-  });
-
   try {
+    if (path === '/api/health' && method === 'GET') {
+      res.json({ status: 'ok', timestamp: new Date().toISOString() }); return;
+    }
+    const userId = await verifiedUser(req);
+    if (!userId) { res.status(401).json({ error: 'Sign in to use Flow.' }); return; }
+    // Identity always comes from the verified session, never from caller data.
+    req.query.userId = userId;
+    req.body = { ...(req.body || {}), userId };
+    const resourceMatch = path.match(/^\/api\/(campaigns|products)\/([^/]+)(?:\/.*)?$/);
+    if (resourceMatch) {
+      const doc = await db.collection(resourceMatch[1]).doc(resourceMatch[2]).get();
+      if (!doc.exists || doc.get('userId') !== userId) { res.status(404).json({ error: 'Resource not found.' }); return; }
+    }
+    if (path === '/api/workflows/execute') {
+      if (typeof req.body.workflowId !== 'string' || !req.body.workflowId || req.body.workflowId.includes('/')) { res.status(400).json({ error: 'A valid workflow ID is required.' }); return; }
+      const workflow = await db.collection('workflows').doc(req.body.workflowId).get();
+      if (!workflow.exists || workflow.get('userId') !== userId) { res.status(404).json({ error: 'Workflow not found.' }); return; }
+      // The recovered route has no dispatcher. Never manufacture a running job.
+      res.status(501).json({ error: 'Workflow execution is not connected. Your workflow remains a draft.' }); return;
+    }
+    logger.info('Authenticated API request', { method, path });
     // Route to appropriate handler
     if (path.startsWith('/api/flowbot')) {
       return await handleFlowbot(req, res);
@@ -62,7 +75,9 @@ export const api = onRequest({
       message: error.message,
     });
   }
-});
+};
+
+export const api = onRequest({ timeoutSeconds: 540, memory: '2GiB', maxInstances: 100, cors: false }, apiHandler);
 
 /**
  * Handle Flowbot chat requests
