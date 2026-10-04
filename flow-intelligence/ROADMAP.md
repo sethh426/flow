@@ -7,7 +7,7 @@
 - Keep active-agent changes isolated.
 
 ## P1 — Durable one-button production job
-Status: in progress. PR #4 adds persisted authenticated execution tracking around the browser renderer; server-side worker execution remains open.
+Status: in progress. Persisted authenticated jobs and Cloud Tasks server preparation are merged. AI narration is the first provider-backed media step under review; final composition and downloaded artifacts remain browser/local.
 
 Acceptance criteria:
 - one intent creates a persisted job id;
@@ -21,9 +21,9 @@ Acceptance criteria:
 ## P2 — Media capability adapters
 Add controlled adapters for:
 - generated images/editing;
-- TTS narration;
+- TTS narration (OpenAI adapter in review; live staging verification remains);
 - generated video;
-- local FFmpeg/compositor finalization.
+- server/local compositor finalization.
 
 Benchmark all candidates on a fixed Flow corpus before routing automatically.
 
