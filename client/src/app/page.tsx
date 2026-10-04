@@ -122,11 +122,11 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
               <Button
                 size="xl"
-                onClick={() => router.push('/dashboard')}
+                onClick={() => router.push('/flow')}
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 border-0 shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <HiSparkles className="mr-2 h-5 w-5" />
-                Launch Demo Dashboard
+                Launch Flow
               </Button>
               <Button
                 size="xl"
