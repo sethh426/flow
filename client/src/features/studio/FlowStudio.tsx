@@ -380,7 +380,7 @@ export default function FlowStudio() {
 
       setWorkflowStage("Rendering video");
       if (jobId && token) await updateProductionJob(jobId, token, "rendering", 10);
-      const video = await renderVideo(project, images, generatedNarration || audio, controller.signal, setProgress);
+      const video = await renderVideo(project, images, generatedNarration || audio, controller.signal, setProgress, !generatedNarration);
 
       reachedPackaging = true;
       setWorkflowStage("Packaging files");
