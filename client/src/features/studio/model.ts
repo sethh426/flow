@@ -244,13 +244,27 @@ export const productionJobSchema = z.object({
   jobId: z.string().uuid(),
   projectId: z.string(),
   status: z.enum(["running", "completed", "failed", "canceled"]),
-  stage: z.enum(["validated", "rendering", "packaging", "awaiting_approval", "completed", "failed", "canceled"]),
+  stage: z.enum(["queued", "preparing", "ready_for_render", "rendering", "packaging", "awaiting_approval", "completed", "failed", "canceled"]),
   progress: z.number().min(0).max(100),
   artifact: z.object({
     kind: z.literal("local-bundle"),
     fileName: z.string(),
     mediaType: z.string(),
     sizeBytes: z.number(),
+  }).nullable().optional(),
+  manifest: z.object({
+    version: z.literal(1),
+    title: z.string(),
+    platform: z.string(),
+    tone: z.string(),
+    look: z.enum(["ember", "ocean", "orchid"]),
+    durationSeconds: z.number(),
+    sceneCount: z.number(),
+    narrationText: z.string(),
+    captionText: z.string(),
+    estimatedNarrationWords: z.number(),
+    requiresApproval: z.boolean(),
+    nextCapability: z.literal("local_render"),
   }).nullable().optional(),
   failure: z.object({
     code: z.string(),
@@ -284,11 +298,56 @@ async function productionJobRequest(
   return parsed.data.job;
 }
 
-export function createProductionJob(projectId: string, jobId: string, token: string) {
+export function createProductionJob(project: Project, jobId: string, token: string) {
   return productionJobRequest("/api/studio/jobs", token, {
     method: "POST",
-    body: JSON.stringify({ projectId, jobId }),
+    body: JSON.stringify({
+      projectId: project.id,
+      jobId,
+      project: {
+        brief: {
+          platform: project.brief.platform,
+          tone: project.brief.tone,
+          duration: project.brief.duration,
+          look: project.brief.look,
+        },
+        creative: {
+          title: project.creative.title,
+          caption: project.creative.caption,
+          hashtags: project.creative.hashtags,
+          scenes: project.creative.scenes,
+          workflow: project.creative.workflow,
+        },
+      },
+    }),
   });
+}
+
+export async function waitForProductionPreparation(
+  jobId: string,
+  token: string,
+  signal: AbortSignal,
+  onJob?: (job: ProductionJob) => void,
+): Promise<ProductionJob> {
+  const deadline = Date.now() + 30_000;
+  while (Date.now() < deadline) {
+    signal.throwIfAborted();
+    const job = await getProductionJob(jobId, token);
+    onJob?.(job);
+    if (job.stage === "ready_for_render") return job;
+    if (job.status === "failed")
+      throw new Error("Flow could not prepare this production run. Please try again.");
+    if (job.status === "canceled")
+      throw new DOMException("Production canceled", "AbortError");
+    await new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(resolve, 500);
+      signal.addEventListener("abort", () => {
+        clearTimeout(timeout);
+        reject(new DOMException("Production canceled", "AbortError"));
+      }, { once: true });
+    });
+  }
+  throw new Error("Flow’s production worker is taking too long. Please try again.");
 }
 
 export function getProductionJob(jobId: string, token: string) {
