@@ -35,3 +35,18 @@ Baseline: `main` at `af6ee9bb6c83fd0c5a05a685e9d12324c93526e1`, the merge of the
 ## Highest-leverage constraint
 
 Flow can create a local creative package, but it cannot yet reliably execute the complete hidden production pipeline behind one button. The next vertical slice should make one request become a durable job that can plan, generate narration/visual media, render, persist artifacts, expose progress/recovery, and stop for explicit approval before external publishing.
+
+
+## Active implementation — PR #4
+
+Branch: `codex/durable-production-jobs-20261004`
+
+A first durable production-state slice is under review:
+- authenticated, user-isolated Firestore production jobs;
+- idempotent client-generated job IDs;
+- explicit render/package/completed/failed/canceled state;
+- saved projects retain the last job ID and can recover recorded state after refresh;
+- actual local ZIP metadata is recorded on completion;
+- signed-out runs remain local-only.
+
+Truth boundary: rendering still happens in the browser. This does not yet provide a server-side durable media worker or cross-device artifact recovery. The next leverage point remains moving eligible long-running capability steps behind a durable worker/router while preserving explicit approval before publishing.
