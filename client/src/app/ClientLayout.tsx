@@ -34,6 +34,7 @@ function PageLoader() {
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isPublicPage = pathname === '/' || pathname?.startsWith('/auth');
+  const isFlowSurface = pathname === '/flow';
 
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
@@ -63,13 +64,13 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             <AuthProvider>
               <FlowBotOnboarding />
               <Suspense fallback={<PageLoader />}>
-                {isPublicPage ? (
+                {isPublicPage || isFlowSurface ? (
                   children
                 ) : (
                   <AppShell>{children}</AppShell>
                 )}
               </Suspense>
-              <FlowAssistant />
+              {!isFlowSurface && <FlowAssistant />}
               <Toaster
                 position="top-right"
                 toastOptions={{
