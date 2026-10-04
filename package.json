@@ -4,7 +4,12 @@
   "description": "Recovered and consolidated Affiliate Flow automation platform",
   "main": "scrape.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "npm run dev --prefix client",
+    "start": "npm start --prefix client",
+    "build": "npm run build --prefix client && npm run build --prefix services/neural-orchestrator",
+    "check": "node --test scripts/deployment/check-flow-config.test.mjs && npm run studio:type-check --prefix client && npm run studio:lint --prefix client && npm run test:studio --prefix services/neural-orchestrator",
+    "test": "npm run check && npm run build --prefix client && npm run studio:test --prefix client",
+    "setup": "npm ci --prefix client && npm ci --prefix services/neural-orchestrator",
     "start:scraper": "node scrape.js",
     "start:api": "node server.js",
     "seed": "node scripts/seed-demo-data.js"

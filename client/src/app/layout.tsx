@@ -1,19 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import "../styles/layout-optimized.css";
-import "../styles/ui-fixes.css";
-import "../styles/ui-enhancements.css";
-import "../styles/mobile-optimizations.css";
-import "../styles/flowbite-theme-override.css";
-import "../styles/neumorphism.css";
-import "../styles/typography.css";
 import ClientLayout from "./ClientLayout";
-import { FlowBotTasksProvider } from '@/contexts/FlowBotTasksContext';
-import ErrorBoundary from "@/core/providers/ErrorBoundary";
-import ToastProvider from "@/core/providers/ToastProvider";
-import MuiThemeProvider from "@/core/providers/MuiThemeProvider";
-import ApiInterceptorInit from "@/components/ApiInterceptorInit";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -30,8 +18,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Affiliate Flow - AI-Powered Marketing Platform",
-  description: "AI-powered affiliate product discovery and content generation with intelligent error handling",
+  title: "Flow — Your creative autopilot",
+  description: "Turn an idea into a video, a story, and a creative plan in one floating workspace.",
   keywords: "affiliate marketing, AI content, product discovery, workflow automation",
   appleWebApp: {
     capable: true,
@@ -45,7 +33,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  themeColor: '#667eea',
+  themeColor: '#0d0e10',
 };
 
 export default function RootLayout({
@@ -56,21 +44,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <ApiInterceptorInit />
-        <MuiThemeProvider>
-          <ToastProvider>
-            <ErrorBoundary
-              autoRecover={true}
-              recoveryAttempts={3}
-            >
-              <FlowBotTasksProvider>
-                <ClientLayout>
-                  {children}
-                </ClientLayout>
-              </FlowBotTasksProvider>
-            </ErrorBoundary>
-          </ToastProvider>
-        </MuiThemeProvider>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );

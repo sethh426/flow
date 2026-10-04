@@ -1,5 +1,23 @@
 # Flow
 
+Flow opens with its original floating avatar. Click it to create/edit content, render a vertical video, or run a local production workflow that downloads the video and creative files in one ZIP. See [the floating studio guide](docs/FLOATING_STUDIO.md) for configuration, limitations and tests. The recovery report below describes the earlier baseline.
+
+## Run Flow
+
+From the repository root, with Node.js 20+ installed:
+
+```bash
+npm run setup
+npm run build
+npm start
+```
+
+Open `http://localhost:3000` and click the floating Flow avatar. Starter drafts, editing, saving, JSON import and video/ZIP export work without an account or AI credentials. For development use `npm run dev`. `npm run check` checks the active creation code and backend; `npm test` also builds and exercises the app in Chromium. Browser tests require Playwright Chromium, FFmpeg and unzip.
+
+On Firebase Hosting, the client can load its public web configuration from `/__/firebase/init.json` when build-time Firebase values are absent. A local static server does not supply that configuration; use `client/.env.local` for local sign-in. Connected AI additionally requires the deployed `studio` Function, its server model and Secret Manager key. Account settings show configuration status. These controls distinguish configuration from a verified live sign-in/provider call.
+
+Firebase documents this JSON configuration endpoint in its [Hosting reserved URLs guide](https://firebase.google.com/docs/hosting/reserved-urls#sdk_auto-configuration). Flow initializes its installed modular SDK using the JSON data; it does not use the legacy SDK script URLs.
+
 Flow is an affiliate-selling and marketing automation platform recovered from the original AffiliateFlow workspace and related 2025 backups. This repository consolidates the Next.js client, automation services, Firebase code, infrastructure definitions, workflows, documentation, design assets, and unique historical source that was scattered across the computer.
 
 The repository is a recovery baseline and engineering source of truth. It preserves the work without pretending every historical service is currently production-ready.

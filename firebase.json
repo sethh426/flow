@@ -19,6 +19,10 @@
     "trailingSlash": false,
     "rewrites": [
       {
+        "source": "/api/studio/**",
+        "function": "studio"
+      },
+      {
         "source": "/api/**",
         "function": "api"
       },

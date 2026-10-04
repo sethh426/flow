@@ -3,6 +3,7 @@ import { onMessagePublished } from 'firebase-functions/v2/pubsub';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import * as logger from 'firebase-functions/logger';
 import { NeuralOrchestrator } from './index';
+import { verifiedUser } from './auth';
 
 // Export the unified API handler
 export { api } from './api-handler';
@@ -26,15 +27,16 @@ export const aiRoute = onRequest({
   timeoutSeconds: 540,
   memory: '2GiB',
   maxInstances: 100,
-  cors: true,
+  cors: false,
 }, async (req, res) => {
+  if (!await verifiedUser(req)) { res.status(401).json({ error: 'Sign in to use AI.' }); return; }
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
   }
 
   try {
-    logger.info('AI Route request received', { body: req.body });
+    logger.info('Authenticated AI route request received');
     const request = req.body;
     
     if (!request.type || !request.complexity || !request.context || !request.priority) {
@@ -67,8 +69,9 @@ export const aiRoute = onRequest({
 export const aiAnalyze = onRequest({
   timeoutSeconds: 300,
   memory: '1GiB',
-  cors: true,
+  cors: false,
 }, async (req, res) => {
+  if (!await verifiedUser(req)) { res.status(401).json({ error: 'Sign in to use AI.' }); return; }
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
@@ -112,8 +115,9 @@ export const aiAnalyze = onRequest({
 export const aiGenerate = onRequest({
   timeoutSeconds: 300,
   memory: '1GiB',
-  cors: true,
+  cors: false,
 }, async (req, res) => {
+  if (!await verifiedUser(req)) { res.status(401).json({ error: 'Sign in to use AI.' }); return; }
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
@@ -169,8 +173,9 @@ export const aiGenerate = onRequest({
 export const aiCode = onRequest({
   timeoutSeconds: 300,
   memory: '2GiB',
-  cors: true,
+  cors: false,
 }, async (req, res) => {
+  if (!await verifiedUser(req)) { res.status(401).json({ error: 'Sign in to use AI.' }); return; }
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
@@ -224,8 +229,9 @@ export const aiBatch = onRequest({
   timeoutSeconds: 540,
   memory: '4GiB',
   maxInstances: 10,
-  cors: true,
+  cors: false,
 }, async (req, res) => {
+  if (!await verifiedUser(req)) { res.status(401).json({ error: 'Sign in to use AI.' }); return; }
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;

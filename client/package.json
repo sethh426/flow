@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "studio:type-check": "tsc --noEmit -p tsconfig.studio.json",
+    "studio:lint": "eslint src/features/studio src/features/workflow/FlowAssistant.tsx src/contexts/AuthContext.tsx src/lib/firebase-config.ts src/lib/auth.ts src/app/ClientLayout.tsx src/app/page.tsx src/app/layout.tsx tests/studio playwright.studio.config.ts",
+    "studio:test": "playwright test --config playwright.studio.config.ts",
     "dev": "next dev",
     "build": "next build",
     "start": "node scripts/serve-export.mjs",

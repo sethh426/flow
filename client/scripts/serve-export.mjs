@@ -52,6 +52,11 @@ async function resolveExportedFile(pathname) {
 const server = createServer(async (request, response) => {
   try {
     const requestUrl = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`);
+    if (requestUrl.pathname.startsWith('/api/')) {
+      response.writeHead(503, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+      response.end(JSON.stringify({ error: 'Connected services are unavailable on this local static server. Use starter creation, or deploy Hosting and Functions together for AI creation.' }));
+      return;
+    }
     const filePath = await resolveExportedFile(requestUrl.pathname);
 
     if (!filePath) {

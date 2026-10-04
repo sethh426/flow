@@ -34,6 +34,7 @@ jobs:
           cache-dependency-path: |
             client/package-lock.json
             services/trend-finder/package-lock.json
+            services/neural-orchestrator/package-lock.json
 
       - name: Check recovered backend entry points
         run: |
@@ -48,5 +49,25 @@ jobs:
       - name: Install client dependencies
         run: npm ci --prefix client
 
+      - name: Check the floating studio
+        run: |
+          npm run studio:type-check --prefix client
+          npm run studio:lint --prefix client
+
+      - name: Build and test the selected backend
+        run: |
+          npm ci --ignore-scripts --prefix services/neural-orchestrator
+          npm run test:studio --prefix services/neural-orchestrator
+
       - name: Build recovered client
         run: npm run build --prefix client
+
+      - name: Install video verification tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg unzip
+          cd client
+          npx playwright install --with-deps chromium
+
+      - name: Verify studio creation and real video export
+        run: npm run studio:test --prefix client

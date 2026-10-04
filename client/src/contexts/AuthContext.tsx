@@ -17,8 +17,8 @@ import {
   sendPasswordResetEmail,
   updateProfile,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase-config';
+import { doc, runTransaction, getDoc } from 'firebase/firestore';
+import { auth, db, ensureFirebase, isFirebaseConfigured } from '@/lib/firebase-config';
 
 interface UserData {
   uid: string;
@@ -36,6 +36,8 @@ interface AuthContextType {
   user: User | null;
   userData: UserData | null;
   loading: boolean;
+  configured: boolean;
+  retryConnection: () => void;
   signup: (email: string, password: string, displayName: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
@@ -44,7 +46,7 @@ interface AuthContextType {
   refreshUserData: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+const AuthContext = createContext<AuthContextType | null>(null);
 
 const requireFirebase = () => {
   if (!auth || !db) {
@@ -52,6 +54,10 @@ const requireFirebase = () => {
   }
 
   return { auth, db };
+};
+const readyFirebase = async () => {
+  await ensureFirebase();
+  return requireFirebase();
 };
 
 export const useAuth = () => {
@@ -66,6 +72,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [configured, setConfigured] = useState(isFirebaseConfigured);
+  const [connectionAttempt, setConnectionAttempt] = useState(0);
 
   // Fetch user data from Firestore
   const fetchUserData = async (uid: string): Promise<UserData | null> => {
@@ -95,13 +103,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       createdAt: new Date(),
     };
 
-    await setDoc(doc(firestore, 'users', user.uid), userData);
+    // A retry or failed initial profile read must never overwrite an existing account.
+    await runTransaction(firestore, async (transaction) => {
+      const reference = doc(firestore, 'users', user.uid);
+      const existing = await transaction.get(reference);
+      if (!existing.exists()) transaction.set(reference, userData);
+    });
     return userData;
   };
 
   // Sign up with email/password
   const signup = async (email: string, password: string, displayName: string) => {
-    const { auth: firebaseAuth } = requireFirebase();
+    const { auth: firebaseAuth } = await readyFirebase();
     const userCredential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
     await updateProfile(userCredential.user, { displayName });
     await createUserDocument(userCredential.user, displayName);
@@ -109,13 +122,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Login with email/password
   const login = async (email: string, password: string) => {
-    const { auth: firebaseAuth } = requireFirebase();
+    const { auth: firebaseAuth } = await readyFirebase();
     await signInWithEmailAndPassword(firebaseAuth, email, password);
   };
 
   // Login with Google
   const loginWithGoogle = async () => {
-    const { auth: firebaseAuth } = requireFirebase();
+    const { auth: firebaseAuth } = await readyFirebase();
     const provider = new GoogleAuthProvider();
     const userCredential = await signInWithPopup(firebaseAuth, provider);
     
@@ -128,14 +141,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Logout
   const logout = async () => {
-    const { auth: firebaseAuth } = requireFirebase();
+    const { auth: firebaseAuth } = await readyFirebase();
     await signOut(firebaseAuth);
     setUserData(null);
   };
 
   // Reset password
   const resetPassword = async (email: string) => {
-    const { auth: firebaseAuth } = requireFirebase();
+    const { auth: firebaseAuth } = await readyFirebase();
     await sendPasswordResetEmail(firebaseAuth, email);
   };
 
@@ -149,32 +162,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Listen to auth state changes
   useEffect(() => {
-    if (!auth) {
-      setLoading(false);
-      return;
-    }
-
-    const firebaseAuth = auth;
-    const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
-      setUser(user);
-      
-      if (user) {
-        const data = await fetchUserData(user.uid);
-        setUserData(data);
-      } else {
-        setUserData(null);
+    let active = true;
+    let generation = 0;
+    let unsubscribe: (() => void) | undefined;
+    void ensureFirebase().then((ready) => {
+      if (!active) return;
+      setConfigured(ready);
+      if (!ready || !auth) {
+        setLoading(false);
+        return;
       }
-      
-      setLoading(false);
+      unsubscribe = onAuthStateChanged(auth, async (nextUser) => {
+        if (!active) return;
+        const current = ++generation;
+        setUser(nextUser);
+        setUserData(null);
+        setLoading(false);
+        if (nextUser) {
+          const data = await fetchUserData(nextUser.uid);
+          if (active && current === generation) setUserData(data);
+        }
+      }, () => {
+        if (!active) return;
+        setUser(null);
+        setUserData(null);
+        setLoading(false);
+      });
     });
-
-    return unsubscribe;
-  }, []);
+    return () => {
+      active = false;
+      generation++;
+      unsubscribe?.();
+    };
+  }, [connectionAttempt]);
 
   const value: AuthContextType = {
     user,
     userData,
     loading,
+    configured,
+    retryConnection: () => {
+      setLoading(true);
+      setConnectionAttempt((attempt) => attempt + 1);
+    },
     signup,
     login,
     loginWithGoogle,

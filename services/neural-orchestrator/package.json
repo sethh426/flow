@@ -17,11 +17,13 @@
     "deploy:functions": "firebase deploy --only functions",
     "logs": "firebase functions:log",
     "test": "jest",
+    "test:studio": "npm run build && node --test tests/studio.test.cjs",
     "test:watch": "jest --watch",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write 'src/**/*.ts'"
   },
   "dependencies": {
+    "zod": "^3.25.76",
     "@google-cloud/vertexai": "^1.7.0",
     "@google-cloud/pubsub": "^4.9.0",
     "@google-cloud/firestore": "^7.10.0",
