@@ -217,6 +217,7 @@ export async function renderVideo(
   audio: File | null,
   signal: AbortSignal,
   onProgress: (fraction: number) => void,
+  loopAudio = true,
 ): Promise<Blob> {
   const mimeType = recordingType();
   if (!mimeType || !HTMLCanvasElement.prototype.captureStream)
@@ -245,7 +246,7 @@ export async function renderVideo(
       const gain = audioContext.createGain();
       audioSource = audioContext.createBufferSource();
       audioSource.buffer = buffer;
-      audioSource.loop = true;
+      audioSource.loop = loopAudio;
       audioSource.connect(gain);
       gain.connect(destination);
       const now = audioContext.currentTime;
