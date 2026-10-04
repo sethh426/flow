@@ -20,7 +20,7 @@ const {
   productionJobCompleteSchema,
   handleProductionJobRequest,
 } = require("../dist/production-jobs");
-const { prepareProductionJob } = require("../dist/production-worker");
+const { prepareProductionJob, markProductionJobRetriesExhausted } = require("../dist/production-worker");
 
 const brief = {
   prompt: "A coffee mug launch",
@@ -743,6 +743,43 @@ test("generated narration is served only through the authenticated job path", as
     );
     assert.equal(res.code, 200);
     assert.deepEqual(res.body, bytes);
+  } finally {
+    for (const stub of stubs.reverse()) stub.mock.restore();
+  }
+});
+
+
+test("exhausted task retries move a running production job to an honest terminal failure", async () => {
+  const jobId = "77777777-7777-4777-8777-777777777777";
+  const store = new Map([[jobId, { status: "running", stage: "generating_narration", progress: 10 }]]);
+  const stubs = [];
+  try {
+    stubs.push(mock.method(getFirestore(), "collection", () => ({
+      doc() {
+        return {
+          collection() {
+            return { doc(id) { return { id }; } };
+          },
+        };
+      },
+    })));
+    stubs.push(mock.method(getFirestore(), "runTransaction", async (run) => run({
+      async get(ref) {
+        const value = store.get(ref.id);
+        return { exists: Boolean(value), data: () => value };
+      },
+      set(ref, value, options) {
+        const current = store.get(ref.id) || {};
+        store.set(ref.id, options?.merge ? { ...current, ...value } : value);
+      },
+    })));
+
+    await markProductionJobRetriesExhausted({ userId: "verified-owner", jobId });
+    const failed = store.get(jobId);
+    assert.equal(failed.status, "failed");
+    assert.equal(failed.stage, "failed");
+    assert.equal(failed.failure.code, "worker_retries_exhausted");
+    assert.equal(failed.failure.retryable, true);
   } finally {
     for (const stub of stubs.reverse()) stub.mock.restore();
   }
