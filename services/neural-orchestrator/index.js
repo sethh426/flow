@@ -5,6 +5,7 @@
 
 const functions = require('./dist/functions');
 exports.studio = require('./dist/studio').studio;
+exports.productionWorker = require('./dist/production-worker').productionWorker;
 
 // Export unified API handler (handles all /api/* routes from Next.js)
 exports.api = functions.api;
