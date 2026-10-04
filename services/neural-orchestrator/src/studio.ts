@@ -28,6 +28,7 @@ export const briefSchema = z
     ]),
     duration: z.union([z.literal(15), z.literal(30), z.literal(45)]),
     look: z.enum(["ember", "ocean", "orchid"]),
+    narrationMode: z.enum(["script", "ai"]).default("script"),
   })
   .strict();
 export const creativeSchema = z.object({
@@ -89,7 +90,21 @@ export async function studioHandler(
   if (req.method === "GET" && ["/api/studio/status", "/status"].includes(req.path)) {
     res.json({
       configured: Boolean(process.env.FLOW_STUDIO_MODEL && studioKey.value()),
-      capabilities: { creative: "ai", video: "local", workflow: "local", publishing: false },
+      capabilities: {
+        creative: "ai",
+        video: "local",
+        workflow: "local",
+        narration:
+          Boolean(
+            process.env.FLOW_STUDIO_TTS_MODEL &&
+            process.env.FLOW_STUDIO_TTS_VOICE &&
+            process.env.FLOW_STUDIO_MEDIA_BUCKET &&
+            studioKey.value(),
+          )
+            ? "ai"
+            : false,
+        publishing: false,
+      },
     });
     return;
   }
