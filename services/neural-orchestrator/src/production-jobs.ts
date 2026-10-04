@@ -1,10 +1,35 @@
 import { getFirestore } from "firebase-admin/firestore";
+import { getFunctions } from "firebase-admin/functions";
 import { z } from "zod";
 import type { Request, Response } from "express";
 
 export const productionJobCreateSchema = z.object({
   jobId: z.string().uuid(),
   projectId: z.string().trim().min(1).max(128),
+  project: z.object({
+    brief: z.object({
+      platform: z.string().min(1).max(80),
+      tone: z.string().min(1).max(80),
+      duration: z.number().int().min(6).max(60),
+      look: z.enum(["ember", "ocean", "orchid"]),
+    }).strict(),
+    creative: z.object({
+      title: z.string().min(1).max(100),
+      caption: z.string().max(2200),
+      hashtags: z.array(z.string().max(60)).max(12),
+      scenes: z.array(z.object({
+        label: z.string().min(1).max(40),
+        text: z.string().max(140),
+        narration: z.string().max(500),
+        direction: z.string().max(500),
+      }).strict()).min(3).max(8),
+      workflow: z.array(z.object({
+        title: z.string().min(1).max(80),
+        detail: z.string().max(500),
+        requiresApproval: z.boolean(),
+      }).strict()).min(1).max(12),
+    }).strict(),
+  }).strict(),
 }).strict();
 
 export const productionJobProgressSchema = z.object({
@@ -27,7 +52,7 @@ export const productionJobFailureSchema = z.object({
 }).strict();
 
 type JobStatus = "running" | "completed" | "failed" | "canceled";
-type JobStage = "validated" | "rendering" | "packaging" | "awaiting_approval" | "completed" | "failed" | "canceled";
+type JobStage = "queued" | "preparing" | "ready_for_render" | "rendering" | "packaging" | "awaiting_approval" | "completed" | "failed" | "canceled";
 
 function jobRef(userId: string, jobId: string) {
   return getFirestore()
@@ -47,6 +72,7 @@ function publicJob(jobId: string, data: Record<string, unknown>) {
     createdAt: data.createdAt instanceof Date ? data.createdAt.toISOString() : data.createdAt,
     updatedAt: data.updatedAt instanceof Date ? data.updatedAt.toISOString() : data.updatedAt,
     artifact: data.artifact ?? null,
+    manifest: data.manifest ?? null,
     failure: data.failure ?? null,
   };
 }
@@ -62,7 +88,7 @@ async function createJob(req: Request, res: Response, userId: string) {
     res.status(400).json({ error: "Provide a valid Flow project and job identifier." });
     return;
   }
-  const { jobId, projectId } = parsed.data;
+  const { jobId, projectId, project } = parsed.data;
   const ref = jobRef(userId, jobId);
   const db = getFirestore();
   const result = await db.runTransaction(async (transaction) => {
@@ -73,8 +99,9 @@ async function createJob(req: Request, res: Response, userId: string) {
       userId,
       projectId,
       status: "running" as JobStatus,
-      stage: "validated" as JobStage,
-      progress: 5,
+      stage: "queued" as JobStage,
+      progress: 2,
+      projectSnapshot: project,
       createdAt: now,
       updatedAt: now,
       artifact: null,
@@ -83,6 +110,18 @@ async function createJob(req: Request, res: Response, userId: string) {
     transaction.set(ref, data);
     return publicJob(jobId, data);
   });
+  try {
+    await getFunctions().taskQueue("productionWorker").enqueue({ userId, jobId });
+  } catch {
+    await ref.set({
+      status: "failed",
+      stage: "failed",
+      failure: { code: "queue_unavailable", retryable: true },
+      updatedAt: new Date(),
+    }, { merge: true });
+    res.status(503).json({ error: "Flow could not start the production worker. Try again." });
+    return;
+  }
   res.status(201).json({ job: result });
 }
 
