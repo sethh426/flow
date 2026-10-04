@@ -333,6 +333,9 @@ export default function FlowStudio() {
           token = await user.getIdToken();
           jobId = crypto.randomUUID();
           const createdJob = await createProductionJob(project, jobId, token);
+          const tracked = { ...project, productionJobId: jobId };
+          setProject(tracked);
+          persist(tracked);
           setWorkflowStage(
             createdJob.stage === "queued" ? "Queued for server preparation" : "Preparing production"
           );
@@ -346,13 +349,17 @@ export default function FlowStudio() {
               if (job.stage === "ready_for_render") setWorkflowStage("Server preparation complete");
             },
           );
-          const tracked = { ...project, productionJobId: jobId };
-          setProject(tracked);
-          persist(tracked);
         } catch {
+          if (jobId && token) {
+            try {
+              await cancelProductionJob(jobId, token);
+            } catch {
+              // The saved job id lets Flow recover the authoritative state later.
+            }
+          }
           token = null;
           jobId = null;
-          setNotice("Flow is running locally. Server progress tracking is unavailable.");
+          setNotice("Server preparation is unavailable. Flow is continuing with a local-only run.");
         }
       }
 
