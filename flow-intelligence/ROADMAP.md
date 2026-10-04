@@ -7,6 +7,8 @@
 - Keep active-agent changes isolated.
 
 ## P1 — Durable one-button production job
+Status: in progress. PR #4 adds persisted authenticated execution tracking around the browser renderer; server-side worker execution remains open.
+
 Acceptance criteria:
 - one intent creates a persisted job id;
 - progress survives client refresh;
