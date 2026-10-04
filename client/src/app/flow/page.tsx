@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useMemo, useState, type ComponentType } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   HiArrowRight,
@@ -16,7 +16,7 @@ type FlowIntent = {
   label: string;
   prompt: string;
   route: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string }>;
 };
 
 const INTENTS: FlowIntent[] = [
