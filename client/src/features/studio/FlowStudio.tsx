@@ -363,7 +363,6 @@ export default function FlowStudio() {
           if (preparedJob.narration && !audio) {
             setWorkflowStage("Loading AI narration");
             generatedNarration = await fetchProductionNarration(jobId, token, controller.signal);
-            setAudio(generatedNarration);
           }
         } catch {
           if (jobId && token) {
