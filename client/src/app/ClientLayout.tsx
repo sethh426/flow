@@ -64,7 +64,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             <AuthProvider>
               <FlowBotOnboarding />
               <Suspense fallback={<PageLoader />}>
-                {isPublicPage ? (
+                {isPublicPage || isFlowSurface ? (
                   children
                 ) : (
                   <AppShell>{children}</AppShell>
