@@ -1,0 +1,275 @@
+{
+  "schemaVersion": 1,
+  "verifiedOn": "2026-10-04",
+  "sources": [
+    {
+      "id": "openai-tools",
+      "name": "OpenAI Tools",
+      "url": "https://developers.openai.com/api/docs/guides/tools",
+      "type": "official-docs",
+      "authority": "primary",
+      "capabilities": [
+        "orchestration",
+        "tools"
+      ],
+      "status": "candidate",
+      "notes": "Built-in tools, function calling, MCP, tool search and programmatic tool calling."
+    },
+    {
+      "id": "openai-mcp",
+      "name": "OpenAI MCP servers",
+      "url": "https://developers.openai.com/api/docs/guides/tools-connectors-mcp",
+      "type": "official-docs",
+      "authority": "primary",
+      "capabilities": [
+        "mcp",
+        "integrations"
+      ],
+      "status": "candidate",
+      "risks": [
+        "Remote MCP servers can expose data; trust/review required."
+      ]
+    },
+    {
+      "id": "openai-tool-search",
+      "name": "OpenAI Tool Search",
+      "url": "https://developers.openai.com/api/docs/guides/tools-tool-search",
+      "type": "official-docs",
+      "authority": "primary",
+      "capabilities": [
+        "orchestration",
+        "cost"
+      ],
+      "status": "experiment",
+      "notes": "Deferred tool loading can reduce context overhead; model compatibility must be verified at implementation time."
+    },
+    {
+      "id": "openai-web-search",
+      "name": "OpenAI Web Search",
+      "url": "https://developers.openai.com/api/docs/guides/tools-web-search",
+      "type": "official-docs",
+      "authority": "primary",
+      "capabilities": [
+        "research"
+      ],
+      "status": "candidate"
+    },
+    {
+      "id": "openai-image",
+      "name": "OpenAI Image Generation",
+      "url": "https://developers.openai.com/api/docs/guides/image-generation",
+      "type": "official-docs",
+      "authority": "primary",
+      "capabilities": [
+        "image-generation",
+        "image-editing"
+      ],
+      "status": "benchmark"
+    },
+    {
+      "id": "openai-tts",
+      "name": "OpenAI Text to Speech",
+      "url": "https://developers.openai.com/api/docs/guides/text-to-speech",
+      "type": "official-docs",
+      "authority": "primary",
+      "capabilities": [
+        "speech",
+        "narration"
+      ],
+      "status": "benchmark",
+      "risks": [
+        "AI voice disclosure required by provider policy."
+      ]
+    },
+    {
+      "id": "google-veo",
+      "name": "Google Veo in Gemini API",
+      "url": "https://ai.google.dev/gemini-api/docs/veo",
+      "type": "official-docs",
+      "authority": "primary",
+      "capabilities": [
+        "video-generation"
+      ],
+      "status": "benchmark",
+      "notes": "Supports portrait generation, native audio and asynchronous operations; exact model availability/pricing must be rechecked."
+    },
+    {
+      "id": "runway-api",
+      "name": "Runway API",
+      "url": "https://docs.dev.runwayml.com/guides/using-the-api/",
+      "type": "official-docs",
+      "authority": "primary",
+      "capabilities": [
+        "video-generation",
+        "image-generation"
+      ],
+      "status": "benchmark"
+    },
+    {
+      "id": "luma-api",
+      "name": "Luma API",
+      "url": "https://docs.lumalabs.ai/docs/api",
+      "type": "official-docs",
+      "authority": "primary",
+      "capabilities": [
+        "video-generation",
+        "image-generation"
+      ],
+      "status": "benchmark"
+    },
+    {
+      "id": "elevenlabs-tts",
+      "name": "ElevenLabs Text to Speech",
+      "url": "https://elevenlabs.io/docs/overview/capabilities/text-to-speech",
+      "type": "official-docs",
+      "authority": "primary",
+      "capabilities": [
+        "speech",
+        "narration"
+      ],
+      "status": "benchmark"
+    },
+    {
+      "id": "ffmpeg",
+      "name": "FFmpeg Documentation",
+      "url": "https://ffmpeg.org/documentation.html",
+      "type": "official-docs",
+      "authority": "primary",
+      "capabilities": [
+        "rendering",
+        "transcoding",
+        "media-inspection"
+      ],
+      "status": "active-reference"
+    },
+    {
+      "id": "firebase-tasks",
+      "name": "Firebase Task Queue Functions",
+      "url": "https://firebase.google.com/docs/functions/task-functions",
+      "type": "official-docs",
+      "authority": "primary",
+      "capabilities": [
+        "durable-jobs",
+        "queues"
+      ],
+      "status": "experiment",
+      "notes": "Provides Cloud Tasks-backed rate limiting/retry for long/resource-intensive work."
+    },
+    {
+      "id": "temporal",
+      "name": "Temporal Durable Execution",
+      "url": "https://docs.temporal.io/temporal",
+      "type": "official-docs",
+      "authority": "primary",
+      "capabilities": [
+        "durable-jobs",
+        "workflow-engine"
+      ],
+      "status": "experiment"
+    },
+    {
+      "id": "firestore-transactions",
+      "name": "Firestore Transactions",
+      "url": "https://firebase.google.com/docs/firestore/manage-data/transactions",
+      "type": "official-docs",
+      "authority": "primary",
+      "capabilities": [
+        "state",
+        "idempotency"
+      ],
+      "status": "active-reference"
+    },
+    {
+      "id": "otel-js",
+      "name": "OpenTelemetry JavaScript",
+      "url": "https://opentelemetry.io/docs/languages/js/",
+      "type": "official-docs",
+      "authority": "primary",
+      "capabilities": [
+        "observability",
+        "tracing",
+        "metrics"
+      ],
+      "status": "candidate"
+    },
+    {
+      "id": "secret-manager",
+      "name": "Google Cloud Secret Manager",
+      "url": "https://cloud.google.com/secret-manager/docs/overview",
+      "type": "official-docs",
+      "authority": "primary",
+      "capabilities": [
+        "security",
+        "secrets"
+      ],
+      "status": "active-reference"
+    },
+    {
+      "id": "tiktok-content-posting",
+      "name": "TikTok Content Posting API",
+      "url": "https://developers.tiktok.com/products/content-posting-api",
+      "type": "official-docs",
+      "authority": "primary",
+      "capabilities": [
+        "publishing",
+        "tiktok"
+      ],
+      "status": "candidate",
+      "risks": [
+        "Requires approved scopes/audit conditions and user authorization."
+      ]
+    },
+    {
+      "id": "tiktok-direct-post",
+      "name": "TikTok Direct Post",
+      "url": "https://developers.tiktok.com/docs/en/content-posting-api-reference-direct-post",
+      "type": "official-docs",
+      "authority": "primary",
+      "capabilities": [
+        "publishing",
+        "tiktok"
+      ],
+      "status": "candidate",
+      "notes": "Unaudited clients are restricted; current creator information and explicit consent are required."
+    },
+    {
+      "id": "youtube-insert",
+      "name": "YouTube videos.insert",
+      "url": "https://developers.google.com/youtube/v3/docs/videos/insert",
+      "type": "official-docs",
+      "authority": "primary",
+      "capabilities": [
+        "publishing",
+        "youtube"
+      ],
+      "status": "candidate",
+      "risks": [
+        "Unverified projects may have private-only upload restrictions."
+      ]
+    },
+    {
+      "id": "playwright",
+      "name": "Playwright",
+      "url": "https://playwright.dev/docs/running-tests",
+      "type": "official-docs",
+      "authority": "primary",
+      "capabilities": [
+        "testing",
+        "browser"
+      ],
+      "status": "active-reference"
+    },
+    {
+      "id": "openai-evals",
+      "name": "OpenAI Evaluation Best Practices",
+      "url": "https://developers.openai.com/api/docs/guides/evaluation-best-practices",
+      "type": "official-docs",
+      "authority": "primary",
+      "capabilities": [
+        "evaluation"
+      ],
+      "status": "active-reference",
+      "notes": "Use evaluation principles; recheck platform deprecations before adopting a specific hosted eval endpoint."
+    }
+  ]
+}
