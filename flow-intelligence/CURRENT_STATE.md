@@ -37,11 +37,11 @@ Baseline: `main` at `af6ee9bb6c83fd0c5a05a685e9d12324c93526e1`, the merge of the
 Flow can create a local creative package, but it cannot yet reliably execute the complete hidden production pipeline behind one button. The next vertical slice should make one request become a durable job that can plan, generate narration/visual media, render, persist artifacts, expose progress/recovery, and stop for explicit approval before external publishing.
 
 
-## Active implementation — PR #4
+## Durable production tracking — merged
 
-Branch: `codex/durable-production-jobs-20261004`
+Merged to `main` as `0687bb3afee823a8726c0429691326dc3d531fea`.
 
-A first durable production-state slice is under review:
+The first durable production-state slice is now in `main`:
 - authenticated, user-isolated Firestore production jobs;
 - idempotent client-generated job IDs;
 - explicit render/package/completed/failed/canceled state;
@@ -49,4 +49,19 @@ A first durable production-state slice is under review:
 - actual local ZIP metadata is recorded on completion;
 - signed-out runs remain local-only.
 
-Truth boundary: rendering still happens in the browser. This does not yet provide a server-side durable media worker or cross-device artifact recovery. The next leverage point remains moving eligible long-running capability steps behind a durable worker/router while preserving explicit approval before publishing.
+Truth boundary: rendering still happens in the browser.
+
+## Active implementation — PR #5
+
+Branch: `codex/server-production-worker-20261004`
+
+A Cloud Tasks production worker is under review:
+- the API enqueues authenticated production jobs;
+- the worker transactionally claims the job;
+- it validates the server-held creative snapshot;
+- it produces a normalized production manifest before rendering;
+- the client waits for `ready_for_render`;
+- queue retries/concurrency are bounded;
+- duplicate create requests do not duplicate work.
+
+Truth boundary: this is real server execution, but video rendering remains in the browser. The next leverage point is moving an actual media capability (narration/image/video generation) behind this worker contract.
