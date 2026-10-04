@@ -11,6 +11,7 @@ const auth = require("../dist/auth");
 const { Firestore } = require("@google-cloud/firestore");
 const { getAuth } = require("firebase-admin/auth");
 const { getFirestore } = require("firebase-admin/firestore");
+const { getFunctions } = require("firebase-admin/functions");
 const OpenAI = require("openai").default;
 const {
   productionJobCreateSchema,
@@ -18,6 +19,7 @@ const {
   productionJobCompleteSchema,
   handleProductionJobRequest,
 } = require("../dist/production-jobs");
+const { prepareProductionJob } = require("../dist/production-worker");
 
 const brief = {
   prompt: "A coffee mug launch",
@@ -27,6 +29,32 @@ const brief = {
   duration: 15,
   look: "ember",
 };
+
+const productionProject = {
+  brief: {
+    platform: "TikTok / Reels",
+    tone: "Calm & considered",
+    duration: 15,
+    look: "ember",
+  },
+  creative: {
+    title: "Coffee mug launch",
+    caption: "Meet the new coffee mug.",
+    hashtags: ["#Handmade"],
+    scenes: Array.from({ length: 5 }, (_, index) => ({
+      label: `Scene ${index + 1}`,
+      text: `Scene ${index + 1}`,
+      narration: index === 0 ? "A closer look at the details." : "A short narration.",
+      direction: "Show the product.",
+    })),
+    workflow: [
+      { title: "Review", detail: "Check the creative.", requiresApproval: true },
+      { title: "Render", detail: "Render the approved creative.", requiresApproval: false },
+      { title: "Publish", detail: "Publish only after approval.", requiresApproval: true },
+    ],
+  },
+};
+
 function response() {
   return {
     code: 200,
@@ -225,8 +253,8 @@ test("authenticated AI creation validates the provider response and releases its
 
 test("production job contracts reject client-owned identity and malformed progress", () => {
   const jobId = "11111111-1111-4111-8111-111111111111";
-  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1" }).success, true);
-  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1", userId: "other" }).success, false);
+  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1", project: productionProject }).success, true);
+  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1", project: productionProject, userId: "other" }).success, false);
   assert.equal(productionJobProgressSchema.safeParse({ stage: "rendering", progress: 50 }).success, true);
   assert.equal(productionJobProgressSchema.safeParse({ stage: "published", progress: 101 }).success, false);
   assert.equal(productionJobCompleteSchema.safeParse({
@@ -277,16 +305,36 @@ test("production jobs are idempotent, persisted and terminal states reject regre
         store.set(ref.id, options?.merge ? { ...current, ...value } : value);
       },
     })));
+    let enqueueCalls = 0;
+    stubs.push(mock.method(getFunctions(), "taskQueue", (name) => {
+      assert.equal(name, "productionWorker");
+      return {
+        async enqueue(payload) {
+          enqueueCalls++;
+          assert.deepEqual(payload, { userId: "verified-owner", jobId });
+        },
+      };
+    }));
 
     let res = response();
     await handleProductionJobRequest(
-      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-1" } },
+      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-1", project: productionProject } },
       res,
       "verified-owner",
     );
     assert.equal(res.code, 201);
     assert.equal(res.body.job.status, "running");
-    assert.equal(res.body.job.stage, "validated");
+    assert.equal(res.body.job.stage, "queued");
+    assert.equal(enqueueCalls, 1);
+
+    res = response();
+    await handleProductionJobRequest(
+      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-1", project: productionProject } },
+      res,
+      "verified-owner",
+    );
+    assert.equal(res.code, 200);
+    assert.equal(enqueueCalls, 1);
 
     res = response();
     await handleProductionJobRequest(
@@ -327,6 +375,74 @@ test("production jobs are idempotent, persisted and terminal states reject regre
     );
     assert.equal(res.code, 200);
     assert.equal(res.body.job.artifact.fileName, "flow.zip");
+  } finally {
+    for (const stub of stubs.reverse()) stub.mock.restore();
+  }
+});
+
+
+test("production worker prepares a real server manifest before local rendering", async () => {
+  const jobId = "22222222-2222-4222-8222-222222222222";
+  const store = new Map([[jobId, {
+    userId: "verified-owner",
+    projectId: "project-2",
+    status: "running",
+    stage: "queued",
+    progress: 2,
+    projectSnapshot: productionProject,
+    createdAt: new Date("2026-10-04T19:00:00Z"),
+    updatedAt: new Date("2026-10-04T19:00:00Z"),
+  }]]);
+  const stubs = [];
+  try {
+    stubs.push(mock.method(getFirestore(), "collection", (name) => {
+      assert.equal(name, "studio_users");
+      return {
+        doc(userId) {
+          assert.equal(userId, "verified-owner");
+          return {
+            collection(child) {
+              assert.equal(child, "production_jobs");
+              return {
+                doc(id) {
+                  return {
+                    id,
+                    async set(value, options) {
+                      const current = store.get(id) || {};
+                      store.set(id, options?.merge ? { ...current, ...value } : value);
+                    },
+                  };
+                },
+              };
+            },
+          };
+        },
+      };
+    }));
+    stubs.push(mock.method(getFirestore(), "runTransaction", async (run) => run({
+      async get(ref) {
+        return { exists: store.has(ref.id), data: () => store.get(ref.id) };
+      },
+      set(ref, value, options) {
+        const current = store.get(ref.id) || {};
+        store.set(ref.id, options?.merge ? { ...current, ...value } : value);
+      },
+    })));
+
+    await prepareProductionJob({ userId: "verified-owner", jobId });
+    const job = store.get(jobId);
+    assert.equal(job.stage, "ready_for_render");
+    assert.equal(job.progress, 15);
+    assert.equal(job.manifest.version, 1);
+    assert.equal(job.manifest.sceneCount, 5);
+    assert.equal(job.manifest.platform, "TikTok / Reels");
+    assert.equal(job.manifest.requiresApproval, true);
+    assert.equal(job.manifest.nextCapability, "local_render");
+    assert.match(job.manifest.narrationText, /closer look/);
+    assert.match(job.manifest.captionText, /#Handmade/);
+
+    await prepareProductionJob({ userId: "verified-owner", jobId });
+    assert.equal(store.get(jobId).stage, "ready_for_render");
   } finally {
     for (const stub of stubs.reverse()) stub.mock.restore();
   }
