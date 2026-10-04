@@ -11,6 +11,7 @@ const auth = require("../dist/auth");
 const { Firestore } = require("@google-cloud/firestore");
 const { getAuth } = require("firebase-admin/auth");
 const { getFirestore } = require("firebase-admin/firestore");
+const { getStorage } = require("firebase-admin/storage");
 const { getFunctions } = require("firebase-admin/functions");
 const OpenAI = require("openai").default;
 const {
@@ -67,6 +68,10 @@ function response() {
       return this;
     },
     json(body) {
+      this.body = body;
+      return this;
+    },
+    send(body) {
       this.body = body;
       return this;
     },
@@ -253,8 +258,8 @@ test("authenticated AI creation validates the provider response and releases its
 
 test("production job contracts reject client-owned identity and malformed progress", () => {
   const jobId = "11111111-1111-4111-8111-111111111111";
-  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1", project: productionProject }).success, true);
-  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1", project: productionProject, userId: "other" }).success, false);
+  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1", production: { generateNarration: false }, project: productionProject }).success, true);
+  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1", production: { generateNarration: false }, project: productionProject, userId: "other" }).success, false);
   assert.equal(productionJobProgressSchema.safeParse({ stage: "rendering", progress: 50 }).success, true);
   assert.equal(productionJobProgressSchema.safeParse({ stage: "published", progress: 101 }).success, false);
   assert.equal(productionJobCompleteSchema.safeParse({
@@ -318,7 +323,7 @@ test("production jobs are idempotent, persisted and terminal states reject regre
 
     let res = response();
     await handleProductionJobRequest(
-      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-1", project: productionProject } },
+      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-1", production: { generateNarration: false }, project: productionProject } },
       res,
       "verified-owner",
     );
@@ -329,7 +334,7 @@ test("production jobs are idempotent, persisted and terminal states reject regre
 
     res = response();
     await handleProductionJobRequest(
-      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-1", project: productionProject } },
+      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-1", production: { generateNarration: false }, project: productionProject } },
       res,
       "verified-owner",
     );
@@ -389,7 +394,7 @@ test("production worker prepares a real server manifest before local rendering",
     status: "running",
     stage: "queued",
     progress: 2,
-    projectSnapshot: productionProject,
+    projectSnapshot: { ...productionProject, production: { generateNarration: false } },
     createdAt: new Date("2026-10-04T19:00:00Z"),
     updatedAt: new Date("2026-10-04T19:00:00Z"),
   }]]);
@@ -492,7 +497,7 @@ test("queue failure is recorded and the same job id can retry without duplicatio
 
     let res = response();
     await handleProductionJobRequest(
-      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-3", project: productionProject } },
+      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-3", production: { generateNarration: false }, project: productionProject } },
       res,
       "verified-owner",
     );
@@ -502,7 +507,7 @@ test("queue failure is recorded and the same job id can retry without duplicatio
 
     res = response();
     await handleProductionJobRequest(
-      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-3", project: productionProject } },
+      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-3", production: { generateNarration: false }, project: productionProject } },
       res,
       "verified-owner",
     );
