@@ -32,6 +32,7 @@ import {
   generateCreative,
   createProductionJob,
   getProductionJob,
+  waitForProductionPreparation,
   updateProductionJob,
   completeProductionJob,
   failProductionJob,
@@ -176,7 +177,9 @@ export default function FlowStudio() {
       .then((job) => {
         if (!active) return;
         const labels: Record<string, string> = {
-          validated: "Ready to render",
+          queued: "Queued for server preparation",
+          preparing: "Preparing production on server",
+          ready_for_render: "Server preparation complete",
           rendering: `Rendering video · ${job.progress}%`,
           packaging: `Packaging files · ${job.progress}%`,
           awaiting_approval: "Awaiting approval",
@@ -329,7 +332,20 @@ export default function FlowStudio() {
         try {
           token = await user.getIdToken();
           jobId = crypto.randomUUID();
-          await createProductionJob(project.id, jobId, token);
+          const createdJob = await createProductionJob(project, jobId, token);
+          setWorkflowStage(
+            createdJob.stage === "queued" ? "Queued for server preparation" : "Preparing production"
+          );
+          await waitForProductionPreparation(
+            jobId,
+            token,
+            controller.signal,
+            (job) => {
+              if (job.stage === "queued") setWorkflowStage("Queued for server preparation");
+              if (job.stage === "preparing") setWorkflowStage("Preparing production on server");
+              if (job.stage === "ready_for_render") setWorkflowStage("Server preparation complete");
+            },
+          );
           const tracked = { ...project, productionJobId: jobId };
           setProject(tracked);
           persist(tracked);
