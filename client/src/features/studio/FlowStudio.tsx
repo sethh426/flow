@@ -340,7 +340,7 @@ export default function FlowStudio() {
         try {
           token = await user.getIdToken();
           jobId = crypto.randomUUID();
-          const wantsNarration = project.brief.narrationMode === "ai" && !audio;
+          const wantsNarration = project.brief.narrationMode === "ai" && narrationAvailable && !audio;
           const createdJob = await createProductionJob(project, jobId, token, wantsNarration);
           const tracked = { ...project, productionJobId: jobId };
           setProject(tracked);
