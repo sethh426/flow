@@ -36,6 +36,7 @@ export interface Brief {
   tone: string;
   duration: number;
   look: Look;
+  narrationMode: "script" | "ai";
 }
 export interface Project {
   id: string;
@@ -174,6 +175,7 @@ export const projectSchema = z.object({
     tone: z.string(),
     duration: z.number().min(6).max(60),
     look: z.enum(["ember", "ocean", "orchid"]),
+    narrationMode: z.enum(["script", "ai"]).default("script"),
   }),
   // Persist unfinished edits too; final exports use the stricter schema above.
   productionJobId: z.string().uuid().optional(),
@@ -244,7 +246,7 @@ export const productionJobSchema = z.object({
   jobId: z.string().uuid(),
   projectId: z.string(),
   status: z.enum(["running", "completed", "failed", "canceled"]),
-  stage: z.enum(["queued", "preparing", "ready_for_render", "rendering", "packaging", "awaiting_approval", "completed", "failed", "canceled"]),
+  stage: z.enum(["queued", "preparing", "generating_narration", "ready_for_render", "rendering", "packaging", "awaiting_approval", "completed", "failed", "canceled"]),
   progress: z.number().min(0).max(100),
   artifact: z.object({
     kind: z.literal("local-bundle"),
@@ -265,6 +267,15 @@ export const productionJobSchema = z.object({
     estimatedNarrationWords: z.number(),
     requiresApproval: z.boolean(),
     nextCapability: z.literal("local_render"),
+  }).nullable().optional(),
+  narration: z.object({
+    kind: z.literal("ai"),
+    provider: z.literal("openai"),
+    model: z.string(),
+    voice: z.string(),
+    mediaType: z.literal("audio/mpeg"),
+    sizeBytes: z.number(),
+    disclosureRequired: z.literal(true),
   }).nullable().optional(),
   failure: z.object({
     code: z.string(),
@@ -298,12 +309,13 @@ async function productionJobRequest(
   return parsed.data.job;
 }
 
-export function createProductionJob(project: Project, jobId: string, token: string) {
+export function createProductionJob(project: Project, jobId: string, token: string, generateNarration = false) {
   return productionJobRequest("/api/studio/jobs", token, {
     method: "POST",
     body: JSON.stringify({
       projectId: project.id,
       jobId,
+      production: { generateNarration },
       project: {
         brief: {
           platform: project.brief.platform,
@@ -348,6 +360,33 @@ export async function waitForProductionPreparation(
     });
   }
   throw new Error("Flow’s production worker is taking too long. Please try again.");
+}
+
+
+export async function fetchProductionNarration(
+  jobId: string,
+  token: string,
+  signal: AbortSignal,
+): Promise<File> {
+  const response = await fetch(`/api/studio/jobs/${jobId}/narration`, {
+    signal,
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) {
+    let message = "Flow could not load the generated narration.";
+    if (response.headers.get("content-type")?.includes("application/json")) {
+      const body: unknown = await response.json();
+      const parsed = z.object({ error: z.string() }).safeParse(body);
+      if (parsed.success) message = parsed.data.error;
+    }
+    throw new Error(message);
+  }
+  const blob = await response.blob();
+  if (blob.type && blob.type !== "audio/mpeg")
+    throw new Error("Flow received an unsupported narration format.");
+  return new File([blob], `flow-${jobId.slice(0, 8)}-narration.mp3`, {
+    type: "audio/mpeg",
+  });
 }
 
 export function getProductionJob(jobId: string, token: string) {
