@@ -572,3 +572,178 @@ test("production worker records invalid server snapshot as non-retryable prepara
     for (const stub of stubs.reverse()) stub.mock.restore();
   }
 });
+
+
+test("production worker generates AI narration once, stores it privately, and records provenance", async () => {
+  const jobId = "55555555-5555-4555-8555-555555555555";
+  const savedEnv = {
+    key: process.env.FLOW_STUDIO_OPENAI_KEY,
+    model: process.env.FLOW_STUDIO_TTS_MODEL,
+    voice: process.env.FLOW_STUDIO_TTS_VOICE,
+    bucket: process.env.FLOW_STUDIO_MEDIA_BUCKET,
+  };
+  process.env.FLOW_STUDIO_OPENAI_KEY = "unit-test-placeholder";
+  process.env.FLOW_STUDIO_TTS_MODEL = "test-tts-model";
+  process.env.FLOW_STUDIO_TTS_VOICE = "test-voice";
+  process.env.FLOW_STUDIO_MEDIA_BUCKET = "private-test-bucket";
+
+  const store = new Map();
+  const quota = new Map();
+  store.set(jobId, {
+    userId: "verified-owner",
+    projectId: "project-5",
+    status: "running",
+    stage: "queued",
+    progress: 2,
+    projectSnapshot: { ...productionProject, production: { generateNarration: true } },
+  });
+  let media = null;
+  let providerCalls = 0;
+  const file = {
+    async exists() { return [Boolean(media)]; },
+    async save(bytes) { media = Buffer.from(bytes); },
+    async getMetadata() { return [{ size: String(media?.length || 0) }]; },
+    async download() { return [media]; },
+  };
+  const stubs = [];
+  try {
+    stubs.push(mock.method(getFirestore(), "collection", (name) => {
+      if (name === "studio_users") return {
+        doc() {
+          return {
+            collection(child) {
+              assert.equal(child, "production_jobs");
+              return { doc(id) {
+                return {
+                  id,
+                  kind: "job",
+                  async get() {
+                    const value = store.get(id);
+                    return {
+                      exists: Boolean(value),
+                      data: () => value,
+                      get: (key) => value?.[key],
+                    };
+                  },
+                  async set(value, options) {
+                    const current = store.get(id) || {};
+                    store.set(id, options?.merge ? { ...current, ...value } : value);
+                  },
+                };
+              } };
+            },
+          };
+        },
+      };
+      if (name === "studio_tts_usage") return {
+        doc(id) { return { id, kind: "quota" }; },
+      };
+      throw new Error(`Unexpected collection ${name}`);
+    }));
+    stubs.push(mock.method(getFirestore(), "runTransaction", async (run) => run({
+      async get(ref) {
+        const source = ref.kind === "quota" ? quota : store;
+        const value = source.get(ref.id);
+        return {
+          exists: Boolean(value),
+          data: () => value,
+          get: (key) => value?.[key],
+        };
+      },
+      set(ref, value, options) {
+        const source = ref.kind === "quota" ? quota : store;
+        const current = source.get(ref.id) || {};
+        source.set(ref.id, options?.merge ? { ...current, ...value } : value);
+      },
+    })));
+    stubs.push(mock.method(getStorage(), "bucket", (name) => {
+      assert.equal(name, "private-test-bucket");
+      return { file: (objectName) => {
+        assert.match(objectName, /studio-users\/verified-owner\/jobs\/55555555/);
+        return file;
+      } };
+    }));
+    stubs.push(mock.method(OpenAI.prototype, "post", async (path, options) => {
+      assert.equal(path, "/audio/speech");
+      assert.equal(options.body.model, "test-tts-model");
+      assert.equal(options.body.voice, "test-voice");
+      assert.match(options.body.input, /closer look/i);
+      providerCalls++;
+      return { arrayBuffer: async () => Buffer.from("fake-mp3-bytes") };
+    }));
+
+    await prepareProductionJob({ userId: "verified-owner", jobId });
+    const result = store.get(jobId);
+    assert.equal(result.stage, "ready_for_render");
+    assert.equal(result.narration.kind, "ai");
+    assert.equal(result.narration.provider, "openai");
+    assert.equal(result.narration.model, "test-tts-model");
+    assert.equal(result.narration.voice, "test-voice");
+    assert.equal(result.narration.disclosureRequired, true);
+    assert.equal(providerCalls, 1);
+    assert.equal(quota.values().next().value.count, 1);
+    assert.ok(media.length > 0);
+
+    await prepareProductionJob({ userId: "verified-owner", jobId });
+    assert.equal(providerCalls, 1);
+  } finally {
+    for (const stub of stubs.reverse()) stub.mock.restore();
+    for (const [key, value] of Object.entries({
+      FLOW_STUDIO_OPENAI_KEY: savedEnv.key,
+      FLOW_STUDIO_TTS_MODEL: savedEnv.model,
+      FLOW_STUDIO_TTS_VOICE: savedEnv.voice,
+      FLOW_STUDIO_MEDIA_BUCKET: savedEnv.bucket,
+    })) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+});
+
+test("generated narration is served only through the authenticated job path", async () => {
+  const jobId = "66666666-6666-4666-8666-666666666666";
+  const bytes = Buffer.from("private-audio");
+  const stubs = [];
+  try {
+    stubs.push(mock.method(getFirestore(), "collection", () => ({
+      doc(userId) {
+        assert.equal(userId, "verified-owner");
+        return {
+          collection() {
+            return { doc(id) {
+              assert.equal(id, jobId);
+              return {
+                async get() {
+                  return {
+                    exists: true,
+                    get(key) {
+                      if (key !== "narration") return undefined;
+                      return {
+                        bucket: "private-test-bucket",
+                        object: `studio-users/verified-owner/jobs/${jobId}/narration.mp3`,
+                        mediaType: "audio/mpeg",
+                      };
+                    },
+                  };
+                },
+              };
+            } };
+          },
+        };
+      },
+    })));
+    stubs.push(mock.method(getStorage(), "bucket", () => ({
+      file() { return { download: async () => [bytes] }; },
+    })));
+    const res = response();
+    await handleProductionJobRequest(
+      { method: "GET", path: `/api/studio/jobs/${jobId}/narration`, body: {} },
+      res,
+      "verified-owner",
+    );
+    assert.equal(res.code, 200);
+    assert.deepEqual(res.body, bytes);
+  } finally {
+    for (const stub of stubs.reverse()) stub.mock.restore();
+  }
+});
