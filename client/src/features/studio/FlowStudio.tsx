@@ -120,6 +120,7 @@ export default function FlowStudio() {
     if (!expanded) return;
     let active = true;
     setService("checking");
+    setNarrationAvailable(false);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
     void fetch("/api/studio/status", { signal: controller.signal })
@@ -1322,7 +1323,7 @@ export default function FlowStudio() {
                 <input
                   type="checkbox"
                   checked={brief.narrationMode === "ai"}
-                  disabled={busy || rendering || !narrationAvailable}
+                  disabled={busy || rendering || !narrationAvailable || !user}
                   onChange={(event) => {
                     const next = {
                       ...brief,
@@ -1339,9 +1340,11 @@ export default function FlowStudio() {
                 <span>
                   <strong>Generate AI narration</strong>
                   <small>
-                    {narrationAvailable
-                      ? "Flow can turn your voiceover script into an AI-generated voice during production. Uploaded audio takes priority."
-                      : "AI narration is not configured on this Flow environment."}
+                    {!user
+                      ? "Sign in to use server-generated narration."
+                      : narrationAvailable
+                        ? "Flow can turn your voiceover script into an AI-generated voice during production. Uploaded audio takes priority."
+                        : "AI narration is not configured on this Flow environment."}
                   </small>
                 </span>
               </label>
