@@ -93,7 +93,25 @@ async function createJob(req: Request, res: Response, userId: string) {
   const db = getFirestore();
   const result = await db.runTransaction(async (transaction) => {
     const existing = await transaction.get(ref);
-    if (existing.exists) return publicJob(jobId, existing.data() || {});
+    if (existing.exists) {
+      const current = existing.data() || {};
+      const queueRetry =
+        current.status === "failed" &&
+        (current.failure as { code?: string } | undefined)?.code === "queue_unavailable";
+      if (!queueRetry)
+        return { job: publicJob(jobId, current), shouldEnqueue: false };
+      const retry = {
+        ...current,
+        status: "running" as JobStatus,
+        stage: "queued" as JobStage,
+        progress: 2,
+        failure: null,
+        projectSnapshot: project,
+        updatedAt: new Date(),
+      };
+      transaction.set(ref, retry, { merge: true });
+      return { job: publicJob(jobId, retry), shouldEnqueue: true };
+    }
     const now = new Date();
     const data = {
       userId,
@@ -105,24 +123,27 @@ async function createJob(req: Request, res: Response, userId: string) {
       createdAt: now,
       updatedAt: now,
       artifact: null,
+      manifest: null,
       failure: null,
     };
     transaction.set(ref, data);
-    return publicJob(jobId, data);
+    return { job: publicJob(jobId, data), shouldEnqueue: true };
   });
-  try {
-    await getFunctions().taskQueue("productionWorker").enqueue({ userId, jobId });
-  } catch {
-    await ref.set({
-      status: "failed",
-      stage: "failed",
-      failure: { code: "queue_unavailable", retryable: true },
-      updatedAt: new Date(),
-    }, { merge: true });
-    res.status(503).json({ error: "Flow could not start the production worker. Try again." });
-    return;
+  if (result.shouldEnqueue) {
+    try {
+      await getFunctions().taskQueue("productionWorker").enqueue({ userId, jobId });
+    } catch {
+      await ref.set({
+        status: "failed",
+        stage: "failed",
+        failure: { code: "queue_unavailable", retryable: true },
+        updatedAt: new Date(),
+      }, { merge: true });
+      res.status(503).json({ error: "Flow could not start the production worker. Try again." });
+      return;
+    }
   }
-  res.status(201).json({ job: result });
+  res.status(result.shouldEnqueue ? 201 : 200).json({ job: result.job });
 }
 
 async function updateJob(
