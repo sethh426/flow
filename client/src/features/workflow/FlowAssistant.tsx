@@ -78,7 +78,10 @@ export default function FlowAssistant({
         width: size,
         height: size,
         ...(point
-          ? { left: point.x, top: point.y }
+          ? {
+              left: `clamp(12px, ${point.x}px, calc(100vw - ${size + 12}px))`,
+              top: `clamp(12px, ${point.y}px, calc(100vh - ${size + 12}px))`,
+            }
           : {
               [position.includes("right") ? "right" : "left"]: 24,
               [position.includes("bottom") ? "bottom" : "top"]: 24,
