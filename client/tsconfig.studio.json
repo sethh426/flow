@@ -2,7 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": { "incremental": false },
   "include": [
-    "next-env.d.ts",
+    "studio-env.d.ts",
     "src/features/studio/**/*.ts",
     "src/features/studio/**/*.tsx",
     "src/app/ClientLayout.tsx",
