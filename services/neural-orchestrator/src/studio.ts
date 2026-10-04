@@ -93,6 +93,14 @@ export async function studioHandler(
     });
     return;
   }
+  const productionPath =
+    (req.path || "").startsWith("/api/studio/jobs") ||
+    (req.path || "").startsWith("/jobs");
+  if (req.method !== "POST" && !(req.method === "GET" && productionPath)) {
+    res.status(405).json({ error: "Use POST to create a draft." });
+    return;
+  }
+
   if (!getApps().length) initializeApp();
   const token = /^Bearer (.+)$/.exec(req.get("Authorization") || "")?.[1];
   if (!token) {
@@ -109,10 +117,6 @@ export async function studioHandler(
 
   if (await handleProductionJobRequest(req, res, userId)) return;
 
-  if (req.method !== "POST") {
-    res.status(405).json({ error: "Use POST to create a draft." });
-    return;
-  }
   if (!["/api/studio/create", "/create"].includes(req.path)) {
     res.status(404).json({ error: "Studio action not found." });
     return;
