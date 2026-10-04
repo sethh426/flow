@@ -37,6 +37,7 @@ import {
   completeProductionJob,
   failProductionJob,
   cancelProductionJob,
+  fetchProductionNarration,
   loadProjects,
   palettes,
   projectSchema,
@@ -63,6 +64,7 @@ const initialBrief: Brief = {
   tone: "Confident & conversational",
   duration: 15,
   look: "ember",
+  narrationMode: "script",
 };
 const suggestions = [
   "Launch something new",
@@ -75,6 +77,7 @@ type Tab = "story" | "copy" | "workflow";
 export default function FlowStudio() {
   const [expanded, setExpanded] = useState(false);
   const [service, setService] = useState<"checking" | "configured" | "unavailable">("checking");
+  const [narrationAvailable, setNarrationAvailable] = useState(false);
   const [connectionAttempt, setConnectionAttempt] = useState(0);
   const { user, loginWithGoogle, login, signup, logout, configured: isFirebaseConfigured, loading: authLoading, retryConnection } = useAuth();
   const [brief, setBrief] = useState<Brief>(initialBrief);
@@ -117,6 +120,7 @@ export default function FlowStudio() {
     if (!expanded) return;
     let active = true;
     setService("checking");
+    setNarrationAvailable(false);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
     void fetch("/api/studio/status", { signal: controller.signal })
@@ -124,7 +128,11 @@ export default function FlowStudio() {
         if (!response.ok || !response.headers.get("content-type")?.includes("application/json"))
           return false;
         const body: unknown = await response.json();
-        return typeof body === "object" && body !== null && "configured" in body && body.configured === true;
+        if (typeof body !== "object" || body === null) return false;
+        const status = body as { configured?: boolean; capabilities?: { narration?: unknown } };
+        if (active && !controller.signal.aborted)
+          setNarrationAvailable(status.capabilities?.narration === "ai");
+        return status.configured === true;
       })
       .then((ready) => { if (active && !controller.signal.aborted) setService(ready ? "configured" : "unavailable"); })
       .catch(() => { if (active) setService("unavailable"); })
@@ -327,28 +335,35 @@ export default function FlowStudio() {
     let token: string | null = null;
     let jobId: string | null = null;
     let reachedPackaging = false;
+    let generatedNarration: File | null = null;
     try {
       if (user) {
         try {
           token = await user.getIdToken();
           jobId = crypto.randomUUID();
-          const createdJob = await createProductionJob(project, jobId, token);
+          const wantsNarration = project.brief.narrationMode === "ai" && narrationAvailable && !audio;
+          const createdJob = await createProductionJob(project, jobId, token, wantsNarration);
           const tracked = { ...project, productionJobId: jobId };
           setProject(tracked);
           persist(tracked);
           setWorkflowStage(
             createdJob.stage === "queued" ? "Queued for server preparation" : "Preparing production"
           );
-          await waitForProductionPreparation(
+          const preparedJob = await waitForProductionPreparation(
             jobId,
             token,
             controller.signal,
             (job) => {
               if (job.stage === "queued") setWorkflowStage("Queued for server preparation");
               if (job.stage === "preparing") setWorkflowStage("Preparing production on server");
+              if (job.stage === "generating_narration") setWorkflowStage("Generating AI narration");
               if (job.stage === "ready_for_render") setWorkflowStage("Server preparation complete");
             },
           );
+          if (preparedJob.narration && !audio) {
+            setWorkflowStage("Loading AI narration");
+            generatedNarration = await fetchProductionNarration(jobId, token, controller.signal);
+          }
         } catch {
           if (jobId && token) {
             try {
@@ -365,7 +380,7 @@ export default function FlowStudio() {
 
       setWorkflowStage("Rendering video");
       if (jobId && token) await updateProductionJob(jobId, token, "rendering", 10);
-      const video = await renderVideo(project, images, audio, controller.signal, setProgress);
+      const video = await renderVideo(project, images, generatedNarration || audio, controller.signal, setProgress, !generatedNarration);
 
       reachedPackaging = true;
       setWorkflowStage("Packaging files");
@@ -376,8 +391,9 @@ export default function FlowStudio() {
         { name: "creative.json", data: text(JSON.stringify(project, null, 2)) },
         { name: "post.txt", data: text(`${project.creative.caption}\n\n${project.creative.hashtags.join(" ")}`) },
         { name: "voiceover.txt", data: text(project.creative.scenes.map((scene) => scene.narration).join("\n\n")) },
+        ...(generatedNarration ? [{ name: "narration.mp3", data: generatedNarration }] : []),
         { name: "workflow.txt", data: text(project.creative.workflow.map((step, index) => `${index + 1}. ${step.title}\n${step.detail}`).join("\n\n")) },
-        { name: "README.txt", data: text("Flow completed this local workflow: validate draft, render video, package creative files.\nNo posts were published or external actions performed.\nThe voiceover script is text, not generated speech. Uploaded audio is included in the video when supplied.\nImport creative.json in Flow to restore the editable draft; source media must be attached again.\nReview claims, rights, disclosures and platform requirements before publishing.") },
+        { name: "README.txt", data: text("Flow completed this local workflow: validate draft, render video, package creative files.\nNo posts were published or external actions performed.\nThe voiceover script is text. If narration.mp3 is present, it was generated by AI and mixed into the video. Uploaded audio is included when supplied and takes priority over AI narration.\nImport creative.json in Flow to restore the editable draft; source media must be attached again.\nReview claims, rights, disclosures and platform requirements before publishing.") },
       ], controller.signal);
       controller.signal.throwIfAborted();
 
@@ -1302,6 +1318,40 @@ export default function FlowStudio() {
                   </small>
                 </span>
               </label>
+              <label className={styles.toggle}>
+                <input
+                  type="checkbox"
+                  checked={brief.narrationMode === "ai"}
+                  disabled={busy || rendering || !narrationAvailable || !user}
+                  onChange={(event) => {
+                    const next = {
+                      ...brief,
+                      narrationMode: event.target.checked ? "ai" as const : "script" as const,
+                    };
+                    setBrief(next);
+                    if (project) {
+                      const updated = { ...project, brief: next };
+                      setProject(updated);
+                      persist(updated);
+                    }
+                  }}
+                />
+                <span>
+                  <strong>Generate AI narration</strong>
+                  <small>
+                    {!user
+                      ? "Sign in to use server-generated narration."
+                      : narrationAvailable
+                        ? "Flow can turn your voiceover script into an AI-generated voice during production. Uploaded audio takes priority."
+                        : "AI narration is not configured on this Flow environment."}
+                  </small>
+                </span>
+              </label>
+              {brief.narrationMode === "ai" && narrationAvailable && (
+                <p className={styles.dialogNote}>
+                  Narration is an AI-generated voice, not a human speaker.
+                </p>
+              )}
               {(imageNames.length > 0 || audio) && (
                 <div className={styles.attachedFiles}>
                   <p className={styles.label}>ATTACHED TO THIS SESSION</p>

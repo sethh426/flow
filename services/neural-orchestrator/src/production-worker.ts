@@ -1,7 +1,12 @@
 import { getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 import { onTaskDispatched } from "firebase-functions/v2/tasks";
+import { defineSecret } from "firebase-functions/params";
+import OpenAI from "openai";
 import * as logger from "firebase-functions/logger";
 import { z } from "zod";
+
+const studioKey = defineSecret("FLOW_STUDIO_OPENAI_KEY");
 
 const taskSchema = z.object({
   userId: z.string().min(1).max(128),
@@ -14,6 +19,25 @@ function jobRef(userId: string, jobId: string) {
     .doc(userId)
     .collection("production_jobs")
     .doc(jobId);
+}
+
+export async function markProductionJobRetriesExhausted(payload: unknown): Promise<void> {
+  const parsed = taskSchema.safeParse(payload);
+  if (!parsed.success) return;
+  const ref = jobRef(parsed.data.userId, parsed.data.jobId);
+  const db = getFirestore();
+  await db.runTransaction(async (transaction) => {
+    const snapshot = await transaction.get(ref);
+    if (!snapshot.exists) return;
+    const current = snapshot.data() || {};
+    if (["completed", "failed", "canceled"].includes(String(current.status))) return;
+    transaction.set(ref, {
+      status: "failed",
+      stage: "failed",
+      failure: { code: "worker_retries_exhausted", retryable: true },
+      updatedAt: new Date(),
+    }, { merge: true });
+  });
 }
 
 export async function prepareProductionJob(payload: unknown): Promise<void> {
@@ -49,6 +73,9 @@ export async function prepareProductionJob(payload: unknown): Promise<void> {
       duration: z.number().int().min(6).max(60),
       look: z.enum(["ember", "ocean", "orchid"]),
     }),
+    production: z.object({
+      generateNarration: z.boolean(),
+    }).strict(),
     creative: z.object({
       title: z.string().min(1).max(100),
       caption: z.string().max(2200),
@@ -78,7 +105,7 @@ export async function prepareProductionJob(payload: unknown): Promise<void> {
     return;
   }
 
-  const { brief, creative } = parsed.data;
+  const { brief, creative, production } = parsed.data;
   const narrationText = creative.scenes
     .map((scene) => scene.narration.trim())
     .filter(Boolean)
@@ -105,6 +132,112 @@ export async function prepareProductionJob(payload: unknown): Promise<void> {
     preparedAt: new Date(),
   };
 
+  let narration: Record<string, unknown> | null = null;
+  if (production.generateNarration) {
+    const model = process.env.FLOW_STUDIO_TTS_MODEL;
+    const voice = process.env.FLOW_STUDIO_TTS_VOICE;
+    const bucketName = process.env.FLOW_STUDIO_MEDIA_BUCKET;
+    if (!model || !voice || !bucketName || !studioKey.value()) {
+      await ref.set({
+        status: "failed",
+        stage: "failed",
+        failure: { code: "narration_not_configured", retryable: false },
+        updatedAt: new Date(),
+      }, { merge: true });
+      return;
+    }
+    if (!narrationText || narrationText.length > 4096) {
+      await ref.set({
+        status: "failed",
+        stage: "failed",
+        failure: { code: "narration_input_invalid", retryable: false },
+        updatedAt: new Date(),
+      }, { merge: true });
+      return;
+    }
+
+    const objectName = `studio-users/${task.userId}/jobs/${task.jobId}/narration.mp3`;
+    const file = getStorage().bucket(bucketName).file(objectName);
+    const [alreadyExists] = await file.exists();
+    if (!alreadyExists) {
+      const admitted = await db.runTransaction(async (transaction) => {
+        const latest = await transaction.get(ref);
+        if (!latest.exists) return "missing";
+        const current = latest.data() || {};
+        if (["completed", "failed", "canceled"].includes(String(current.status))) return "terminal";
+        if (current.narrationAttemptCharged) return "ok";
+        const quota = db
+          .collection("studio_tts_usage")
+          .doc(`${task.userId}_${new Date().toISOString().slice(0, 10)}`);
+        const usage = await transaction.get(quota);
+        const count = Number(usage.get("count") || 0);
+        if (count >= 10) {
+          transaction.set(ref, {
+            status: "failed",
+            stage: "failed",
+            failure: { code: "narration_daily_limit", retryable: false },
+            updatedAt: new Date(),
+          }, { merge: true });
+          return "limit";
+        }
+        transaction.set(quota, {
+          userId: task.userId,
+          count: count + 1,
+          updatedAt: new Date(),
+        }, { merge: true });
+        transaction.set(ref, {
+          narrationAttemptCharged: true,
+          stage: "generating_narration",
+          progress: Math.max(Number(current.progress || 0), 10),
+          updatedAt: new Date(),
+        }, { merge: true });
+        return "ok";
+      });
+      if (admitted !== "ok") return;
+
+      const openai = new OpenAI({
+        apiKey: studioKey.value(),
+        timeout: 120_000,
+        maxRetries: 0,
+      });
+      const speech = await openai.audio.speech.create({
+        model,
+        voice,
+        input: narrationText,
+        response_format: "mp3",
+      } as any);
+      const bytes = Buffer.from(await speech.arrayBuffer());
+      if (!bytes.length) throw new Error("empty-narration");
+      await file.save(bytes, {
+        resumable: false,
+        contentType: "audio/mpeg",
+        metadata: {
+          cacheControl: "private, no-store",
+          metadata: {
+            flowJobId: task.jobId,
+            provider: "openai",
+            model,
+            voice,
+          },
+        },
+      });
+    }
+
+    const [metadata] = await file.getMetadata();
+    narration = {
+      kind: "ai",
+      provider: "openai",
+      model,
+      voice,
+      bucket: bucketName,
+      object: objectName,
+      mediaType: "audio/mpeg",
+      sizeBytes: Number(metadata.size || 0),
+      disclosureRequired: true,
+      generatedAt: new Date(),
+    };
+  }
+
   await db.runTransaction(async (transaction) => {
     const latest = await transaction.get(ref);
     if (!latest.exists) return;
@@ -112,6 +245,7 @@ export async function prepareProductionJob(payload: unknown): Promise<void> {
     if (["completed", "failed", "canceled"].includes(String(current.status))) return;
     transaction.set(ref, {
       manifest,
+      narration,
       status: "running",
       stage: "ready_for_render",
       progress: Math.max(Number(current.progress || 0), 15),
@@ -132,6 +266,7 @@ export const productionWorker = onTaskDispatched(
     },
     timeoutSeconds: 300,
     memory: "512MiB",
+    secrets: [studioKey],
   },
   async (request) => {
     try {
@@ -139,7 +274,13 @@ export const productionWorker = onTaskDispatched(
     } catch (error) {
       logger.error("Production preparation failed", {
         category: error instanceof z.ZodError ? "invalid-task" : "worker-error",
+        retryCount: request.retryCount,
       });
+      if (request.retryCount >= 2) {
+        await markProductionJobRetriesExhausted(request.data).catch(() =>
+          logger.error("Could not mark exhausted production job"),
+        );
+      }
       throw error;
     }
   },

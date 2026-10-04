@@ -51,17 +51,26 @@ The first durable production-state slice is now in `main`:
 
 Truth boundary: rendering still happens in the browser.
 
-## Active implementation — PR #5
+## Server production worker — merged
 
-Branch: `codex/server-production-worker-20261004`
+Merged to `main` as `b91646422f228c14546bcc30fbf2a78d05fce56e`.
 
-A Cloud Tasks production worker is under review:
-- the API enqueues authenticated production jobs;
-- the worker transactionally claims the job;
-- it validates the server-held creative snapshot;
-- it produces a normalized production manifest before rendering;
-- the client waits for `ready_for_render`;
-- queue retries/concurrency are bounded;
-- duplicate create requests do not duplicate work.
+Signed-in production runs now enqueue a Firebase Cloud Tasks worker. The worker validates the server-held creative snapshot, writes a normalized production manifest, uses bounded retries/concurrency, and releases the client only at `ready_for_render`. A viewport-clamping regression discovered by the browser suite was fixed before merge.
 
-Truth boundary: this is real server execution, but video rendering remains in the browser. The next leverage point is moving an actual media capability (narration/image/video generation) behind this worker contract.
+Truth boundary: final video composition still runs in the browser.
+
+## Active implementation — AI narration
+
+Branch: `codex/ai-narration-main-20261004`
+
+The first provider-backed media capability is under review:
+- explicit opt-in AI narration;
+- server-side OpenAI speech generation;
+- private bucket storage and authenticated retrieval only;
+- provider/model/voice provenance;
+- ten charged narration attempts per user per UTC day;
+- uploaded audio takes priority to avoid unnecessary spend;
+- generated narration plays once, not as looping background audio;
+- AI-voice disclosure in the interface.
+
+Truth boundary: narration requires explicit server model/voice/bucket configuration and a valid OpenAI secret. No live production provider call has been claimed from CI; provider/storage behavior is verified with controlled test doubles.
