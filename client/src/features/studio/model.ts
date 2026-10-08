@@ -363,7 +363,7 @@ export async function waitForProductionPreparation(
   signal: AbortSignal,
   onJob?: (job: ProductionJob) => void,
 ): Promise<ProductionJob> {
-  const deadline = Date.now() + 10 * 60_000;
+  const deadline = Date.now() + 20 * 60_000;
   while (Date.now() < deadline) {
     signal.throwIfAborted();
     const job = await getProductionJob(jobId, token);
@@ -381,7 +381,7 @@ export async function waitForProductionPreparation(
       }, { once: true });
     });
   }
-  throw new Error("Flow’s production worker did not finish within 10 minutes. Please try again or use local media.");
+  throw new Error("Flow’s production worker did not finish within 20 minutes. Please try again or use local media.");
 }
 
 
