@@ -11,7 +11,10 @@ export const productionJobCreateSchema = z.object({
     generateNarration: z.boolean(),
     generateVisuals: z.boolean(),
     generateFootage: z.boolean(),
-  }).strict(),
+  }).strict().refine(
+    (value) => !(value.generateVisuals && value.generateFootage),
+    "Generate either AI still visuals or AI footage, not both.",
+  ),
   project: z.object({
     brief: z.object({
       platform: z.string().min(1).max(80),
