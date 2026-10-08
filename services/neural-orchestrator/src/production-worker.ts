@@ -198,8 +198,20 @@ export async function prepareProductionJob(payload: unknown): Promise<void> {
       maxRetries: 0,
     });
     const bucket = getStorage().bucket(bucketName);
-    const generated = await Promise.all(
-      creative.scenes.map(async (scene, sceneIndex) => {
+    const generated: Array<Record<string, unknown>> = new Array(creative.scenes.length);
+    let nextScene = 0;
+    let stopped = false;
+    const generateScene = async () => {
+      while (!stopped) {
+        const sceneIndex = nextScene++;
+        if (sceneIndex >= creative.scenes.length) return;
+        const latest = await ref.get();
+        const latestData = latest.data() || {};
+        if (!latest.exists || ["completed", "failed", "canceled"].includes(String(latestData.status))) {
+          stopped = true;
+          return;
+        }
+        const scene = creative.scenes[sceneIndex];
         const objectName = `studio-users/${task.userId}/jobs/${task.jobId}/scene-${String(sceneIndex).padStart(2, "0")}.webp`;
         const file = bucket.file(objectName);
         const [alreadyExists] = await file.exists();
@@ -243,7 +255,7 @@ export async function prepareProductionJob(payload: unknown): Promise<void> {
           });
         }
         const [metadata] = await file.getMetadata();
-        return {
+        generated[sceneIndex] = {
           kind: "ai",
           provider: "openai",
           model,
@@ -255,8 +267,10 @@ export async function prepareProductionJob(payload: unknown): Promise<void> {
           sceneIndex,
           generatedAt: new Date(),
         };
-      }),
-    );
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(2, creative.scenes.length) }, generateScene));
+    if (stopped) return;
     visuals = generated;
   }
 
