@@ -258,9 +258,18 @@ test("authenticated AI creation validates the provider response and releases its
 
 test("production job contracts reject client-owned identity and malformed progress", () => {
   const jobId = "11111111-1111-4111-8111-111111111111";
-  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1", production: { generateNarration: false, generateVisuals: false }, project: productionProject }).success, true);
-  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1", production: { generateNarration: false, generateVisuals: false }, project: productionProject, userId: "other" }).success, false);
-  assert.equal(productionJobProgressSchema.safeParse({ stage: "rendering", progress: 50 }).success, true);
+  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1", production: { generateNarration: false, generateVisuals: false, generateFootage: false }, project: productionProject }).success, true);
+  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1", production: { generateNarration: false, generateVisuals: false, generateFootage: false }, project: productionProject, userId: "other" }).success, false);
+  assert.equal(
+    productionJobCreateSchema.safeParse({
+      jobId,
+      projectId: "project-1",
+      production: { generateNarration: false, generateVisuals: true, generateFootage: true },
+      project: productionProject,
+    }).success,
+    false,
+  );
+    assert.equal(productionJobProgressSchema.safeParse({ stage: "rendering", progress: 50 }).success, true);
   assert.equal(productionJobProgressSchema.safeParse({ stage: "published", progress: 101 }).success, false);
   assert.equal(productionJobCompleteSchema.safeParse({
     artifact: { kind: "local-bundle", fileName: "flow.zip", mediaType: "application/zip", sizeBytes: 1234 },
@@ -323,7 +332,7 @@ test("production jobs are idempotent, persisted and terminal states reject regre
 
     let res = response();
     await handleProductionJobRequest(
-      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-1", production: { generateNarration: false, generateVisuals: false }, project: productionProject } },
+      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-1", production: { generateNarration: false, generateVisuals: false, generateFootage: false }, project: productionProject } },
       res,
       "verified-owner",
     );
@@ -334,7 +343,7 @@ test("production jobs are idempotent, persisted and terminal states reject regre
 
     res = response();
     await handleProductionJobRequest(
-      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-1", production: { generateNarration: false, generateVisuals: false }, project: productionProject } },
+      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-1", production: { generateNarration: false, generateVisuals: false, generateFootage: false }, project: productionProject } },
       res,
       "verified-owner",
     );
@@ -394,7 +403,7 @@ test("production worker prepares a real server manifest before local rendering",
     status: "running",
     stage: "queued",
     progress: 2,
-    projectSnapshot: { ...productionProject, production: { generateNarration: false, generateVisuals: false } },
+    projectSnapshot: { ...productionProject, production: { generateNarration: false, generateVisuals: false, generateFootage: false } },
     createdAt: new Date("2026-10-04T19:00:00Z"),
     updatedAt: new Date("2026-10-04T19:00:00Z"),
   }]]);
@@ -497,7 +506,7 @@ test("queue failure is recorded and the same job id can retry without duplicatio
 
     let res = response();
     await handleProductionJobRequest(
-      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-3", production: { generateNarration: false, generateVisuals: false }, project: productionProject } },
+      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-3", production: { generateNarration: false, generateVisuals: false, generateFootage: false }, project: productionProject } },
       res,
       "verified-owner",
     );
@@ -507,7 +516,7 @@ test("queue failure is recorded and the same job id can retry without duplicatio
 
     res = response();
     await handleProductionJobRequest(
-      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-3", production: { generateNarration: false, generateVisuals: false }, project: productionProject } },
+      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-3", production: { generateNarration: false, generateVisuals: false, generateFootage: false }, project: productionProject } },
       res,
       "verified-owner",
     );
@@ -595,7 +604,7 @@ test("production worker generates AI narration once, stores it privately, and re
     status: "running",
     stage: "queued",
     progress: 2,
-    projectSnapshot: { ...productionProject, production: { generateNarration: true, generateVisuals: false } },
+    projectSnapshot: { ...productionProject, production: { generateNarration: true, generateVisuals: false, generateFootage: false } },
   });
   let media = null;
   let providerCalls = 0;
@@ -807,7 +816,7 @@ test("production worker generates one private visual per scene and reuses them o
     progress: 2,
     projectSnapshot: {
       ...productionProject,
-      production: { generateNarration: false, generateVisuals: true },
+      production: { generateNarration: false, generateVisuals: true, generateFootage: false },
     },
   }]]);
   const quota = new Map();
@@ -978,6 +987,361 @@ test("generated scene visuals are served only through the authenticated job path
     const res = response();
     await handleProductionJobRequest(
       { method: "GET", path: `/api/studio/jobs/${jobId}/visuals/0`, body: {} },
+      res,
+      "verified-owner",
+    );
+    assert.equal(res.code, 200);
+    assert.deepEqual(res.body, bytes);
+  } finally {
+    for (const stub of stubs.reverse()) stub.mock.restore();
+  }
+});
+
+
+test("production worker starts Veo once, polls the persisted operation, and records private footage", async () => {
+  const jobId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+  const savedEnv = {
+    project: process.env.GOOGLE_CLOUD_PROJECT,
+    location: process.env.FLOW_STUDIO_VERTEX_LOCATION,
+    model: process.env.FLOW_STUDIO_VIDEO_MODEL,
+    duration: process.env.FLOW_STUDIO_VIDEO_DURATION,
+    resolution: process.env.FLOW_STUDIO_VIDEO_RESOLUTION,
+    bucket: process.env.FLOW_STUDIO_MEDIA_BUCKET,
+    poll: process.env.FLOW_STUDIO_VIDEO_POLL_MS,
+  };
+  process.env.GOOGLE_CLOUD_PROJECT = "flow-test-project";
+  process.env.FLOW_STUDIO_VERTEX_LOCATION = "us-central1";
+  process.env.FLOW_STUDIO_VIDEO_MODEL = "veo-3.1-fast-generate-001";
+  process.env.FLOW_STUDIO_VIDEO_DURATION = "4";
+  process.env.FLOW_STUDIO_VIDEO_RESOLUTION = "720p";
+  process.env.FLOW_STUDIO_MEDIA_BUCKET = "private-test-bucket";
+  process.env.FLOW_STUDIO_VIDEO_POLL_MS = "0";
+
+  const store = new Map([[jobId, {
+    userId: "verified-owner",
+    projectId: "project-video",
+    status: "running",
+    stage: "queued",
+    progress: 2,
+    projectSnapshot: {
+      ...productionProject,
+      production: {
+        generateNarration: false,
+        generateVisuals: false,
+        generateFootage: true,
+      },
+    },
+  }]]);
+  const quota = new Map();
+  let startCalls = 0;
+  let pollCalls = 0;
+  const mp4 = Buffer.from("fake-veo-mp4");
+  const videoObject = {
+    name: `studio-users/verified-owner/jobs/${jobId}/veo/generated-0.mp4`,
+    async getMetadata() { return [{ size: String(mp4.length) }]; },
+    async download() { return [mp4]; },
+  };
+  const stubs = [];
+  try {
+    stubs.push(mock.method(getFirestore(), "collection", (name) => {
+      if (name === "studio_users") return {
+        doc(userId) {
+          assert.equal(userId, "verified-owner");
+          return {
+            collection(child) {
+              assert.equal(child, "production_jobs");
+              return { doc(id) {
+                return {
+                  id,
+                  kind: "job",
+                  async get() {
+                    const value = store.get(id);
+                    return {
+                      exists: Boolean(value),
+                      data: () => value,
+                      get: (key) => value?.[key],
+                    };
+                  },
+                  async set(value, options) {
+                    const current = store.get(id) || {};
+                    store.set(id, options?.merge ? { ...current, ...value } : value);
+                  },
+                };
+              } };
+            },
+          };
+        },
+      };
+      if (name === "studio_video_usage")
+        return { doc(id) { return { id, kind: "quota" }; } };
+      throw new Error(`Unexpected collection ${name}`);
+    }));
+    stubs.push(mock.method(getFirestore(), "runTransaction", async (run) => run({
+      async get(ref) {
+        const source = ref.kind === "quota" ? quota : store;
+        const value = source.get(ref.id);
+        return {
+          exists: Boolean(value),
+          data: () => value,
+          get: (key) => value?.[key],
+        };
+      },
+      set(ref, value, options) {
+        const source = ref.kind === "quota" ? quota : store;
+        const current = source.get(ref.id) || {};
+        source.set(ref.id, options?.merge ? { ...current, ...value } : value);
+      },
+    })));
+    stubs.push(mock.method(getStorage(), "bucket", (name) => {
+      assert.equal(name, "private-test-bucket");
+      return {
+        async getFiles({ prefix }) {
+          assert.equal(prefix, `studio-users/verified-owner/jobs/${jobId}/veo/`);
+          return [[videoObject]];
+        },
+        file(objectName) {
+          assert.equal(objectName, videoObject.name);
+          return videoObject;
+        },
+      };
+    }));
+    stubs.push(mock.method(global, "fetch", async (url, options = {}) => {
+      const target = String(url);
+      if (target.startsWith("http://metadata.google.internal/")) {
+        assert.equal(options.headers["Metadata-Flavor"], "Google");
+        return new Response(JSON.stringify({ access_token: "adc-token" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      assert.equal(options.headers.Authorization, "Bearer adc-token");
+      if (target.endsWith(":predictLongRunning")) {
+        startCalls++;
+        const body = JSON.parse(options.body);
+        assert.match(body.instances[0].prompt, /portrait motion clip/i);
+        assert.deepEqual(body.parameters, {
+          storageUri: `gs://private-test-bucket/studio-users/verified-owner/jobs/${jobId}/veo/`,
+          sampleCount: 1,
+          aspectRatio: "9:16",
+          durationSeconds: 4,
+          resolution: "720p",
+        });
+        return new Response(JSON.stringify({
+          name: "projects/flow-test-project/locations/us-central1/publishers/google/models/veo-3.1-fast-generate-001/operations/op-1",
+        }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      if (target.endsWith(":fetchPredictOperation")) {
+        pollCalls++;
+        const body = JSON.parse(options.body);
+        assert.match(body.operationName, /operations\/op-1$/);
+        return new Response(JSON.stringify({ done: true, response: {} }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      throw new Error(`Unexpected fetch ${target}`);
+    }));
+
+    await prepareProductionJob({ userId: "verified-owner", jobId });
+    const result = store.get(jobId);
+    assert.equal(result.stage, "ready_for_render");
+    assert.equal(result.footage.kind, "ai-video");
+    assert.equal(result.footage.provider, "vertex-ai");
+    assert.equal(result.footage.model, "veo-3.1-fast-generate-001");
+    assert.equal(result.footage.durationSeconds, 4);
+    assert.equal(result.footage.resolution, "720p");
+    assert.equal(result.videoOperationName.endsWith("/operations/op-1"), true);
+    assert.equal(quota.values().next().value.seconds, 4);
+    assert.equal(startCalls, 1);
+    assert.equal(pollCalls, 1);
+
+    const res = response();
+    await handleProductionJobRequest(
+      { method: "GET", path: `/api/studio/jobs/${jobId}`, body: {} },
+      res,
+      "verified-owner",
+    );
+    assert.equal(res.code, 200);
+    assert.equal(res.body.job.footage.provider, "vertex-ai");
+    assert.equal(res.body.job.footage.bucket, undefined);
+    assert.equal(res.body.job.footage.object, undefined);
+    assert.equal(res.body.job.footage.operationName, undefined);
+  } finally {
+    for (const stub of stubs.reverse()) stub.mock.restore();
+    const values = {
+      GOOGLE_CLOUD_PROJECT: savedEnv.project,
+      FLOW_STUDIO_VERTEX_LOCATION: savedEnv.location,
+      FLOW_STUDIO_VIDEO_MODEL: savedEnv.model,
+      FLOW_STUDIO_VIDEO_DURATION: savedEnv.duration,
+      FLOW_STUDIO_VIDEO_RESOLUTION: savedEnv.resolution,
+      FLOW_STUDIO_MEDIA_BUCKET: savedEnv.bucket,
+      FLOW_STUDIO_VIDEO_POLL_MS: savedEnv.poll,
+    };
+    for (const [key, value] of Object.entries(values)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+});
+
+test("Veo retry resumes a stored operation without starting another paid generation", async () => {
+  const jobId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+  const savedEnv = {
+    project: process.env.GOOGLE_CLOUD_PROJECT,
+    location: process.env.FLOW_STUDIO_VERTEX_LOCATION,
+    model: process.env.FLOW_STUDIO_VIDEO_MODEL,
+    duration: process.env.FLOW_STUDIO_VIDEO_DURATION,
+    resolution: process.env.FLOW_STUDIO_VIDEO_RESOLUTION,
+    bucket: process.env.FLOW_STUDIO_MEDIA_BUCKET,
+    poll: process.env.FLOW_STUDIO_VIDEO_POLL_MS,
+  };
+  process.env.GOOGLE_CLOUD_PROJECT = "flow-test-project";
+  process.env.FLOW_STUDIO_VERTEX_LOCATION = "us-central1";
+  process.env.FLOW_STUDIO_VIDEO_MODEL = "veo-3.1-generate-001";
+  process.env.FLOW_STUDIO_VIDEO_DURATION = "6";
+  process.env.FLOW_STUDIO_VIDEO_RESOLUTION = "1080p";
+  process.env.FLOW_STUDIO_MEDIA_BUCKET = "private-test-bucket";
+  process.env.FLOW_STUDIO_VIDEO_POLL_MS = "0";
+
+  const operationName =
+    "projects/flow-test-project/locations/us-central1/publishers/google/models/veo-3.1-generate-001/operations/existing-op";
+  const store = new Map([[jobId, {
+    userId: "verified-owner",
+    projectId: "project-video-retry",
+    status: "running",
+    stage: "generating_video",
+    progress: 10,
+    videoAttemptCharged: true,
+    videoOperationName: operationName,
+    projectSnapshot: {
+      ...productionProject,
+      production: {
+        generateNarration: false,
+        generateVisuals: false,
+        generateFootage: true,
+      },
+    },
+  }]]);
+  const mp4 = Buffer.from("retried-veo-mp4");
+  const videoObject = {
+    name: `studio-users/verified-owner/jobs/${jobId}/veo/result.mp4`,
+    async getMetadata() { return [{ size: String(mp4.length) }]; },
+  };
+  const stubs = [];
+  let startCalls = 0;
+  try {
+    stubs.push(mock.method(getFirestore(), "collection", (name) => {
+      if (name === "studio_users") return {
+        doc() {
+          return { collection() { return { doc(id) {
+            return {
+              id,
+              kind: "job",
+              async get() {
+                const value = store.get(id);
+                return { exists: Boolean(value), data: () => value, get: (key) => value?.[key] };
+              },
+              async set(value, options) {
+                const current = store.get(id) || {};
+                store.set(id, options?.merge ? { ...current, ...value } : value);
+              },
+            };
+          } }; } };
+        },
+      };
+      if (name === "studio_video_usage")
+        return { doc(id) { return { id, kind: "quota" }; } };
+      throw new Error(`Unexpected collection ${name}`);
+    }));
+    stubs.push(mock.method(getFirestore(), "runTransaction", async (run) => run({
+      async get(ref) {
+        const value = store.get(ref.id);
+        return { exists: Boolean(value), data: () => value, get: (key) => value?.[key] };
+      },
+      set(ref, value, options) {
+        const current = store.get(ref.id) || {};
+        store.set(ref.id, options?.merge ? { ...current, ...value } : value);
+      },
+    })));
+    stubs.push(mock.method(getStorage(), "bucket", () => ({
+      async getFiles() { return [[videoObject]]; },
+    })));
+    stubs.push(mock.method(global, "fetch", async (url) => {
+      const target = String(url);
+      if (target.startsWith("http://metadata.google.internal/"))
+        return new Response(JSON.stringify({ access_token: "adc-token" }), {
+          status: 200, headers: { "Content-Type": "application/json" },
+        });
+      if (target.endsWith(":predictLongRunning")) {
+        startCalls++;
+        throw new Error("retry must not start a new generation");
+      }
+      if (target.endsWith(":fetchPredictOperation"))
+        return new Response(JSON.stringify({ done: true }), {
+          status: 200, headers: { "Content-Type": "application/json" },
+        });
+      throw new Error(`Unexpected fetch ${target}`);
+    }));
+
+    await prepareProductionJob({ userId: "verified-owner", jobId });
+    assert.equal(startCalls, 0);
+    assert.equal(store.get(jobId).stage, "ready_for_render");
+    assert.equal(store.get(jobId).footage.operationName, operationName);
+  } finally {
+    for (const stub of stubs.reverse()) stub.mock.restore();
+    for (const [key, value] of Object.entries({
+      GOOGLE_CLOUD_PROJECT: savedEnv.project,
+      FLOW_STUDIO_VERTEX_LOCATION: savedEnv.location,
+      FLOW_STUDIO_VIDEO_MODEL: savedEnv.model,
+      FLOW_STUDIO_VIDEO_DURATION: savedEnv.duration,
+      FLOW_STUDIO_VIDEO_RESOLUTION: savedEnv.resolution,
+      FLOW_STUDIO_MEDIA_BUCKET: savedEnv.bucket,
+      FLOW_STUDIO_VIDEO_POLL_MS: savedEnv.poll,
+    })) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+});
+
+test("generated Veo footage is served only through the authenticated job path", async () => {
+  const jobId = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+  const bytes = Buffer.from("private-veo-video");
+  const stubs = [];
+  try {
+    stubs.push(mock.method(getFirestore(), "collection", () => ({
+      doc(userId) {
+        assert.equal(userId, "verified-owner");
+        return { collection() { return { doc(id) {
+          assert.equal(id, jobId);
+          return {
+            async get() {
+              return {
+                exists: true,
+                get(key) {
+                  if (key !== "footage") return undefined;
+                  return {
+                    bucket: "private-test-bucket",
+                    object: `studio-users/verified-owner/jobs/${jobId}/veo/result.mp4`,
+                    mediaType: "video/mp4",
+                  };
+                },
+              };
+            },
+          };
+        } }; } };
+      },
+    })));
+    stubs.push(mock.method(getStorage(), "bucket", () => ({
+      file() { return { download: async () => [bytes] }; },
+    })));
+
+    const res = response();
+    await handleProductionJobRequest(
+      { method: "GET", path: `/api/studio/jobs/${jobId}/footage`, body: {} },
       res,
       "verified-owner",
     );

@@ -5,8 +5,8 @@
 | Floating intent surface | Working baseline | One simple interaction can launch/inspect/cancel durable jobs |
 | Content package | Working baseline | Research-grounded, brand-aware outputs with evals |
 | Local vertical render | Working baseline | Deterministic high-quality render with captions/audio/provenance |
-| Image generation/editing | In review | Opt-in OpenAI scene-image generation, private storage, renderer integration; add editing/reference-image workflow and benchmark |
-| AI video generation | Missing production integration | At least two adapters, fallback, async polling, provenance |
+| Image generation/editing | Merged | Live staging verification, editing/reference-image workflow and provider benchmark/fallback remain |
+| AI video generation | In review | Veo 3.1 async adapter, private storage and renderer integration; add live staging proof, benchmark and second-provider fallback |
 | Narration | Merged | Live staging verification, timing controls and provider benchmark/fallback remain |
 | Research/search | Fragmented | Source-aware research service with citations + freshness |
 | Workflow execution | Durable server preparation + local render | Expand queued capability execution beyond preparation while preserving retries, idempotency, cancellation and honest state |

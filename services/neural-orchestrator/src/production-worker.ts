@@ -76,6 +76,7 @@ export async function prepareProductionJob(payload: unknown): Promise<void> {
     production: z.object({
       generateNarration: z.boolean(),
       generateVisuals: z.boolean(),
+      generateFootage: z.boolean(),
     }).strict(),
     creative: z.object({
       title: z.string().min(1).max(100),
@@ -133,8 +134,191 @@ export async function prepareProductionJob(payload: unknown): Promise<void> {
     preparedAt: new Date(),
   };
 
+  let footage: Record<string, unknown> | null = null;
+  if (production.generateFootage) {
+    const projectId =
+      process.env.GOOGLE_CLOUD_PROJECT ||
+      process.env.GCLOUD_PROJECT ||
+      process.env.GCP_PROJECT;
+    const location = process.env.FLOW_STUDIO_VERTEX_LOCATION;
+    const model = process.env.FLOW_STUDIO_VIDEO_MODEL;
+    const durationSeconds = Number(process.env.FLOW_STUDIO_VIDEO_DURATION);
+    const resolution = process.env.FLOW_STUDIO_VIDEO_RESOLUTION;
+    const bucketName = process.env.FLOW_STUDIO_MEDIA_BUCKET;
+    const validModel = ["veo-3.1-generate-001", "veo-3.1-fast-generate-001"].includes(model || "");
+    const validDuration = [4, 6, 8].includes(durationSeconds);
+    const validResolution = ["720p", "1080p"].includes(resolution || "");
+    if (
+      !projectId ||
+      location !== "us-central1" ||
+      !model ||
+      !validModel ||
+      !validDuration ||
+      !resolution ||
+      !validResolution ||
+      !bucketName
+    ) {
+      await ref.set({
+        status: "failed",
+        stage: "failed",
+        failure: { code: "video_not_configured", retryable: false },
+        updatedAt: new Date(),
+      }, { merge: true });
+      return;
+    }
+
+    const outputPrefix = `studio-users/${task.userId}/jobs/${task.jobId}/veo/`;
+    const outputStorageUri = `gs://${bucketName}/${outputPrefix}`;
+    const admitted = await db.runTransaction(async (transaction) => {
+      const latest = await transaction.get(ref);
+      if (!latest.exists) return { kind: "missing" as const };
+      const current = latest.data() || {};
+      if (["completed", "failed", "canceled"].includes(String(current.status)))
+        return { kind: "terminal" as const };
+      if (current.videoAttemptCharged) {
+        transaction.set(ref, {
+          stage: "generating_video",
+          progress: Math.max(Number(current.progress || 0), 10),
+          updatedAt: new Date(),
+        }, { merge: true });
+        return {
+          kind: "ok" as const,
+          operationName:
+            typeof current.videoOperationName === "string"
+              ? current.videoOperationName
+              : null,
+        };
+      }
+      const quota = db
+        .collection("studio_video_usage")
+        .doc(`${task.userId}_${new Date().toISOString().slice(0, 10)}`);
+      const usage = await transaction.get(quota);
+      const seconds = Number(usage.get("seconds") || 0);
+      if (seconds + durationSeconds > 16) {
+        transaction.set(ref, {
+          status: "failed",
+          stage: "failed",
+          failure: { code: "video_daily_limit", retryable: false },
+          updatedAt: new Date(),
+        }, { merge: true });
+        return { kind: "limit" as const };
+      }
+      transaction.set(quota, {
+        userId: task.userId,
+        seconds: seconds + durationSeconds,
+        updatedAt: new Date(),
+      }, { merge: true });
+      transaction.set(ref, {
+        videoAttemptCharged: true,
+        stage: "generating_video",
+        progress: Math.max(Number(current.progress || 0), 10),
+        updatedAt: new Date(),
+      }, { merge: true });
+      return { kind: "ok" as const, operationName: null };
+    });
+    if (admitted.kind !== "ok") return;
+
+    const tokenResponse = await fetch(
+      "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token",
+      { headers: { "Metadata-Flavor": "Google" } },
+    );
+    if (!tokenResponse.ok) throw new Error("vertex-auth-unavailable");
+    const tokenJson = z.object({ access_token: z.string().min(1) }).parse(
+      await tokenResponse.json(),
+    );
+    const endpoint =
+      `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${model}`;
+
+    let operationName = admitted.operationName;
+    if (!operationName) {
+      const prompt = [
+        "Create a cinematic portrait motion clip for a short-form vertical video.",
+        `Creative title: ${creative.title}`,
+        `Opening scene: ${creative.scenes[0]?.direction || creative.scenes[0]?.text || creative.title}`,
+        `Tone: ${brief.tone}`,
+        `Visual palette: ${brief.look}`,
+        "Use natural camera movement, coherent physical motion, strong subject separation, and leave room for Flow to add readable text overlays.",
+        "Do not render captions, UI, watermarks, logos, or fake product claims.",
+      ].join("\n");
+      const startResponse = await fetch(`${endpoint}:predictLongRunning`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${tokenJson.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          instances: [{ prompt }],
+          parameters: {
+            storageUri: outputStorageUri,
+            sampleCount: 1,
+            aspectRatio: "9:16",
+            durationSeconds,
+            resolution,
+          },
+        }),
+      });
+      if (!startResponse.ok) throw new Error("vertex-video-start-failed");
+      const startJson = z.object({ name: z.string().min(1) }).parse(
+        await startResponse.json(),
+      );
+      operationName = startJson.name;
+      await ref.set({
+        videoOperationName: operationName,
+        updatedAt: new Date(),
+      }, { merge: true });
+    }
+
+    while (true) {
+      const latest = await ref.get();
+      const latestData = latest.data() || {};
+      if (!latest.exists || ["completed", "failed", "canceled"].includes(String(latestData.status)))
+        return;
+
+      const pollResponse = await fetch(`${endpoint}:fetchPredictOperation`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${tokenJson.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ operationName }),
+      });
+      if (!pollResponse.ok) throw new Error("vertex-video-poll-failed");
+      const pollJson = z.object({
+        done: z.boolean().optional(),
+        error: z.object({
+          code: z.number().optional(),
+          message: z.string().optional(),
+        }).optional(),
+      }).passthrough().parse(await pollResponse.json());
+      if (pollJson.error) throw new Error("vertex-video-generation-failed");
+      if (pollJson.done) break;
+      await new Promise((resolve) =>
+        setTimeout(resolve, Number(process.env.FLOW_STUDIO_VIDEO_POLL_MS || 10_000)),
+      );
+    }
+
+    const bucket = getStorage().bucket(bucketName);
+    const [files] = await bucket.getFiles({ prefix: outputPrefix });
+    const videoFile = files.find((item) => item.name.toLowerCase().endsWith(".mp4"));
+    if (!videoFile) throw new Error("vertex-video-output-missing");
+    const [metadata] = await videoFile.getMetadata();
+    footage = {
+      kind: "ai-video",
+      provider: "vertex-ai",
+      model,
+      durationSeconds,
+      resolution,
+      bucket: bucketName,
+      object: videoFile.name,
+      mediaType: "video/mp4",
+      sizeBytes: Number(metadata.size || 0),
+      operationName,
+      generatedAt: new Date(),
+    };
+  }
+
   let visuals: Array<Record<string, unknown>> | null = null;
-  if (production.generateVisuals) {
+  if (production.generateVisuals && !production.generateFootage) {
     const model = process.env.FLOW_STUDIO_IMAGE_MODEL;
     const quality = process.env.FLOW_STUDIO_IMAGE_QUALITY;
     const bucketName = process.env.FLOW_STUDIO_MEDIA_BUCKET;
@@ -387,6 +571,7 @@ export async function prepareProductionJob(payload: unknown): Promise<void> {
     if (["completed", "failed", "canceled"].includes(String(current.status))) return;
     transaction.set(ref, {
       manifest,
+      footage,
       visuals,
       narration,
       status: "running",
@@ -407,7 +592,7 @@ export const productionWorker = onTaskDispatched(
     rateLimits: {
       maxConcurrentDispatches: 2,
     },
-    timeoutSeconds: 900,
+    timeoutSeconds: 1800,
     memory: "512MiB",
     secrets: [studioKey],
   },

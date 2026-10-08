@@ -10,7 +10,11 @@ export const productionJobCreateSchema = z.object({
   production: z.object({
     generateNarration: z.boolean(),
     generateVisuals: z.boolean(),
-  }).strict(),
+    generateFootage: z.boolean(),
+  }).strict().refine(
+    (value) => !(value.generateVisuals && value.generateFootage),
+    "Generate either AI still visuals or AI footage, not both.",
+  ),
   project: z.object({
     brief: z.object({
       platform: z.string().min(1).max(80),
@@ -78,6 +82,18 @@ function publicJob(jobId: string, data: Record<string, unknown>) {
     updatedAt: data.updatedAt instanceof Date ? data.updatedAt.toISOString() : data.updatedAt,
     artifact: data.artifact ?? null,
     manifest: data.manifest ?? null,
+    footage:
+      typeof data.footage === "object" && data.footage !== null
+        ? {
+            kind: (data.footage as Record<string, unknown>).kind,
+            provider: (data.footage as Record<string, unknown>).provider,
+            model: (data.footage as Record<string, unknown>).model,
+            durationSeconds: (data.footage as Record<string, unknown>).durationSeconds,
+            resolution: (data.footage as Record<string, unknown>).resolution,
+            mediaType: (data.footage as Record<string, unknown>).mediaType,
+            sizeBytes: (data.footage as Record<string, unknown>).sizeBytes,
+          }
+        : null,
     visuals:
       Array.isArray(data.visuals)
         ? data.visuals.map((item) => {
@@ -212,7 +228,7 @@ export async function handleProductionJobRequest(
   const normalized = path.replace(/^\/api\/studio/, "");
   const root = normalized === "/jobs" || normalized === "/jobs/";
   const visualMatch = /^\/jobs\/([0-9a-f-]{36})\/visuals\/([0-7])$/.exec(normalized);
-  const match = /^\/jobs\/([0-9a-f-]{36})(?:\/(progress|complete|fail|cancel|narration))?$/.exec(normalized);
+  const match = /^\/jobs\/([0-9a-f-]{36})(?:\/(progress|complete|fail|cancel|narration|footage))?$/.exec(normalized);
 
   if (visualMatch && req.method === "GET") {
     const [, jobId, indexText] = visualMatch;
@@ -255,6 +271,30 @@ export async function handleProductionJobRequest(
     const job = await readJob(userId, jobId);
     if (!job) res.status(404).json({ error: "Production job not found." });
     else res.json({ job });
+    return true;
+  }
+  if (action === "footage" && req.method === "GET") {
+    const snapshot = await jobRef(userId, jobId).get();
+    if (!snapshot.exists) {
+      res.status(404).json({ error: "Production job not found." });
+      return true;
+    }
+    const footage = snapshot.get("footage") as
+      | { bucket?: string; object?: string; mediaType?: string }
+      | undefined;
+    if (!footage?.bucket || !footage.object) {
+      res.status(404).json({ error: "AI footage is not available for this production job." });
+      return true;
+    }
+    try {
+      const [bytes] = await getStorage().bucket(footage.bucket).file(footage.object).download();
+      res.set("Cache-Control", "private, no-store");
+      res.set("Content-Type", footage.mediaType || "video/mp4");
+      res.set("Content-Length", String(bytes.length));
+      res.status(200).send(bytes);
+    } catch {
+      res.status(503).json({ error: "Flow could not load the generated footage." });
+    }
     return true;
   }
   if (action === "narration" && req.method === "GET") {
