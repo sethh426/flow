@@ -1,4 +1,4 @@
-# Current State — 2026-10-04
+# Current State — 2026-10-08
 
 Baseline: `main` at `af6ee9bb6c83fd0c5a05a685e9d12324c93526e1`, the merge of the floating studio work.
 
@@ -59,18 +59,24 @@ Signed-in production runs now enqueue a Firebase Cloud Tasks worker. The worker 
 
 Truth boundary: final video composition still runs in the browser.
 
-## Active implementation — AI narration
+## AI narration — merged
 
-Branch: `codex/ai-narration-main-20261004`
+Merged to `main` as `76916a252ba1c00e3f715688df9fbfea494c5cab`.
 
-The first provider-backed media capability is under review:
-- explicit opt-in AI narration;
-- server-side OpenAI speech generation;
+AI narration is now an opt-in production capability with server-side generation, private media storage, authenticated retrieval, provenance, daily cost admission and renderer integration. Live staging/provider verification remains distinct from CI test-double verification.
+
+## Active implementation — AI scene visuals
+
+Branch: `codex/ai-scene-visuals-20261008`
+
+The next provider-backed media slice is under review:
+- explicit opt-in generated scene visuals;
+- one portrait image per scene using the configured OpenAI image model;
 - private bucket storage and authenticated retrieval only;
-- provider/model/voice provenance;
-- ten charged narration attempts per user per UTC day;
-- uploaded audio takes priority to avoid unnecessary spend;
-- generated narration plays once, not as looping background audio;
-- AI-voice disclosure in the interface.
+- provider/model/quality/scene provenance;
+- 24 generated-image admissions per user per UTC day;
+- retries reuse stored scene objects;
+- uploaded images always take priority;
+- generated visuals feed the existing real video renderer and final ZIP.
 
-Truth boundary: narration requires explicit server model/voice/bucket configuration and a valid OpenAI secret. No live production provider call has been claimed from CI; provider/storage behavior is verified with controlled test doubles.
+Truth boundary: these are generated still visuals used in motion composition, not generated live-action video clips. A live staging image-provider call remains unproven until separately verified.
