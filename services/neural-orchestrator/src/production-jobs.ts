@@ -9,6 +9,7 @@ export const productionJobCreateSchema = z.object({
   projectId: z.string().trim().min(1).max(128),
   production: z.object({
     generateNarration: z.boolean(),
+    generateVisuals: z.boolean(),
   }).strict(),
   project: z.object({
     brief: z.object({
@@ -77,6 +78,21 @@ function publicJob(jobId: string, data: Record<string, unknown>) {
     updatedAt: data.updatedAt instanceof Date ? data.updatedAt.toISOString() : data.updatedAt,
     artifact: data.artifact ?? null,
     manifest: data.manifest ?? null,
+    visuals:
+      Array.isArray(data.visuals)
+        ? data.visuals.map((item) => {
+            const visual = item as Record<string, unknown>;
+            return {
+              kind: visual.kind,
+              provider: visual.provider,
+              model: visual.model,
+              quality: visual.quality,
+              mediaType: visual.mediaType,
+              sizeBytes: visual.sizeBytes,
+              sceneIndex: visual.sceneIndex,
+            };
+          })
+        : null,
     narration:
       typeof data.narration === "object" && data.narration !== null
         ? {
@@ -195,7 +211,35 @@ export async function handleProductionJobRequest(
 
   const normalized = path.replace(/^\/api\/studio/, "");
   const root = normalized === "/jobs" || normalized === "/jobs/";
+  const visualMatch = /^\/jobs\/([0-9a-f-]{36})\/visuals\/([0-7])$/.exec(normalized);
   const match = /^\/jobs\/([0-9a-f-]{36})(?:\/(progress|complete|fail|cancel|narration))?$/.exec(normalized);
+
+  if (visualMatch && req.method === "GET") {
+    const [, jobId, indexText] = visualMatch;
+    const snapshot = await jobRef(userId, jobId).get();
+    if (!snapshot.exists) {
+      res.status(404).json({ error: "Production job not found." });
+      return true;
+    }
+    const visuals = snapshot.get("visuals") as
+      | Array<{ bucket?: string; object?: string; mediaType?: string }>
+      | undefined;
+    const visual = visuals?.[Number(indexText)];
+    if (!visual?.bucket || !visual.object) {
+      res.status(404).json({ error: "AI scene visual is not available for this production job." });
+      return true;
+    }
+    try {
+      const [bytes] = await getStorage().bucket(visual.bucket).file(visual.object).download();
+      res.set("Cache-Control", "private, no-store");
+      res.set("Content-Type", visual.mediaType || "image/webp");
+      res.set("Content-Length", String(bytes.length));
+      res.status(200).send(bytes);
+    } catch {
+      res.status(503).json({ error: "Flow could not load the generated scene visual." });
+    }
+    return true;
+  }
 
   if (root && req.method === "POST") {
     await createJob(req, res, userId);
