@@ -2,6 +2,7 @@ import { palettes, type Project } from "./model";
 
 export interface FrameOptions {
   images: HTMLImageElement[];
+  video?: HTMLVideoElement | null;
   width?: number;
   height?: number;
 }
@@ -61,10 +62,31 @@ export function drawFrame(
   const palette = palettes[brief.look];
   ctx.fillStyle = palette.background;
   ctx.fillRect(0, 0, w, h);
+  const backgroundVideo =
+    options.video && options.video.readyState >= 2 ? options.video : null;
   const image = options.images.length
     ? options.images[sceneIndex % options.images.length]
     : null;
-  if (image) {
+  if (backgroundVideo) {
+    const sourceWidth = backgroundVideo.videoWidth || w;
+    const sourceHeight = backgroundVideo.videoHeight || h;
+    const scale = Math.max(w / sourceWidth, h / sourceHeight);
+    const vw = sourceWidth * scale;
+    const vh = sourceHeight * scale;
+    ctx.drawImage(
+      backgroundVideo,
+      (w - vw) / 2,
+      (h - vh) / 2,
+      vw,
+      vh,
+    );
+    const shade = ctx.createLinearGradient(0, 0, 0, h);
+    shade.addColorStop(0, "rgba(0,0,0,0.2)");
+    shade.addColorStop(0.45, "rgba(0,0,0,0.08)");
+    shade.addColorStop(1, "rgba(0,0,0,0.84)");
+    ctx.fillStyle = shade;
+    ctx.fillRect(0, 0, w, h);
+  } else if (image) {
     const scale =
       Math.max(w / image.width, h / image.height) * (1.03 + progress * 0.09);
     const iw = image.width * scale,
@@ -218,6 +240,7 @@ export async function renderVideo(
   signal: AbortSignal,
   onProgress: (fraction: number) => void,
   loopAudio = true,
+  backgroundVideo: File | null = null,
 ): Promise<Blob> {
   const mimeType = recordingType();
   if (!mimeType || !HTMLCanvasElement.prototype.captureStream)
@@ -233,7 +256,38 @@ export async function renderVideo(
   let audioContext: AudioContext | null = null;
   let audioSource: AudioBufferSourceNode | null = null;
   let animation = 0;
+  let backgroundElement: HTMLVideoElement | null = null;
+  let backgroundUrl: string | null = null;
   try {
+    if (backgroundVideo) {
+      backgroundUrl = URL.createObjectURL(backgroundVideo);
+      backgroundElement = document.createElement("video");
+      backgroundElement.src = backgroundUrl;
+      backgroundElement.muted = true;
+      backgroundElement.loop = true;
+      backgroundElement.playsInline = true;
+      backgroundElement.preload = "auto";
+      await new Promise<void>((resolve, reject) => {
+        const ready = () => {
+          cleanup();
+          resolve();
+        };
+        const failed = () => {
+          cleanup();
+          reject(new Error("Flow could not open the generated footage."));
+        };
+        const cleanup = () => {
+          backgroundElement?.removeEventListener("loadeddata", ready);
+          backgroundElement?.removeEventListener("error", failed);
+        };
+        backgroundElement!.addEventListener("loadeddata", ready, { once: true });
+        backgroundElement!.addEventListener("error", failed, { once: true });
+        backgroundElement!.load();
+      });
+      if (signal.aborted)
+        throw new DOMException("Export canceled", "AbortError");
+      await backgroundElement.play();
+    }
     if (audio) {
       audioContext = new AudioContext();
       await audioContext.resume();
@@ -297,6 +351,7 @@ export async function renderVideo(
         const elapsed = (performance.now() - start) / 1000;
         drawFrame(canvas, project, Math.min(elapsed, project.brief.duration), {
           images,
+          video: backgroundElement,
         });
         onProgress(Math.min(1, elapsed / project.brief.duration));
         if (elapsed >= project.brief.duration) recorder.stop();
@@ -313,5 +368,7 @@ export async function renderVideo(
       /* Source may not have started. */
     }
     await audioContext?.close();
+    backgroundElement?.pause();
+    if (backgroundUrl) URL.revokeObjectURL(backgroundUrl);
   }
 }
