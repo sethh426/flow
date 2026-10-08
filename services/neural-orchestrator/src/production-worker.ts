@@ -318,7 +318,7 @@ export async function prepareProductionJob(payload: unknown): Promise<void> {
   }
 
   let visuals: Array<Record<string, unknown>> | null = null;
-  if (production.generateVisuals) {
+  if (production.generateVisuals && !production.generateFootage) {
     const model = process.env.FLOW_STUDIO_IMAGE_MODEL;
     const quality = process.env.FLOW_STUDIO_IMAGE_QUALITY;
     const bucketName = process.env.FLOW_STUDIO_MEDIA_BUCKET;
@@ -592,7 +592,7 @@ export const productionWorker = onTaskDispatched(
     rateLimits: {
       maxConcurrentDispatches: 2,
     },
-    timeoutSeconds: 900,
+    timeoutSeconds: 1800,
     memory: "512MiB",
     secrets: [studioKey],
   },
