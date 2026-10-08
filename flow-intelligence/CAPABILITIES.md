@@ -5,9 +5,9 @@
 | Floating intent surface | Working baseline | One simple interaction can launch/inspect/cancel durable jobs |
 | Content package | Working baseline | Research-grounded, brand-aware outputs with evals |
 | Local vertical render | Working baseline | Deterministic high-quality render with captions/audio/provenance |
-| Image generation/editing | Candidate | Provider adapter + tests + cost/quality benchmark |
+| Image generation/editing | In review | Opt-in OpenAI scene-image generation, private storage, renderer integration; add editing/reference-image workflow and benchmark |
 | AI video generation | Missing production integration | At least two adapters, fallback, async polling, provenance |
-| Narration | In review | Opt-in OpenAI TTS, private artifact storage, provenance/disclosure, renderer integration; live staging verification remains |
+| Narration | Merged | Live staging verification, timing controls and provider benchmark/fallback remain |
 | Research/search | Fragmented | Source-aware research service with citations + freshness |
 | Workflow execution | Durable server preparation + local render | Expand queued capability execution beyond preparation while preserving retries, idempotency, cancellation and honest state |
 | Artifact persistence | Local/device-centric | User-isolated server storage + retention policy |
