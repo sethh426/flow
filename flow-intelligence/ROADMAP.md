@@ -7,7 +7,7 @@
 - Keep active-agent changes isolated.
 
 ## P1 — Durable one-button production job
-Status: in progress. Persisted authenticated jobs, Cloud Tasks server preparation, and AI narration are merged. AI scene visuals are under review; final composition and downloaded bundles remain browser/local.
+Status: in progress. Persisted authenticated jobs, Cloud Tasks server preparation, AI narration, and generated scene visuals are merged. Veo motion footage is under review; final composition and downloaded bundles remain browser/local.
 
 Acceptance criteria:
 - one intent creates a persisted job id;
@@ -20,9 +20,9 @@ Acceptance criteria:
 
 ## P2 — Media capability adapters
 Add controlled adapters for:
-- generated images/editing (scene-image generation in review; editing/reference-image workflow remains);
+- generated images/editing (scene-image generation merged; editing/reference-image workflow remains);
 - TTS narration (merged; live staging verification and provider benchmark remain);
-- generated video;
+- generated video (Veo 3.1 adapter in review; live staging proof, benchmark, and fallback remain);
 - server/local compositor finalization.
 
 Benchmark all candidates on a fixed Flow corpus before routing automatically.
