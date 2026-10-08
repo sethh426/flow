@@ -65,18 +65,26 @@ Merged to `main` as `76916a252ba1c00e3f715688df9fbfea494c5cab`.
 
 AI narration is now an opt-in production capability with server-side generation, private media storage, authenticated retrieval, provenance, daily cost admission and renderer integration. Live staging/provider verification remains distinct from CI test-double verification.
 
-## Active implementation — AI scene visuals
+## AI scene visuals — merged
 
-Branch: `codex/ai-scene-visuals-20261008`
+Merged to `main` as `152b32e0cfc928822dd8076ca6c07e3e686795ef`.
 
-The next provider-backed media slice is under review:
-- explicit opt-in generated scene visuals;
-- one portrait image per scene using the configured OpenAI image model;
-- private bucket storage and authenticated retrieval only;
-- provider/model/quality/scene provenance;
-- 24 generated-image admissions per user per UTC day;
-- retries reuse stored scene objects;
-- uploaded images always take priority;
-- generated visuals feed the existing real video renderer and final ZIP.
+Generated portrait scene visuals are now an opt-in production capability with private storage, daily admission, idempotent object reuse, authenticated retrieval and integration into the final renderer/ZIP. Live provider verification remains distinct from CI test-double verification.
 
-Truth boundary: these are generated still visuals used in motion composition, not generated live-action video clips. A live staging image-provider call remains unproven until separately verified.
+## Active implementation — Veo footage
+
+Branch: `codex/veo-footage-20261008`
+
+Actual generated motion footage is under review:
+- explicit opt-in Veo 3.1 footage;
+- GA model allowlist: `veo-3.1-generate-001` or `veo-3.1-fast-generate-001`;
+- Vertex AI workload/service identity auth rather than another user-managed API key;
+- 9:16 output, explicit 4/6/8 second duration and 720p/1080p resolution;
+- long-running operation name persisted for retry resume;
+- 16 generated seconds per user per UTC day;
+- private GCS output and authenticated owner retrieval;
+- generated MP4 used as the moving background of Flow's final 1080×1920 composition;
+- raw generated MP4 included in the final ZIP;
+- Veo native audio is intentionally muted in the final composition while Flow's narration/uploaded audio remains authoritative.
+
+Truth boundary: a live Vertex Veo call is not proven by CI. Operation persistence sharply reduces duplicate-start risk after the start response is stored, but no claim is made that the upstream start endpoint itself provides an idempotency key.
