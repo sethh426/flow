@@ -107,7 +107,9 @@ export async function studioHandler(
         visuals:
           Boolean(
             process.env.FLOW_STUDIO_IMAGE_MODEL &&
-            process.env.FLOW_STUDIO_IMAGE_QUALITY &&
+            ["low", "medium", "high", "xhigh", "max"].includes(
+              process.env.FLOW_STUDIO_IMAGE_QUALITY || "",
+            ) &&
             process.env.FLOW_STUDIO_MEDIA_BUCKET &&
             studioKey.value(),
           )
