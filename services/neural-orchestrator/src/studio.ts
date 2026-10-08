@@ -29,6 +29,7 @@ export const briefSchema = z
     duration: z.union([z.literal(15), z.literal(30), z.literal(45)]),
     look: z.enum(["ember", "ocean", "orchid"]),
     narrationMode: z.enum(["script", "ai"]).default("script"),
+    visualMode: z.enum(["local", "ai"]).default("local"),
   })
   .strict();
 export const creativeSchema = z.object({
@@ -98,6 +99,17 @@ export async function studioHandler(
           Boolean(
             process.env.FLOW_STUDIO_TTS_MODEL &&
             process.env.FLOW_STUDIO_TTS_VOICE &&
+            process.env.FLOW_STUDIO_MEDIA_BUCKET &&
+            studioKey.value(),
+          )
+            ? "ai"
+            : false,
+        visuals:
+          Boolean(
+            process.env.FLOW_STUDIO_IMAGE_MODEL &&
+            ["low", "medium", "high", "xhigh", "max"].includes(
+              process.env.FLOW_STUDIO_IMAGE_QUALITY || "",
+            ) &&
             process.env.FLOW_STUDIO_MEDIA_BUCKET &&
             studioKey.value(),
           )

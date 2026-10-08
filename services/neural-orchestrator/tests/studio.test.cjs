@@ -258,8 +258,8 @@ test("authenticated AI creation validates the provider response and releases its
 
 test("production job contracts reject client-owned identity and malformed progress", () => {
   const jobId = "11111111-1111-4111-8111-111111111111";
-  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1", production: { generateNarration: false }, project: productionProject }).success, true);
-  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1", production: { generateNarration: false }, project: productionProject, userId: "other" }).success, false);
+  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1", production: { generateNarration: false, generateVisuals: false }, project: productionProject }).success, true);
+  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1", production: { generateNarration: false, generateVisuals: false }, project: productionProject, userId: "other" }).success, false);
   assert.equal(productionJobProgressSchema.safeParse({ stage: "rendering", progress: 50 }).success, true);
   assert.equal(productionJobProgressSchema.safeParse({ stage: "published", progress: 101 }).success, false);
   assert.equal(productionJobCompleteSchema.safeParse({
@@ -323,7 +323,7 @@ test("production jobs are idempotent, persisted and terminal states reject regre
 
     let res = response();
     await handleProductionJobRequest(
-      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-1", production: { generateNarration: false }, project: productionProject } },
+      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-1", production: { generateNarration: false, generateVisuals: false }, project: productionProject } },
       res,
       "verified-owner",
     );
@@ -334,7 +334,7 @@ test("production jobs are idempotent, persisted and terminal states reject regre
 
     res = response();
     await handleProductionJobRequest(
-      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-1", production: { generateNarration: false }, project: productionProject } },
+      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-1", production: { generateNarration: false, generateVisuals: false }, project: productionProject } },
       res,
       "verified-owner",
     );
@@ -394,7 +394,7 @@ test("production worker prepares a real server manifest before local rendering",
     status: "running",
     stage: "queued",
     progress: 2,
-    projectSnapshot: { ...productionProject, production: { generateNarration: false } },
+    projectSnapshot: { ...productionProject, production: { generateNarration: false, generateVisuals: false } },
     createdAt: new Date("2026-10-04T19:00:00Z"),
     updatedAt: new Date("2026-10-04T19:00:00Z"),
   }]]);
@@ -497,7 +497,7 @@ test("queue failure is recorded and the same job id can retry without duplicatio
 
     let res = response();
     await handleProductionJobRequest(
-      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-3", production: { generateNarration: false }, project: productionProject } },
+      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-3", production: { generateNarration: false, generateVisuals: false }, project: productionProject } },
       res,
       "verified-owner",
     );
@@ -507,7 +507,7 @@ test("queue failure is recorded and the same job id can retry without duplicatio
 
     res = response();
     await handleProductionJobRequest(
-      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-3", production: { generateNarration: false }, project: productionProject } },
+      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-3", production: { generateNarration: false, generateVisuals: false }, project: productionProject } },
       res,
       "verified-owner",
     );
@@ -595,7 +595,7 @@ test("production worker generates AI narration once, stores it privately, and re
     status: "running",
     stage: "queued",
     progress: 2,
-    projectSnapshot: { ...productionProject, production: { generateNarration: true } },
+    projectSnapshot: { ...productionProject, production: { generateNarration: true, generateVisuals: false } },
   });
   let media = null;
   let providerCalls = 0;
@@ -780,6 +780,209 @@ test("exhausted task retries move a running production job to an honest terminal
     assert.equal(failed.stage, "failed");
     assert.equal(failed.failure.code, "worker_retries_exhausted");
     assert.equal(failed.failure.retryable, true);
+  } finally {
+    for (const stub of stubs.reverse()) stub.mock.restore();
+  }
+});
+
+
+test("production worker generates one private visual per scene and reuses them on replay", async () => {
+  const jobId = "88888888-8888-4888-8888-888888888888";
+  const savedEnv = {
+    key: process.env.FLOW_STUDIO_OPENAI_KEY,
+    model: process.env.FLOW_STUDIO_IMAGE_MODEL,
+    quality: process.env.FLOW_STUDIO_IMAGE_QUALITY,
+    bucket: process.env.FLOW_STUDIO_MEDIA_BUCKET,
+  };
+  process.env.FLOW_STUDIO_OPENAI_KEY = "unit-test-placeholder";
+  process.env.FLOW_STUDIO_IMAGE_MODEL = "test-image-model";
+  process.env.FLOW_STUDIO_IMAGE_QUALITY = "medium";
+  process.env.FLOW_STUDIO_MEDIA_BUCKET = "private-test-bucket";
+
+  const store = new Map([[jobId, {
+    userId: "verified-owner",
+    projectId: "project-visuals",
+    status: "running",
+    stage: "queued",
+    progress: 2,
+    projectSnapshot: {
+      ...productionProject,
+      production: { generateNarration: false, generateVisuals: true },
+    },
+  }]]);
+  const quota = new Map();
+  const media = new Map();
+  let providerCalls = 0;
+  const stubs = [];
+  try {
+    stubs.push(mock.method(getFirestore(), "collection", (name) => {
+      if (name === "studio_users") return {
+        doc(userId) {
+          assert.equal(userId, "verified-owner");
+          return {
+            collection(child) {
+              assert.equal(child, "production_jobs");
+              return { doc(id) {
+                return {
+                  id,
+                  kind: "job",
+                  async get() {
+                    const value = store.get(id);
+                    return {
+                      exists: Boolean(value),
+                      data: () => value,
+                      get: (key) => value?.[key],
+                    };
+                  },
+                  async set(value, options) {
+                    const current = store.get(id) || {};
+                    store.set(id, options?.merge ? { ...current, ...value } : value);
+                  },
+                };
+              } };
+            },
+          };
+        },
+      };
+      if (name === "studio_image_usage")
+        return { doc(id) { return { id, kind: "quota" }; } };
+      throw new Error(`Unexpected collection ${name}`);
+    }));
+    stubs.push(mock.method(getFirestore(), "runTransaction", async (run) => run({
+      async get(ref) {
+        const source = ref.kind === "quota" ? quota : store;
+        const value = source.get(ref.id);
+        return {
+          exists: Boolean(value),
+          data: () => value,
+          get: (key) => value?.[key],
+        };
+      },
+      set(ref, value, options) {
+        const source = ref.kind === "quota" ? quota : store;
+        const current = source.get(ref.id) || {};
+        source.set(ref.id, options?.merge ? { ...current, ...value } : value);
+      },
+    })));
+    stubs.push(mock.method(getStorage(), "bucket", (name) => {
+      assert.equal(name, "private-test-bucket");
+      return {
+        file(objectName) {
+          return {
+            async exists() { return [media.has(objectName)]; },
+            async save(bytes) { media.set(objectName, Buffer.from(bytes)); },
+            async getMetadata() {
+              return [{ size: String(media.get(objectName)?.length || 0) }];
+            },
+            async download() { return [media.get(objectName)]; },
+          };
+        },
+      };
+    }));
+    stubs.push(mock.method(OpenAI.prototype, "post", async (path, options) => {
+      assert.equal(path, "/images/generations");
+      assert.equal(options.body.model, "test-image-model");
+      assert.equal(options.body.size, "1024x1536");
+      assert.equal(options.body.quality, "medium");
+      assert.equal(options.body.output_format, "webp");
+      assert.match(options.body.prompt, /portrait background image/i);
+      providerCalls++;
+      return {
+        data: [{
+          b64_json: Buffer.from(`scene-image-${providerCalls}`).toString("base64"),
+        }],
+      };
+    }));
+
+    await prepareProductionJob({ userId: "verified-owner", jobId });
+    const result = store.get(jobId);
+    assert.equal(result.stage, "ready_for_render");
+    assert.equal(result.visuals.length, productionProject.creative.scenes.length);
+    assert.equal(result.visuals[0].provider, "openai");
+    assert.equal(result.visuals[0].model, "test-image-model");
+    assert.equal(result.visuals[0].quality, "medium");
+    assert.equal(result.visuals[0].mediaType, "image/webp");
+    assert.equal(providerCalls, productionProject.creative.scenes.length);
+    assert.equal(quota.values().next().value.count, productionProject.creative.scenes.length);
+    assert.equal(media.size, productionProject.creative.scenes.length);
+
+    await prepareProductionJob({ userId: "verified-owner", jobId });
+    assert.equal(providerCalls, productionProject.creative.scenes.length);
+
+    const res = response();
+    await handleProductionJobRequest(
+      { method: "GET", path: `/api/studio/jobs/${jobId}`, body: {} },
+      res,
+      "verified-owner",
+    );
+    assert.equal(res.code, 200);
+    assert.equal(res.body.job.visuals.length, productionProject.creative.scenes.length);
+    assert.equal(res.body.job.visuals[0].bucket, undefined);
+    assert.equal(res.body.job.visuals[0].object, undefined);
+  } finally {
+    for (const stub of stubs.reverse()) stub.mock.restore();
+    for (const [key, value] of Object.entries({
+      FLOW_STUDIO_OPENAI_KEY: savedEnv.key,
+      FLOW_STUDIO_IMAGE_MODEL: savedEnv.model,
+      FLOW_STUDIO_IMAGE_QUALITY: savedEnv.quality,
+      FLOW_STUDIO_MEDIA_BUCKET: savedEnv.bucket,
+    })) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+});
+
+test("generated scene visuals are served only through the authenticated job path", async () => {
+  const jobId = "99999999-9999-4999-8999-999999999999";
+  const bytes = Buffer.from("private-scene-image");
+  const stubs = [];
+  try {
+    stubs.push(mock.method(getFirestore(), "collection", () => ({
+      doc(userId) {
+        assert.equal(userId, "verified-owner");
+        return {
+          collection() {
+            return { doc(id) {
+              assert.equal(id, jobId);
+              return {
+                async get() {
+                  return {
+                    exists: true,
+                    get(key) {
+                      if (key !== "visuals") return undefined;
+                      return [{
+                        bucket: "private-test-bucket",
+                        object: `studio-users/verified-owner/jobs/${jobId}/scene-00.webp`,
+                        mediaType: "image/webp",
+                      }];
+                    },
+                  };
+                },
+              };
+            } };
+          },
+        };
+      },
+    })));
+    stubs.push(mock.method(getStorage(), "bucket", (name) => {
+      assert.equal(name, "private-test-bucket");
+      return {
+        file(objectName) {
+          assert.match(objectName, /scene-00\.webp$/);
+          return { download: async () => [bytes] };
+        },
+      };
+    }));
+
+    const res = response();
+    await handleProductionJobRequest(
+      { method: "GET", path: `/api/studio/jobs/${jobId}/visuals/0`, body: {} },
+      res,
+      "verified-owner",
+    );
+    assert.equal(res.code, 200);
+    assert.deepEqual(res.body, bytes);
   } finally {
     for (const stub of stubs.reverse()) stub.mock.restore();
   }

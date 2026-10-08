@@ -38,6 +38,7 @@ import {
   failProductionJob,
   cancelProductionJob,
   fetchProductionNarration,
+  fetchProductionVisuals,
   loadProjects,
   palettes,
   projectSchema,
@@ -65,6 +66,7 @@ const initialBrief: Brief = {
   duration: 15,
   look: "ember",
   narrationMode: "script",
+  visualMode: "local",
 };
 const suggestions = [
   "Launch something new",
@@ -78,6 +80,7 @@ export default function FlowStudio() {
   const [expanded, setExpanded] = useState(false);
   const [service, setService] = useState<"checking" | "configured" | "unavailable">("checking");
   const [narrationAvailable, setNarrationAvailable] = useState(false);
+  const [visualsAvailable, setVisualsAvailable] = useState(false);
   const [connectionAttempt, setConnectionAttempt] = useState(0);
   const { user, loginWithGoogle, login, signup, logout, configured: isFirebaseConfigured, loading: authLoading, retryConnection } = useAuth();
   const [brief, setBrief] = useState<Brief>(initialBrief);
@@ -121,6 +124,7 @@ export default function FlowStudio() {
     let active = true;
     setService("checking");
     setNarrationAvailable(false);
+    setVisualsAvailable(false);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
     void fetch("/api/studio/status", { signal: controller.signal })
@@ -129,9 +133,14 @@ export default function FlowStudio() {
           return false;
         const body: unknown = await response.json();
         if (typeof body !== "object" || body === null) return false;
-        const status = body as { configured?: boolean; capabilities?: { narration?: unknown } };
-        if (active && !controller.signal.aborted)
+        const status = body as {
+          configured?: boolean;
+          capabilities?: { narration?: unknown; visuals?: unknown };
+        };
+        if (active && !controller.signal.aborted) {
           setNarrationAvailable(status.capabilities?.narration === "ai");
+          setVisualsAvailable(status.capabilities?.visuals === "ai");
+        }
         return status.configured === true;
       })
       .then((ready) => { if (active && !controller.signal.aborted) setService(ready ? "configured" : "unavailable"); })
@@ -187,6 +196,8 @@ export default function FlowStudio() {
         const labels: Record<string, string> = {
           queued: "Queued for server preparation",
           preparing: "Preparing production on server",
+          generating_visuals: "Generating AI scene visuals",
+          generating_narration: "Generating AI narration",
           ready_for_render: "Server preparation complete",
           rendering: `Rendering video · ${job.progress}%`,
           packaging: `Packaging files · ${job.progress}%`,
@@ -336,13 +347,23 @@ export default function FlowStudio() {
     let jobId: string | null = null;
     let reachedPackaging = false;
     let generatedNarration: File | null = null;
+    let generatedVisualFiles: File[] = [];
+    let renderImages = images;
     try {
       if (user) {
         try {
           token = await user.getIdToken();
           jobId = crypto.randomUUID();
           const wantsNarration = project.brief.narrationMode === "ai" && narrationAvailable && !audio;
-          const createdJob = await createProductionJob(project, jobId, token, wantsNarration);
+          const wantsVisuals =
+            project.brief.visualMode === "ai" && visualsAvailable && images.length === 0;
+          const createdJob = await createProductionJob(
+            project,
+            jobId,
+            token,
+            wantsNarration,
+            wantsVisuals,
+          );
           const tracked = { ...project, productionJobId: jobId };
           setProject(tracked);
           persist(tracked);
@@ -356,10 +377,21 @@ export default function FlowStudio() {
             (job) => {
               if (job.stage === "queued") setWorkflowStage("Queued for server preparation");
               if (job.stage === "preparing") setWorkflowStage("Preparing production on server");
+              if (job.stage === "generating_visuals") setWorkflowStage("Generating AI scene visuals");
               if (job.stage === "generating_narration") setWorkflowStage("Generating AI narration");
               if (job.stage === "ready_for_render") setWorkflowStage("Server preparation complete");
             },
           );
+          if (preparedJob.visuals?.length && images.length === 0) {
+            setWorkflowStage("Loading AI scene visuals");
+            generatedVisualFiles = await fetchProductionVisuals(
+              jobId,
+              preparedJob.visuals.length,
+              token,
+              controller.signal,
+            );
+            renderImages = await loadImages(generatedVisualFiles);
+          }
           if (preparedJob.narration && !audio) {
             setWorkflowStage("Loading AI narration");
             generatedNarration = await fetchProductionNarration(jobId, token, controller.signal);
@@ -380,7 +412,7 @@ export default function FlowStudio() {
 
       setWorkflowStage("Rendering video");
       if (jobId && token) await updateProductionJob(jobId, token, "rendering", 10);
-      const video = await renderVideo(project, images, generatedNarration || audio, controller.signal, setProgress, !generatedNarration);
+      const video = await renderVideo(project, renderImages, generatedNarration || audio, controller.signal, setProgress, !generatedNarration);
 
       reachedPackaging = true;
       setWorkflowStage("Packaging files");
@@ -392,8 +424,12 @@ export default function FlowStudio() {
         { name: "post.txt", data: text(`${project.creative.caption}\n\n${project.creative.hashtags.join(" ")}`) },
         { name: "voiceover.txt", data: text(project.creative.scenes.map((scene) => scene.narration).join("\n\n")) },
         ...(generatedNarration ? [{ name: "narration.mp3", data: generatedNarration }] : []),
+        ...generatedVisualFiles.map((file, index) => ({
+          name: `scene-visual-${String(index + 1).padStart(2, "0")}.webp`,
+          data: file,
+        })),
         { name: "workflow.txt", data: text(project.creative.workflow.map((step, index) => `${index + 1}. ${step.title}\n${step.detail}`).join("\n\n")) },
-        { name: "README.txt", data: text("Flow completed this local workflow: validate draft, render video, package creative files.\nNo posts were published or external actions performed.\nThe voiceover script is text. If narration.mp3 is present, it was generated by AI and mixed into the video. Uploaded audio is included when supplied and takes priority over AI narration.\nImport creative.json in Flow to restore the editable draft; source media must be attached again.\nReview claims, rights, disclosures and platform requirements before publishing.") },
+        { name: "README.txt", data: text("Flow completed this local workflow: validate draft, render video, package creative files.\nNo posts were published or external actions performed.\nThe voiceover script is text. If narration.mp3 is present, it was generated by AI and mixed into the video. If scene-visual files are present, they were generated by AI and used as the scene backgrounds. Uploaded images and audio take priority over generated media.\nImport creative.json in Flow to restore the editable draft; source media must be attached again.\nReview claims, rights, disclosures and platform requirements before publishing.") },
       ], controller.signal);
       controller.signal.throwIfAborted();
 
@@ -1344,6 +1380,35 @@ export default function FlowStudio() {
                       : narrationAvailable
                         ? "Flow can turn your voiceover script into an AI-generated voice during production. Uploaded audio takes priority."
                         : "AI narration is not configured on this Flow environment."}
+                  </small>
+                </span>
+              </label>
+              <label className={styles.toggle}>
+                <input
+                  type="checkbox"
+                  checked={brief.visualMode === "ai"}
+                  disabled={busy || rendering || !visualsAvailable || !user}
+                  onChange={(event) => {
+                    const next = {
+                      ...brief,
+                      visualMode: event.target.checked ? "ai" as const : "local" as const,
+                    };
+                    setBrief(next);
+                    if (project) {
+                      const updated = { ...project, brief: next };
+                      setProject(updated);
+                      persist(updated);
+                    }
+                  }}
+                />
+                <span>
+                  <strong>Generate AI scene visuals</strong>
+                  <small>
+                    {!user
+                      ? "Sign in to use server-generated scene visuals."
+                      : visualsAvailable
+                        ? "Flow can generate a portrait visual for each scene during production. Uploaded images always take priority."
+                        : "AI scene visuals are not configured on this Flow environment."}
                   </small>
                 </span>
               </label>
