@@ -75,6 +75,7 @@ export async function prepareProductionJob(payload: unknown): Promise<void> {
     }),
     production: z.object({
       generateNarration: z.boolean(),
+      generateVisuals: z.boolean(),
     }).strict(),
     creative: z.object({
       title: z.string().min(1).max(100),
@@ -131,6 +132,133 @@ export async function prepareProductionJob(payload: unknown): Promise<void> {
     nextCapability: "local_render",
     preparedAt: new Date(),
   };
+
+  let visuals: Array<Record<string, unknown>> | null = null;
+  if (production.generateVisuals) {
+    const model = process.env.FLOW_STUDIO_IMAGE_MODEL;
+    const quality = process.env.FLOW_STUDIO_IMAGE_QUALITY;
+    const bucketName = process.env.FLOW_STUDIO_MEDIA_BUCKET;
+    const validQuality = ["low", "medium", "high", "xhigh", "max"].includes(quality || "");
+    if (!model || !quality || !validQuality || !bucketName || !studioKey.value()) {
+      await ref.set({
+        status: "failed",
+        stage: "failed",
+        failure: { code: "visuals_not_configured", retryable: false },
+        updatedAt: new Date(),
+      }, { merge: true });
+      return;
+    }
+
+    const admitted = await db.runTransaction(async (transaction) => {
+      const latest = await transaction.get(ref);
+      if (!latest.exists) return "missing";
+      const current = latest.data() || {};
+      if (["completed", "failed", "canceled"].includes(String(current.status))) return "terminal";
+      if (current.visualAttemptCharged) {
+        transaction.set(ref, {
+          stage: "generating_visuals",
+          progress: Math.max(Number(current.progress || 0), 10),
+          updatedAt: new Date(),
+        }, { merge: true });
+        return "ok";
+      }
+      const quota = db
+        .collection("studio_image_usage")
+        .doc(`${task.userId}_${new Date().toISOString().slice(0, 10)}`);
+      const usage = await transaction.get(quota);
+      const count = Number(usage.get("count") || 0);
+      const requested = creative.scenes.length;
+      if (count + requested > 24) {
+        transaction.set(ref, {
+          status: "failed",
+          stage: "failed",
+          failure: { code: "visuals_daily_limit", retryable: false },
+          updatedAt: new Date(),
+        }, { merge: true });
+        return "limit";
+      }
+      transaction.set(quota, {
+        userId: task.userId,
+        count: count + requested,
+        updatedAt: new Date(),
+      }, { merge: true });
+      transaction.set(ref, {
+        visualAttemptCharged: true,
+        stage: "generating_visuals",
+        progress: Math.max(Number(current.progress || 0), 10),
+        updatedAt: new Date(),
+      }, { merge: true });
+      return "ok";
+    });
+    if (admitted !== "ok") return;
+
+    const openai = new OpenAI({
+      apiKey: studioKey.value(),
+      timeout: 150_000,
+      maxRetries: 0,
+    });
+    const bucket = getStorage().bucket(bucketName);
+    const generated = await Promise.all(
+      creative.scenes.map(async (scene, sceneIndex) => {
+        const objectName = `studio-users/${task.userId}/jobs/${task.jobId}/scene-${String(sceneIndex).padStart(2, "0")}.webp`;
+        const file = bucket.file(objectName);
+        const [alreadyExists] = await file.exists();
+        if (!alreadyExists) {
+          const prompt = [
+            "Create a cinematic portrait background image for a short-form vertical video.",
+            `Creative title: ${creative.title}`,
+            `Scene purpose: ${scene.label}`,
+            `Shot direction: ${scene.direction}`,
+            `On-screen idea: ${scene.text}`,
+            `Tone: ${brief.tone}`,
+            `Visual palette: ${brief.look}`,
+            "Composition: 9:16 portrait framing with clear subject separation and room for readable text overlays.",
+            "Do not render words, captions, UI, watermarks, logos, or fake product claims inside the image.",
+          ].join("\n");
+          const image = await openai.images.generate({
+            model,
+            prompt,
+            size: "1024x1536",
+            quality,
+            output_format: "webp",
+            n: 1,
+          } as any);
+          const base64 = image.data?.[0]?.b64_json;
+          if (!base64) throw new Error("empty-scene-visual");
+          const bytes = Buffer.from(base64, "base64");
+          if (!bytes.length) throw new Error("empty-scene-visual");
+          await file.save(bytes, {
+            resumable: false,
+            contentType: "image/webp",
+            metadata: {
+              cacheControl: "private, no-store",
+              metadata: {
+                flowJobId: task.jobId,
+                provider: "openai",
+                model,
+                quality,
+                sceneIndex: String(sceneIndex),
+              },
+            },
+          });
+        }
+        const [metadata] = await file.getMetadata();
+        return {
+          kind: "ai",
+          provider: "openai",
+          model,
+          quality,
+          bucket: bucketName,
+          object: objectName,
+          mediaType: "image/webp",
+          sizeBytes: Number(metadata.size || 0),
+          sceneIndex,
+          generatedAt: new Date(),
+        };
+      }),
+    );
+    visuals = generated;
+  }
 
   let narration: Record<string, unknown> | null = null;
   if (production.generateNarration) {
@@ -245,6 +373,7 @@ export async function prepareProductionJob(payload: unknown): Promise<void> {
     if (["completed", "failed", "canceled"].includes(String(current.status))) return;
     transaction.set(ref, {
       manifest,
+      visuals,
       narration,
       status: "running",
       stage: "ready_for_render",
