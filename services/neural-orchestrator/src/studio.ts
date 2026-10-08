@@ -30,6 +30,7 @@ export const briefSchema = z
     look: z.enum(["ember", "ocean", "orchid"]),
     narrationMode: z.enum(["script", "ai"]).default("script"),
     visualMode: z.enum(["local", "ai"]).default("local"),
+    footageMode: z.enum(["local", "ai"]).default("local"),
   })
   .strict();
 export const creativeSchema = z.object({
@@ -112,6 +113,21 @@ export async function studioHandler(
             ) &&
             process.env.FLOW_STUDIO_MEDIA_BUCKET &&
             studioKey.value(),
+          )
+            ? "ai"
+            : false,
+        footage:
+          Boolean(
+            ["veo-3.1-generate-001", "veo-3.1-fast-generate-001"].includes(
+              process.env.FLOW_STUDIO_VIDEO_MODEL || "",
+            ) &&
+            process.env.FLOW_STUDIO_VERTEX_LOCATION === "us-central1" &&
+            ["4", "6", "8"].includes(process.env.FLOW_STUDIO_VIDEO_DURATION || "") &&
+            ["720p", "1080p"].includes(process.env.FLOW_STUDIO_VIDEO_RESOLUTION || "") &&
+            process.env.FLOW_STUDIO_MEDIA_BUCKET &&
+            (process.env.GOOGLE_CLOUD_PROJECT ||
+              process.env.GCLOUD_PROJECT ||
+              process.env.GCP_PROJECT),
           )
             ? "ai"
             : false,
