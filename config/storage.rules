@@ -1,0 +1,32 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function ownsProductionJob(userId, jobId) {
+      return request.auth != null
+        && request.auth.uid == userId
+        && firestore.exists(
+          /databases/(default)/documents/studio_users/$(userId)/production_jobs/$(jobId)
+        );
+    }
+
+    match /studio-final/{userId}/{jobId}/{fileName} {
+      allow read: if ownsProductionJob(userId, jobId);
+
+      allow create, update: if ownsProductionJob(userId, jobId)
+        && (
+          (
+            fileName == 'bundle.zip'
+            && request.resource.size <= 150 * 1024 * 1024
+            && request.resource.contentType == 'application/zip'
+          )
+          ||
+          (
+            (fileName == 'final.mp4' || fileName == 'final.webm')
+            && request.resource.size <= 100 * 1024 * 1024
+            && request.resource.contentType.matches('video/(mp4|webm)')
+          )
+        );
+    }
+  }
+}
