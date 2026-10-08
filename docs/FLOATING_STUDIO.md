@@ -32,6 +32,7 @@ Configure:
 2. Firebase Secret Manager secret `FLOW_STUDIO_OPENAI_KEY`.
 3. Server environment value `FLOW_STUDIO_MODEL`, specifying a chat-completions model supported by the configured OpenAI account and JSON-object response mode. No model is silently assumed.
 4. Deploy the selected Functions and Hosting configuration together to a reviewed staging project. Do not deploy only the frontend and assume API creation is connected.
+5. For Veo footage, configure the explicit `FLOW_STUDIO_VIDEO_MODEL`, `FLOW_STUDIO_VERTEX_LOCATION=us-central1`, `FLOW_STUDIO_VIDEO_DURATION`, and `FLOW_STUDIO_VIDEO_RESOLUTION` values. The deployed Functions service identity must be authorized to invoke Vertex AI and to list/read/write objects in `FLOW_STUDIO_MEDIA_BUCKET`. Configuration flags do not prove those IAM permissions; staging must exercise them.
 
 The provider call returns hooks, scenes, copy and a workflow plan. Media is not sent to the provider. Missing credentials, unavailable endpoints and malformed results are errors, not manufactured success. The backend does not log the brief, tokens or provider error bodies.
 
