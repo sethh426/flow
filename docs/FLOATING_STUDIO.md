@@ -62,7 +62,7 @@ Browser tests require Playwright Chromium and `ffprobe` on PATH (from FFmpeg). T
 
 The expanded browser suite also verifies idle-only avatar visibility, drag position restoration, keyboard control, minimizing without losing a draft, JSON import rejection/recovery, and ZIP integrity and contents. ZIP verification requires `unzip` on PATH.
 
-The current suites contain ten browser tests and nine backend tests. Authenticated creative generation is also tested with provider/database doubles, including hook normalization and quota-lease cleanup; this is not evidence of a successful live provider call. Runtime Firebase configuration is tested with valid and malformed Hosting responses; enabling account controls is not a test of successful real sign-in.
+The current suite contains ten browser tests plus backend coverage for authenticated creative generation, durable production jobs, queue recovery, AI narration, generated scene visuals, private artifact retrieval, quotas and retry exhaustion. Provider/database/storage paths are exercised with controlled doubles; this is not evidence of a successful live provider call. Runtime Firebase configuration is tested with valid and malformed Hosting responses; enabling account controls is not a test of successful real sign-in.
 
 For local use after building, run `npm start --prefix client` and open `http://localhost:3000`. The static server explicitly returns a JSON service-unavailable error for API requests rather than serving HTML as an API response. AI creation requires the separately deployed authenticated Functions and configured model; the local server does not impersonate those services.
 
