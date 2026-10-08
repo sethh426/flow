@@ -258,8 +258,8 @@ test("authenticated AI creation validates the provider response and releases its
 
 test("production job contracts reject client-owned identity and malformed progress", () => {
   const jobId = "11111111-1111-4111-8111-111111111111";
-  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1", production: { generateNarration: false }, project: productionProject }).success, true);
-  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1", production: { generateNarration: false }, project: productionProject, userId: "other" }).success, false);
+  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1", production: { generateNarration: false, generateVisuals: false }, project: productionProject }).success, true);
+  assert.equal(productionJobCreateSchema.safeParse({ jobId, projectId: "project-1", production: { generateNarration: false, generateVisuals: false }, project: productionProject, userId: "other" }).success, false);
   assert.equal(productionJobProgressSchema.safeParse({ stage: "rendering", progress: 50 }).success, true);
   assert.equal(productionJobProgressSchema.safeParse({ stage: "published", progress: 101 }).success, false);
   assert.equal(productionJobCompleteSchema.safeParse({
@@ -323,7 +323,7 @@ test("production jobs are idempotent, persisted and terminal states reject regre
 
     let res = response();
     await handleProductionJobRequest(
-      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-1", production: { generateNarration: false }, project: productionProject } },
+      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-1", production: { generateNarration: false, generateVisuals: false }, project: productionProject } },
       res,
       "verified-owner",
     );
@@ -334,7 +334,7 @@ test("production jobs are idempotent, persisted and terminal states reject regre
 
     res = response();
     await handleProductionJobRequest(
-      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-1", production: { generateNarration: false }, project: productionProject } },
+      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-1", production: { generateNarration: false, generateVisuals: false }, project: productionProject } },
       res,
       "verified-owner",
     );
@@ -394,7 +394,7 @@ test("production worker prepares a real server manifest before local rendering",
     status: "running",
     stage: "queued",
     progress: 2,
-    projectSnapshot: { ...productionProject, production: { generateNarration: false } },
+    projectSnapshot: { ...productionProject, production: { generateNarration: false, generateVisuals: false } },
     createdAt: new Date("2026-10-04T19:00:00Z"),
     updatedAt: new Date("2026-10-04T19:00:00Z"),
   }]]);
@@ -497,7 +497,7 @@ test("queue failure is recorded and the same job id can retry without duplicatio
 
     let res = response();
     await handleProductionJobRequest(
-      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-3", production: { generateNarration: false }, project: productionProject } },
+      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-3", production: { generateNarration: false, generateVisuals: false }, project: productionProject } },
       res,
       "verified-owner",
     );
@@ -507,7 +507,7 @@ test("queue failure is recorded and the same job id can retry without duplicatio
 
     res = response();
     await handleProductionJobRequest(
-      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-3", production: { generateNarration: false }, project: productionProject } },
+      { method: "POST", path: "/api/studio/jobs", body: { jobId, projectId: "project-3", production: { generateNarration: false, generateVisuals: false }, project: productionProject } },
       res,
       "verified-owner",
     );
@@ -595,7 +595,7 @@ test("production worker generates AI narration once, stores it privately, and re
     status: "running",
     stage: "queued",
     progress: 2,
-    projectSnapshot: { ...productionProject, production: { generateNarration: true } },
+    projectSnapshot: { ...productionProject, production: { generateNarration: true, generateVisuals: false } },
   });
   let media = null;
   let providerCalls = 0;
