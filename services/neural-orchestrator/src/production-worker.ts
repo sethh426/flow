@@ -391,9 +391,9 @@ export const productionWorker = onTaskDispatched(
       maxBackoffSeconds: 120,
     },
     rateLimits: {
-      maxConcurrentDispatches: 5,
+      maxConcurrentDispatches: 2,
     },
-    timeoutSeconds: 300,
+    timeoutSeconds: 900,
     memory: "512MiB",
     secrets: [studioKey],
   },
