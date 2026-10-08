@@ -37,6 +37,7 @@ export interface Brief {
   duration: number;
   look: Look;
   narrationMode: "script" | "ai";
+  visualMode: "local" | "ai";
 }
 export interface Project {
   id: string;
@@ -176,6 +177,7 @@ export const projectSchema = z.object({
     duration: z.number().min(6).max(60),
     look: z.enum(["ember", "ocean", "orchid"]),
     narrationMode: z.enum(["script", "ai"]).default("script"),
+    visualMode: z.enum(["local", "ai"]).default("local"),
   }),
   // Persist unfinished edits too; final exports use the stricter schema above.
   productionJobId: z.string().uuid().optional(),
@@ -246,7 +248,7 @@ export const productionJobSchema = z.object({
   jobId: z.string().uuid(),
   projectId: z.string(),
   status: z.enum(["running", "completed", "failed", "canceled"]),
-  stage: z.enum(["queued", "preparing", "generating_narration", "ready_for_render", "rendering", "packaging", "awaiting_approval", "completed", "failed", "canceled"]),
+  stage: z.enum(["queued", "preparing", "generating_narration", "generating_visuals", "ready_for_render", "rendering", "packaging", "awaiting_approval", "completed", "failed", "canceled"]),
   progress: z.number().min(0).max(100),
   artifact: z.object({
     kind: z.literal("local-bundle"),
@@ -268,6 +270,15 @@ export const productionJobSchema = z.object({
     requiresApproval: z.boolean(),
     nextCapability: z.literal("local_render"),
   }).nullable().optional(),
+  visuals: z.array(z.object({
+    kind: z.literal("ai"),
+    provider: z.literal("openai"),
+    model: z.string(),
+    quality: z.string(),
+    mediaType: z.string(),
+    sizeBytes: z.number(),
+    sceneIndex: z.number().int().min(0),
+  })).max(8).nullable().optional(),
   narration: z.object({
     kind: z.literal("ai"),
     provider: z.literal("openai"),
@@ -309,13 +320,13 @@ async function productionJobRequest(
   return parsed.data.job;
 }
 
-export function createProductionJob(project: Project, jobId: string, token: string, generateNarration = false) {
+export function createProductionJob(project: Project, jobId: string, token: string, generateNarration = false, generateVisuals = false) {
   return productionJobRequest("/api/studio/jobs", token, {
     method: "POST",
     body: JSON.stringify({
       projectId: project.id,
       jobId,
-      production: { generateNarration },
+      production: { generateNarration, generateVisuals },
       project: {
         brief: {
           platform: project.brief.platform,
@@ -362,6 +373,39 @@ export async function waitForProductionPreparation(
   throw new Error("Flow’s production worker is taking too long. Please try again.");
 }
 
+
+
+export async function fetchProductionVisuals(
+  jobId: string,
+  count: number,
+  token: string,
+  signal: AbortSignal,
+): Promise<File[]> {
+  const files: File[] = [];
+  for (let index = 0; index < count; index++) {
+    signal.throwIfAborted();
+    const response = await fetch(`/api/studio/jobs/${jobId}/visuals/${index}`, {
+      signal,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!response.ok) {
+      let message = "Flow could not load the generated scene visuals.";
+      if (response.headers.get("content-type")?.includes("application/json")) {
+        const body: unknown = await response.json();
+        const parsed = z.object({ error: z.string() }).safeParse(body);
+        if (parsed.success) message = parsed.data.error;
+      }
+      throw new Error(message);
+    }
+    const blob = await response.blob();
+    if (blob.type && !["image/png", "image/jpeg", "image/webp"].includes(blob.type))
+      throw new Error("Flow received an unsupported generated image format.");
+    files.push(new File([blob], `flow-${jobId.slice(0, 8)}-scene-${index + 1}.webp`, {
+      type: blob.type || "image/webp",
+    }));
+  }
+  return files;
+}
 
 export async function fetchProductionNarration(
   jobId: string,
