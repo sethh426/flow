@@ -1,5 +1,16 @@
 # Current State — 2026-10-08
 
+## Live deployment audit — 2026-10-09
+
+See [FIREBASE_DEPLOYMENT_AUDIT.md](FIREBASE_DEPLOYMENT_AUDIT.md) for authenticated cloud evidence against main `65499c9`.
+- The user-found `flowearlyadopters.web.app` serves both a waitlist at `/` and an older Flow app at `/app/`; last release 2026-09-06.
+- Canonical source targets `affiliateflow-abzfy`; its Hosting release is from 2025-11-20. No deployed `studio` or `productionWorker` was listed, and its studio status request returned 503.
+- Seven Firebase projects are accessible; all report billing disabled. The GitHub WIF provider still requires repository owner `luxcognita`, excluding the current `sethh426/flow` repository.
+- Source changes/CI success do not imply live deployment. The last returned deployment run failed at Hosting; root deployment is manual and omits Firestore rule deployment.
+- The canonical and older named `flow` databases share 52 product IDs with identical canonical fields. Preserve 3 canonical Auth users, 1 older `appy` Auth user and 2 waitlist signup records before consolidation.
+- Deployed waitlist rules allow public signup reads and counter writes; canonical deployed rules lag the safer source. These require remediation before customer use.
+- This audit changed documentation only; no live resources, IAM, billing or data were modified.
+
 Baseline: `main` at `af6ee9bb6c83fd0c5a05a685e9d12324c93526e1`, the merge of the floating studio work.
 
 ## Verified from current source
