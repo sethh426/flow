@@ -1274,7 +1274,7 @@ export default function FlowStudio() {
               <X size={19} />
             </button>
           </div>
-          {dialog === "plugins" && <PluginCatalog />}
+          {dialog === "plugins" && <PluginCatalog user={user} />}
           {dialog === "settings" && (
             <div className={styles.settings}>
               <label>
