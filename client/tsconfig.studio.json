@@ -3,6 +3,8 @@
   "compilerOptions": { "incremental": false },
   "include": [
     "studio-env.d.ts",
+    "src/features/plugins/**/*.ts",
+    "src/features/plugins/**/*.tsx",
     "src/features/studio/**/*.ts",
     "src/features/studio/**/*.tsx",
     "src/app/ClientLayout.tsx",

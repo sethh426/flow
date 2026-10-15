@@ -17,3 +17,6 @@
 | Provider routing | Partial historical concepts | One canonical capability router with measured scores |
 | Observability | Fragmented | Trace each job/capability/provider attempt with cost/latency/outcome |
 | Security | Partial | Threat-reviewed canonical backend, least privilege, abuse limits, secret rotation |
+
+## Free workflow catalog — implementation branch, October 14, 2026
+Ten local artifact-producing plugins are implemented and verified in focused tests. Includes search, field input, examples, version manifests, local saved selections and output downloads. See WORKFLOW_PLUGINS.md for verification and explicit boundaries. This is not yet production deployment or connected multi-LLM/MCP orchestration.
