@@ -21,6 +21,41 @@ const {
   handleProductionJobRequest,
 } = require("../dist/production-jobs");
 const { prepareProductionJob, markProductionJobRetriesExhausted } = require("../dist/production-worker");
+const { normalizeRevisionSuggestions, handleRevisionRequest } = require("../dist/revisions");
+
+test("revision AI results retain exact evidence and only assign named roster members", () => {
+  const feedback = "Maya will shorten the launch opening by 2026-11-02. Please also replace the end card next Friday.";
+  const people = [{ gid: "12345", name: "Maya" }, { gid: "67890", name: "Alex" }];
+  const task = (quote, ownerGid, due) => ({ sourceQuote: quote, deliverable: "Launch video", change: "Shorten opening", ownerGid, due, uncertainty: "" });
+  const parsed = normalizeRevisionSuggestions(feedback, people, { tasks: [task("Maya will shorten the launch opening by 2026-11-02.", "12345", "2026-11-02"), task("Please also replace the end card next Friday.", "67890", "2026-11-07")] });
+  assert.equal(parsed[0].owner, "Maya"); assert.equal(parsed[0].due, "2026-11-02");
+  assert.equal(parsed[1].ownerGid, ""); assert.equal(parsed[1].due, "");
+  assert.throws(() => normalizeRevisionSuggestions(feedback, people, { tasks: [task("Imaginary quote", "12345", "")] }), /unsupported quote/);
+});
+test("connected revision endpoints reject anonymous or unapproved action", async () => {
+  const anonymous = response();
+  await studioHandler({ method: "POST", path: "/api/studio/revisions/asana/create", body: {}, get: () => undefined }, anonymous);
+  assert.equal(anonymous.code, 401);
+  const unapproved = response();
+  await handleRevisionRequest({ method: "POST", path: "/api/studio/revisions/asana/create", body: { approved: false } }, unapproved, "owner", "key");
+  assert.equal(unapproved.code, 400);
+});
+test("an explicitly approved Asana task is created once and confirmed by provider ID", async () => {
+  const db = getFirestore(); const saved = { exists: false, status: undefined, gid: undefined }; const calls = [];
+  const stubs = [
+    mock.method(db, "collection", () => ({ doc: () => ({ get: async () => ({ exists: saved.exists, get: key => saved[key] }), set: async patch => Object.assign(saved, patch) }) })),
+    mock.method(db, "runTransaction", async fn => fn({ get: async () => ({ exists: saved.exists }), create: (_doc, patch) => Object.assign(saved, patch, { exists: true }) })),
+    mock.method(global, "fetch", async (_url, options) => { calls.push(JSON.parse(options.body)); return { ok: true, json: async () => ({ data: { gid: "99999" } }) }; }),
+  ];
+  const body = { asanaToken: "test-token-placeholder", projectGid: "12345", approved: true, task: { deliverable: "Launch video", change: "Shorten intro", sourceQuote: "Maya requested a shorter intro", ownerGid: "67890", due: "2026-11-02" } };
+  try {
+    const first = response(); await handleRevisionRequest({ method: "POST", path: "/api/studio/revisions/asana/create", body }, first, "owner", "key");
+    assert.equal(first.code, 200); assert.equal(first.body.gid, "99999"); assert.equal(saved.status, "confirmed");
+    assert.deepEqual(calls[0].data.projects, ["12345"]); assert.equal(calls[0].data.assignee, "67890");
+    const second = response(); await handleRevisionRequest({ method: "POST", path: "/api/studio/revisions/asana/create", body }, second, "owner", "key");
+    assert.equal(second.code, 200); assert.equal(calls.length, 1);
+  } finally { stubs.forEach(stub => stub.mock.restore()); }
+});
 
 const brief = {
   prompt: "A coffee mug launch",
