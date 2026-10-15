@@ -24,12 +24,14 @@ const { prepareProductionJob, markProductionJobRetriesExhausted } = require("../
 const { normalizeRevisionSuggestions, handleRevisionRequest } = require("../dist/revisions");
 
 test("revision AI results retain exact evidence and only assign named roster members", () => {
-  const feedback = "Maya will shorten the launch opening by 2026-11-02. Please also replace the end card next Friday.";
+  const feedback = "Maya owns the launch video. Maya will shorten the launch opening by 2026-11-02. Please also replace the end card next Friday.";
   const people = [{ gid: "12345", name: "Maya" }, { gid: "67890", name: "Alex" }];
-  const task = (quote, ownerGid, due) => ({ sourceQuote: quote, deliverable: "Launch video", change: "Shorten opening", ownerGid, due, uncertainty: "" });
+  const task = (quote, ownerGid, due, ownerEvidence = quote) => ({ sourceQuote: quote, ownerEvidence, deliverable: "Launch video", change: "Shorten opening", ownerGid, due, uncertainty: "" });
   const parsed = normalizeRevisionSuggestions(feedback, people, { tasks: [task("Maya will shorten the launch opening by 2026-11-02.", "12345", "2026-11-02"), task("Please also replace the end card next Friday.", "67890", "2026-11-07")] });
   assert.equal(parsed[0].owner, "Maya"); assert.equal(parsed[0].due, "2026-11-02");
   assert.equal(parsed[1].ownerGid, ""); assert.equal(parsed[1].due, "");
+  const contextual = normalizeRevisionSuggestions(feedback, people, { tasks: [task("Please also replace the end card next Friday.", "12345", "", "Maya owns the launch video.")] });
+  assert.equal(contextual[0].ownerGid, "12345");
   assert.throws(() => normalizeRevisionSuggestions(feedback, people, { tasks: [task("Imaginary quote", "12345", "")] }), /unsupported quote/);
 });
 test("connected revision endpoints reject anonymous or unapproved action", async () => {
