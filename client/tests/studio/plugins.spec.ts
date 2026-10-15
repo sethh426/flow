@@ -24,9 +24,18 @@ test('subtitles preserve content and reject overlaps', () => {
 test('invalid dates, unsafe URLs, missing data and unknown plugins fail closed', () => {
   expect(() => runPlugin('content-calendar', { posts: '2026-02-30 | X | Title | Maya' })).toThrow(/Invalid date/);
   expect(() => runPlugin('handoff-pack', { project: 'Test', assets: 'A | v1 | javascript:alert(1) | Maya' })).toThrow(/HTTP/);
-  expect(() => runPlugin('revision-tasks', { project: 'Test', revisions: 'missing columns' })).toThrow(/4 nonempty/);
+  expect(() => runPlugin('revision-tasks', { project: 'Test', revisions: 'A | Maya | missing | Change' })).toThrow(/Invalid date/);
   expect(() => runPlugin('nonexistent', {})).toThrow(/Unknown/);
   expect(() => runPlugin('asset-manifest', {project:'P', files:'same.mp4\nsame.mp4'})).toThrow(/duplicate/);
+});
+test('raw revision feedback stays traceable and missing fields are not invented', () => {
+  const run = runPlugin('revision-tasks', { project: 'Fall launch', revisions: 'Launch video: Shorten the opening. [owner: Maya]\n- Social cut: Replace the end card. [due: Friday]\n\nPlease check the logo color.' });
+  expect(run.reviewTasks).toHaveLength(3);
+  expect(run.reviewTasks?.[0]).toMatchObject({ deliverable: 'Launch video', owner: 'Maya', due: '', change: 'Shorten the opening.' });
+  expect(run.reviewTasks?.[1].reviewNotes).toContain('Due date was not ISO format; confirm it');
+  expect(run.reviewTasks?.[2]).toMatchObject({ deliverable: '', owner: '', due: '', change: 'Please check the logo color.' });
+  expect(run.artifacts[0].content).toContain('Needs details');
+  expect(run.artifacts[0].content).toContain('Please check the logo color.');
 });
 test('zero denominators remain unknown; campaign URL parameters are encoded', () => {
   expect(runPlugin('performance-report', {metrics:'A | 0 | 0 | 0'}).artifacts[0].content).toContain('N/A');
@@ -42,17 +51,26 @@ test('free catalog runs, downloads, saves selection and rejects invalid changes'
   await page.getByRole('button', {name:/Revision Task Export/}).click();
   await page.getByRole('button', {name:'Load example'}).click();
   await page.getByRole('button', {name:'Run workflow', exact:true}).click();
+  await expect(page.getByRole('heading', {name:'Review the extracted tasks'})).toBeVisible();
+  await expect(page.getByRole('button', {name:'Download revision-tasks.csv'})).toHaveCount(0);
+  await page.getByRole('button', {name:'Prepare reviewed files'}).click();
   await expect(page.getByRole('heading', {name:'Your files are ready'})).toBeVisible();
   const download = page.waitForEvent('download');
   await page.getByRole('button', {name:'Download revision-tasks.csv', exact:true}).click();
   const downloaded = await download;
   const {readFileSync} = await import('node:fs');
-  expect(readFileSync((await downloaded.path())!, 'utf8')).toContain('Replace the opening title');
+  const exported = readFileSync((await downloaded.path())!, 'utf8');
+  expect(exported).toContain('Shorten the opening to three seconds');
+  expect(exported).toContain('Set due date');
+  await page.getByLabel('Due date (YYYY-MM-DD)').first().fill('2026-11-03');
+  await expect(page.getByRole('button', {name:'Download revision-tasks.csv'})).toHaveCount(0);
+  await page.getByRole('button', {name:'Prepare reviewed files'}).click();
+  await expect(page.getByRole('button', {name:'Download revision-tasks.csv'})).toBeVisible();
   await page.getByRole('button', {name:'Add to my workflows', exact:true}).click();
-  await page.getByLabel('Deliverable | owner | due date | requested change').fill('bad');
+  await page.getByLabel('Paste feedback (bullets or paragraphs; optional [owner: Name] [due: YYYY-MM-DD])').fill('Video | Maya | invalid | Change');
   await expect(page.getByRole('heading', {name:'Your files are ready'})).toHaveCount(0);
   await page.getByRole('button', {name:'Run workflow', exact:true}).click();
-  await expect(page.getByRole('dialog').getByRole('alert')).toContainText('4 nonempty');
+  await expect(page.getByRole('dialog').getByRole('alert')).toContainText('Invalid date');
   await page.reload(); await page.getByRole('button', {name:'Open Flow', exact:true}).click(); await page.getByRole('button', {name:'Open free workflows'}).click();
   await expect(page.getByRole('button', {name:/Revision Task Export/})).toContainText('Added');
   await page.setViewportSize({width:390, height:844});
