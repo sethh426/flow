@@ -1,4 +1,4 @@
-# Auto-deploy to Firebase Studio on every push
+# Manual Flow deployment to the canonical Firebase project
 name: Deploy to Firebase Studio
 
 on:
@@ -10,11 +10,29 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: read
+      id-token: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       
+      - name: Check deployment identity configuration
+        env:
+          WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+        run: |
+          test -n "$WIF_PROVIDER" || { echo "::error::WIF_PROVIDER is not configured"; exit 1; }
+          test -n "$WIF_SERVICE_ACCOUNT" || { echo "::error::WIF_SERVICE_ACCOUNT is not configured"; exit 1; }
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: affiliateflow-abzfy
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -49,11 +67,11 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
       
-      - name: Deploy to Firebase Hosting
-        run: firebase deploy --only hosting --project affiliateflow-abzfy --non-interactive --token "${{ secrets.FIREBASE_TOKEN }}"
-      
-      - name: Deploy Cloud Functions
-        run: firebase deploy --only functions --project affiliateflow-abzfy --non-interactive --token "${{ secrets.FIREBASE_TOKEN }}"
+      - name: Deploy connected backend first
+        run: firebase deploy --only functions:studio,functions:productionWorker,functions:api --project affiliateflow-abzfy --non-interactive
+
+      - name: Deploy Firebase Hosting
+        run: firebase deploy --only hosting --project affiliateflow-abzfy --non-interactive
       
       - name: Deployment Success
         run: |
