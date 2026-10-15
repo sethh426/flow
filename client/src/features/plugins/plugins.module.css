@@ -3,10 +3,13 @@
 .note { color: #b5afc4; font-size: 12px; }
 .layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 22px; }
 .search, .field { display: grid; gap: 7px; margin-bottom: 16px; }
-.catalog input, .catalog textarea { width: 100%; box-sizing: border-box; border: 1px solid #625970; background: #17141f; color: #f5f1fa; padding: 10px 12px; border-radius: 10px; font: inherit; }
+.catalog input, .catalog textarea, .catalog select { width: 100%; box-sizing: border-box; border: 1px solid #625970; background: #17141f; color: #f5f1fa; padding: 10px 12px; border-radius: 10px; font: inherit; }
 .catalog textarea { resize: vertical; }
 .catalog button { border: 1px solid #625970; background: #282132; color: #f5f1fa; padding: 9px 12px; border-radius: 10px; cursor: pointer; font: inherit; }
-.catalog button:focus-visible, .catalog input:focus-visible, .catalog textarea:focus-visible, .catalog summary:focus-visible { outline: 2px solid #e4bdff; outline-offset: 3px; }
+.catalog button:focus-visible, .catalog input:focus-visible, .catalog textarea:focus-visible, .catalog select:focus-visible, .catalog summary:focus-visible { outline: 2px solid #e4bdff; outline-offset: 3px; }
+.catalog button:disabled { opacity: .55; cursor: not-allowed; }
+.connected { border-top: 1px solid #625970; padding-top: 14px; }
+.connected h4 { margin: 0 0 8px; }
 .list { display: flex; flex-direction: column; gap: 8px; }
 .list button { text-align: left; }
 .list button[aria-pressed=true] { background: #443454; border-color: #d0a6ed; }
