@@ -3,7 +3,7 @@ export type Field = { key: string; label: string; example: string; multiline?: b
 export type Artifact = { name: string; type: string; content: string };
 export type Plugin = { id: string; version: '1.0.0' | '1.1.0'; name: string; outcome: string; limit: string; fields: Field[]; execute: (input: Record<string, string>) => Artifact[] };
 export type Run = { pluginId: string; version: string; stages: string[]; artifacts: Artifact[] };
-export type RevisionTask = { id: string; project: string; deliverable: string; owner: string; due: string; change: string; source: string; reviewNotes: string[] };
+export type RevisionTask = { id: string; project: string; deliverable: string; owner: string; ownerGid?: string; due: string; change: string; source: string; reviewNotes: string[] };
 const field = (key: string, label: string, example: string, multiline = false): Field => ({ key, label, example, multiline });
 const lines = (value: string) => value.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
 const safeCell = (value: unknown) => { const s = String(value ?? ''); return `"${(/^[\s]*[=+@-]/.test(s) ? "'" : '') + s.replace(/"/g, '""')}"`; };
@@ -78,7 +78,7 @@ export const plugins: Plugin[] = [
     const source = lines(i.files); if (new Set(source).size !== source.length) throw new Error('Remove duplicate filenames or include their unique source paths.');
     return [file('asset-manifest.csv', csv([['Original', 'Proposed', 'Sequence'], ...source.map((name, index) => { const ext = /\.([a-z0-9]{1,10})$/i.exec(name)?.[1]?.toLowerCase(); return [name, `${slug(i.project)}-${String(index + 1).padStart(3, '0')}${ext ? '.' + ext : ''}`, index + 1]; })]))];
   }}),
-  make({ id: 'revision-tasks', name: 'Revision Task Export', outcome: 'Turn pasted client revision notes into reviewable tasks and CSV/JSON exports.', limit: 'Conservative local text parsing only. Review every task and fill missing details; no AI interpretation, app import or external action.', fields: [field('project', 'Project', 'Acme launch'), field('revisions', 'Paste feedback (bullets or paragraphs; optional [owner: Name] [due: YYYY-MM-DD])', 'Launch video: Shorten the opening to three seconds. [owner: Maya]\n- Social cut: Replace the closing card. [due: 2026-11-02]', true)], execute: i => {
+  make({ id: 'revision-tasks', name: 'Revision Task Export', outcome: 'Turn pasted client revision notes into reviewable tasks and CSV/JSON exports.', limit: 'Base parsing runs locally. Optional AI and Asana actions require sign-in, reviewed inputs and explicit consent; never assume an edit is correct.', fields: [field('project', 'Project', 'Acme launch'), field('revisions', 'Paste feedback (bullets or paragraphs; optional [owner: Name] [due: YYYY-MM-DD])', 'Launch video: Shorten the opening to three seconds. [owner: Maya]\n- Social cut: Replace the closing card. [due: 2026-11-02]', true)], execute: i => {
     return revisionArtifacts(parseRevisionNotes(i.project, i.revisions));
   }}, '1.1.0'),
   make({ id: 'approval-audit', name: 'Approval Version Audit', outcome: 'Find pending, rejected and outdated approvals before a handoff.', limit: 'Evaluates the records you supply; it does not authenticate approvers or authorize publication.', fields: [field('approvals', 'Deliverable | current version | approved version (or none) | status', 'Video 01 | v3 | v2 | approved\nVideo 02 | v1 | v1 | approved\nVideo 03 | v2 | none | pending', true)], execute: i => {
