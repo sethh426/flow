@@ -8,6 +8,7 @@ import OpenAI from "openai";
 import { z } from "zod";
 import type { Request, Response } from "express";
 import { handleProductionJobRequest } from "./production-jobs";
+import { handleRevisionRequest } from "./revisions";
 
 const studioKey = defineSecret("FLOW_STUDIO_OPENAI_KEY");
 export const briefSchema = z
@@ -159,6 +160,7 @@ export async function studioHandler(
   }
 
   if (await handleProductionJobRequest(req, res, userId)) return;
+  if (await handleRevisionRequest(req, res, userId, studioKey.value())) return;
 
   if (!["/api/studio/create", "/create"].includes(req.path)) {
     res.status(404).json({ error: "Studio action not found." });

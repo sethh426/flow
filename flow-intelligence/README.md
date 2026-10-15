@@ -28,3 +28,5 @@ npm run intelligence:check
 ```
 
 The intelligence kernel is not a second application architecture. It is the control plane for reasoning about the real one.
+
+For catalog, acquisition or sales work, also read `SALES_PLAYBOOK.md` and `WORKFLOW_PLUGINS.md`. Owner direction is to lead with free usable products and demonstrated outputs; do not reinstate discovery interviews as a prerequisite for building the free catalog.
