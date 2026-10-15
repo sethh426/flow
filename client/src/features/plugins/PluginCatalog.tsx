@@ -7,7 +7,7 @@ import { manifest, plugins, revisionArtifacts, runPlugin, type RevisionTask, typ
 import styles from './plugins.module.css';
 const STORAGE = 'flow.plugins.installed.v1';
 type Person = { gid: string; name: string };
-type AiTask = { sourceQuote: string; deliverable: string; change: string; ownerGid: string; owner: string; due: string; uncertainty: string };
+type AiTask = { sourceQuote: string; ownerEvidence: string; deliverable: string; change: string; ownerGid: string; owner: string; due: string; uncertainty: string };
 async function revisionRequest(path: string, body: object, user: User): Promise<unknown> {
   const token = await user.getIdToken();
   const response = await fetch(`/api/studio/revisions/${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
@@ -71,7 +71,7 @@ export default function PluginCatalog({ user }: { user: User | null }) {
     try {
       const payload = await revisionRequest('analyze', { project: values.project, feedback: values.revisions, people }, user) as { tasks: AiTask[] };
       if (!Array.isArray(payload.tasks) || !payload.tasks.length) throw new Error('No reviewable revision tasks were found.');
-      const tasks: RevisionTask[] = payload.tasks.map((t, index) => ({ id: `revision-${index + 1}`, project: values.project, deliverable: t.deliverable, owner: t.owner, ownerGid: t.ownerGid, due: t.due, change: t.change, source: t.sourceQuote, reviewNotes: [t.uncertainty, 'AI suggestion; verify against the complete feedback'].filter(Boolean) }));
+      const tasks: RevisionTask[] = payload.tasks.map((t, index) => ({ id: `revision-${index + 1}`, project: values.project, deliverable: t.deliverable, owner: t.owner, ownerGid: t.ownerGid, due: t.due, change: t.change, source: t.sourceQuote, reviewNotes: [t.owner && t.ownerEvidence ? `Owner context: ${t.ownerEvidence}` : '', t.uncertainty, 'AI suggestion; verify against the complete feedback'].filter(Boolean) }));
       setReviewTasks(tasks); setResult({ pluginId: selected, version: plugin.version, stages: ['Source excerpts verified by server', 'AI suggestions require human review', 'Output files prepared'], artifacts: revisionArtifacts(tasks) });
       setNotice('AI suggestions are ready for review. No Asana task was created.');
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not analyze feedback.'); }
