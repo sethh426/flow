@@ -1,8 +1,9 @@
 /** Built-in, versioned local capabilities. No downloaded code or implicit network calls. */
 export type Field = { key: string; label: string; example: string; multiline?: boolean };
 export type Artifact = { name: string; type: string; content: string };
-export type Plugin = { id: string; version: '1.0.0'; name: string; outcome: string; limit: string; fields: Field[]; execute: (input: Record<string, string>) => Artifact[] };
+export type Plugin = { id: string; version: '1.0.0' | '1.1.0'; name: string; outcome: string; limit: string; fields: Field[]; execute: (input: Record<string, string>) => Artifact[] };
 export type Run = { pluginId: string; version: string; stages: string[]; artifacts: Artifact[] };
+export type RevisionTask = { id: string; project: string; deliverable: string; owner: string; due: string; change: string; source: string; reviewNotes: string[] };
 const field = (key: string, label: string, example: string, multiline = false): Field => ({ key, label, example, multiline });
 const lines = (value: string) => value.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
 const safeCell = (value: unknown) => { const s = String(value ?? ''); return `"${(/^[\s]*[=+@-]/.test(s) ? "'" : '') + s.replace(/"/g, '""')}"`; };
@@ -30,7 +31,41 @@ function httpUrl(value: string) {
   if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) throw new Error('Use a public HTTP(S) link without embedded credentials.');
   return url;
 }
-const make = (p: Omit<Plugin, 'version'>): Plugin => ({ ...p, version: '1.0.0' });
+const make = (p: Omit<Plugin, 'version'>, version: Plugin['version'] = '1.0.0'): Plugin => ({ ...p, version });
+export function revisionArtifacts(tasks: RevisionTask[]): Artifact[] {
+  const reviewed = tasks.map(t => {
+    if (!t.change.trim()) throw new Error(`Task ${t.id} needs a requested change.`);
+    if (t.due.trim()) date(t.due.trim());
+    const reviewNotes = [...new Set([...t.reviewNotes.filter(note => note !== 'Due date was not ISO format; confirm it' || !t.due.trim()), !t.deliverable.trim() && 'Confirm deliverable', !t.owner.trim() && 'Assign owner', !t.due.trim() && 'Set due date'].filter((x): x is string => Boolean(x)))];
+    return { ...t, deliverable: t.deliverable.trim(), owner: t.owner.trim(), due: t.due.trim(), change: t.change.trim(), reviewNotes, status: reviewNotes.length ? 'Needs details' : 'Ready for import review' };
+  });
+  return [file('revision-tasks.csv', csv([['ID', 'Project', 'Deliverable', 'Owner', 'Due date', 'Request', 'Source note', 'Review notes', 'Status'], ...reviewed.map(t => [t.id, t.project, t.deliverable, t.owner, t.due, t.change, t.source, t.reviewNotes.join('; '), t.status])])), json('revision-tasks.json', reviewed)];
+}
+export function parseRevisionNotes(project: string, input: string): RevisionTask[] {
+  if (input.split(/\r?\n/).filter(x => x.trim()).every(x => x.includes('|'))) {
+    return rows(input, 4).map(([deliverable, owner, due, change], n) => ({ id: `revision-${n + 1}`, project, deliverable, owner, due: date(due), change, source: `${deliverable} | ${owner} | ${due} | ${change}`, reviewNotes: [] }));
+  }
+  const blocks: string[] = [];
+  for (const paragraph of input.replace(/\r\n/g, '\n').split(/\n\s*\n/)) {
+    let current = '';
+    for (const line of paragraph.split('\n').map(x => x.trim()).filter(Boolean)) {
+      if (/^(?:[-*•]\s+|\d+[.)]\s+)/.test(line) && current) { blocks.push(current); current = ''; }
+      current += (current ? ' ' : '') + line.replace(/^(?:[-*•]\s+|\d+[.)]\s+)/, '');
+    }
+    if (current) blocks.push(current);
+  }
+  if (!blocks.length) throw new Error('Paste at least one revision request.');
+  return blocks.map((source, n) => {
+    const owner = /\[owner:\s*([^\]]+)\]/i.exec(source)?.[1]?.trim() || '';
+    const dueText = /\[due:\s*([^\]]+)\]/i.exec(source)?.[1]?.trim() || '';
+    const due = dueText && /^\d{4}-\d{2}-\d{2}$/.test(dueText) ? date(dueText) : '';
+    let change = source.replace(/\[(?:owner|due):\s*[^\]]+\]/gi, '').trim();
+    const heading = /^([^:]{2,80}):\s+(.+)$/.exec(change);
+    const deliverable = heading && !/^(?:note|request|feedback|subject|hi|hello|thanks)$/i.test(heading[1]) ? heading[1].trim() : '';
+    if (deliverable && heading) change = heading[2].trim();
+    return { id: `revision-${n + 1}`, project, deliverable, owner, due, change, source, reviewNotes: [deliverable && 'Confirm inferred deliverable', dueText && !due && 'Due date was not ISO format; confirm it'].filter((x): x is string => Boolean(x)) };
+  });
+}
 export const plugins: Plugin[] = [
   make({ id: 'brief-check', name: 'Brief Readiness Check', outcome: 'Turn a client brief into a production checklist and a missing-information report.', limit: 'Checks supplied fields; does not judge strategy or verify client claims.', fields: [field('project', 'Project', 'Acme launch'), field('brief', 'Brief fields — one key: value per line', 'audience: New customers\nmessage: Meet our new collection\ndeliverables: Three short videos\nowner: Maya\ndeadline: 2026-11-01\napprover: Alex\nassets: Client folder', true)], execute: i => {
     const data: Record<string, string> = Object.create(null);
@@ -43,10 +78,9 @@ export const plugins: Plugin[] = [
     const source = lines(i.files); if (new Set(source).size !== source.length) throw new Error('Remove duplicate filenames or include their unique source paths.');
     return [file('asset-manifest.csv', csv([['Original', 'Proposed', 'Sequence'], ...source.map((name, index) => { const ext = /\.([a-z0-9]{1,10})$/i.exec(name)?.[1]?.toLowerCase(); return [name, `${slug(i.project)}-${String(index + 1).padStart(3, '0')}${ext ? '.' + ext : ''}`, index + 1]; })]))];
   }}),
-  make({ id: 'revision-tasks', name: 'Revision Task Export', outcome: 'Convert structured client feedback into an assigned task CSV.', limit: 'Exports tasks for review/import; does not send or create tasks in external apps.', fields: [field('project', 'Project', 'Acme launch'), field('revisions', 'Deliverable | owner | due date | requested change', 'Video 01 | Maya | 2026-11-01 | Replace the opening title\nVideo 02 | Alex | 2026-11-02 | Shorten closing card', true)], execute: i => {
-    const tasks = rows(i.revisions, 4).map(([deliverable, owner, due, change], n) => ({ id: `revision-${n + 1}`, project: i.project, deliverable, owner, due: date(due), change, status: 'Needs review' }));
-    return [file('revision-tasks.csv', csv([['ID', 'Project', 'Deliverable', 'Owner', 'Due date', 'Request', 'Status'], ...tasks.map(t => [t.id, t.project, t.deliverable, t.owner, t.due, t.change, t.status])])), json('revision-tasks.json', tasks)];
-  }}),
+  make({ id: 'revision-tasks', name: 'Revision Task Export', outcome: 'Turn pasted client revision notes into reviewable tasks and CSV/JSON exports.', limit: 'Conservative local text parsing only. Review every task and fill missing details; no AI interpretation, app import or external action.', fields: [field('project', 'Project', 'Acme launch'), field('revisions', 'Paste feedback (bullets or paragraphs; optional [owner: Name] [due: YYYY-MM-DD])', 'Launch video: Shorten the opening to three seconds. [owner: Maya]\n- Social cut: Replace the closing card. [due: 2026-11-02]', true)], execute: i => {
+    return revisionArtifacts(parseRevisionNotes(i.project, i.revisions));
+  }}, '1.1.0'),
   make({ id: 'approval-audit', name: 'Approval Version Audit', outcome: 'Find pending, rejected and outdated approvals before a handoff.', limit: 'Evaluates the records you supply; it does not authenticate approvers or authorize publication.', fields: [field('approvals', 'Deliverable | current version | approved version (or none) | status', 'Video 01 | v3 | v2 | approved\nVideo 02 | v1 | v1 | approved\nVideo 03 | v2 | none | pending', true)], execute: i => {
     const report = rows(i.approvals, 4).map(([name, current, approved, state]) => { if (!['approved', 'pending', 'rejected'].includes(state.toLowerCase())) throw new Error('Status must be approved, pending or rejected.'); return { name, current, approved, status: state.toLowerCase(), result: state.toLowerCase() === 'approved' && current === approved && approved.toLowerCase() !== 'none' ? 'Recorded approval matches version' : 'Hold for review' }; });
     return [file('approval-audit.csv', csv([['Deliverable', 'Current version', 'Approved version', 'Status', 'Result'], ...report.map(r => [r.name, r.current, r.approved, r.status, r.result])]))];
@@ -84,13 +118,14 @@ export const plugins: Plugin[] = [
     return [file('clip-cut-list.csv', csv([['Source', 'Start seconds', 'End seconds', 'Duration seconds', 'Title'], ...clips.map(c => [i.source, c.start, c.end, c.duration, c.title])])), json('clip-cut-list.json', { source: i.source, clips })];
   }}),
 ];
-export function runPlugin(id: string, input: Record<string, string>): Run {
+export function runPlugin(id: string, input: Record<string, string>): Run & { reviewTasks?: RevisionTask[] } {
   const plugin = plugins.find(p => p.id === id); if (!plugin) throw new Error('Unknown workflow.');
   const clean: Record<string, string> = Object.create(null);
   for (const f of plugin.fields) { const value = input[f.key]; if (typeof value !== 'string' || !value.trim()) throw new Error(`Enter ${f.label}.`); if (value.length > 100_000 || lines(value).length > 1000) throw new Error('Input is too large. Maximum 100 KB and 1,000 lines per field.'); clean[f.key] = value.trim(); }
-  const artifacts = plugin.execute(clean);
+  const reviewTasks = id === 'revision-tasks' ? parseRevisionNotes(clean.project, clean.revisions) : undefined;
+  const artifacts = reviewTasks ? revisionArtifacts(reviewTasks) : plugin.execute(clean);
   if (!artifacts.length || artifacts.some(a => !a.content || !/^[a-z0-9-]+\.[a-z]+$/.test(a.name))) throw new Error('Workflow did not produce valid output.');
-  return { pluginId: id, version: plugin.version, stages: ['Inputs validated', 'Local transformation completed', 'Output files prepared'], artifacts };
+  return { pluginId: id, version: plugin.version, stages: ['Inputs validated', 'Local transformation completed', 'Output files prepared'], artifacts, reviewTasks };
 }
 export function manifest(plugin: Plugin) {
   return { schemaVersion: 1, id: plugin.id, version: plugin.version, name: plugin.name, price: 0, execution: 'local', permissions: [], fields: plugin.fields.map(({key, label, multiline}) => ({key, label, multiline: Boolean(multiline)})), limitations: plugin.limit };
