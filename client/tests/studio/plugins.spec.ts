@@ -49,6 +49,8 @@ test('free catalog runs, downloads, saves selection and rejects invalid changes'
   await page.getByRole('button', {name:'Open free workflows'}).click();
   await expect(page.getByRole('heading', {name:'Free workflows.'})).toBeVisible();
   await page.getByRole('button', {name:/Revision Task Export/}).click();
+  await expect(page.getByRole('button', {name:'Analyze free-form feedback with AI'})).toBeDisabled();
+  await expect(page.getByRole('button', {name:'Verify Asana project'})).toBeDisabled();
   await page.getByRole('button', {name:'Load example'}).click();
   await page.getByRole('button', {name:'Run workflow', exact:true}).click();
   await expect(page.getByRole('heading', {name:'Review the extracted tasks'})).toBeVisible();
