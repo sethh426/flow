@@ -46,7 +46,7 @@ export default function PluginCatalog({ user }: { user: User | null }) {
   function choose(id: string) { setSelected(id); setValues({}); clearResult(); setError(''); setNotice(''); }
   function editTask(index: number, key: 'deliverable' | 'owner' | 'due' | 'change', value: string) {
     if (!reviewTasks) return;
-    setReviewTasks(reviewTasks.map((task, n) => n === index ? { ...task, [key]: value, ...(key === 'owner' ? { ownerGid: '' } : {}) } : task));
+    setReviewTasks(reviewTasks.map((task, n) => n === index ? { ...task, [key]: value, ownerGid: '' } : task));
     setReviewed(false); setError('');
   }
   function prepareFiles() {
