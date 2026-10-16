@@ -279,7 +279,7 @@ export default function FlowStudio() {
     const controller = new AbortController();
     abortRef.current = controller;
     try {
-      const connected = Boolean(user && useAI);
+      const connected = Boolean(user && useAI && service === "configured");
       const creative = connected
         ? await generateCreative(
             brief,
@@ -296,6 +296,8 @@ export default function FlowStudio() {
       };
       openProject(next);
       persist(next);
+      if (user && useAI && service !== "configured")
+        setNotice("AI service is unavailable. Flow created an editable local draft.");
     } catch (failure) {
       if (failure instanceof Error && failure.name !== "AbortError")
         setError(failure.message);
@@ -357,7 +359,13 @@ export default function FlowStudio() {
     let generatedFootage: File | null = null;
     let renderImages = images;
     try {
-      if (user) {
+      const requestedAI =
+        (project.brief.narrationMode === "ai" && !audio) ||
+        (project.brief.visualMode === "ai" && images.length === 0) ||
+        (project.brief.footageMode === "ai" && images.length === 0);
+      if (requestedAI && (!user || service !== "configured"))
+        throw new Error("AI media is unavailable. Turn off AI media in settings to run this workflow locally.");
+      if (user && service === "configured") {
         try {
           token = await user.getIdToken();
           jobId = crypto.randomUUID();
@@ -418,16 +426,20 @@ export default function FlowStudio() {
             setWorkflowStage("Loading AI narration");
             generatedNarration = await fetchProductionNarration(jobId, token, controller.signal);
           }
-        } catch {
+        } catch (failure) {
           if (jobId && token) {
             try {
               await cancelProductionJob(jobId, token);
             } catch {
               // The saved job id lets Flow recover the authoritative state later.
             }
+            const untracked = { ...project, productionJobId: undefined };
+            setProject(untracked);
+            persist(untracked);
           }
           token = null;
           jobId = null;
+          if (requestedAI) throw failure;
           setNotice("Server preparation is unavailable. Flow is continuing with a local-only run.");
         }
       }
@@ -546,7 +558,9 @@ export default function FlowStudio() {
       setPassword("");
       setDialog(null);
       setNotice(
-        "Account connected. AI creation is now available when the studio service is configured.",
+        service === "configured"
+          ? "Account connected. AI creation is available."
+          : "Account connected. Local creation is available while the AI service is offline.",
       );
     } catch (failure) {
       setError(
@@ -578,7 +592,7 @@ export default function FlowStudio() {
     setPlaying(false);
   };
   const activeScene = project?.creative.scenes[sceneIndex];
-  const connected = Boolean(user && useAI);
+  const connected = Boolean(user && useAI && service === "configured");
 
   return (
     <main className={styles.world}>
@@ -843,8 +857,9 @@ export default function FlowStudio() {
             </div>
             {!connected && (
               <p className={styles.modeNote}>
-                Starter mode creates editable drafts on this device. Connect
-                your account for AI creation.
+                Starter mode creates editable drafts on this device. {user && useAI
+                  ? "The AI service is currently unavailable."
+                  : "Connect your account for AI creation."}
               </p>
             )}
             {busy && (

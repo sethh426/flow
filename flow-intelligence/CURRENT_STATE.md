@@ -1,5 +1,14 @@
 # Current State — 2026-10-08
 
+## 2026-10-15 operational check and reliability work
+
+- Direct HTTP probe of `https://affiliateflow-abzfy.web.app/` returned 200, while `/api/studio/status` returned 503 HTML. The public Firebase initialization JSON returned 200. The separate `flowearlyadopters.web.app` site is a legacy landing page and its Studio route returned 404.
+- The current deployed Studio backend is therefore unavailable. A successful static client build or configured Firebase Auth is not proof that AI creation or production jobs work live.
+- Local change on `codex/flow-reliability-20261015`: when the Studio service is unavailable, signed-in users can still create local drafts; explicit AI-media runs fail clearly rather than silently becoming local runs; an abandoned server job ID is removed from the local draft on fallback.
+- The manual deployment workflow now deploys Functions and checks the live Studio status before releasing a new Hosting frontend. `scripts/deployment/check-studio-live.mjs` fails against the present 503, as intended. It checks reachability and configuration, not an authenticated provider call.
+- Targeted Studio TypeScript and lint checks passed. Two Chromium tests passed: create/edit/save/restore, and local workflow rendering with a valid ZIP. The Next.js static build passed, while warning that local build-time Firebase environment variables were absent; the Hosting runtime configuration route is available live.
+- Remaining production block: deploy and configure the canonical Studio backend and production worker, or implement and verify an alternative backend. Live authenticated AI generation, media processing, persistent artifacts, publishing, and end-to-end production remain unproven. Do not label Flow complete based on the local fallback.
+
 Baseline: `main` at `af6ee9bb6c83fd0c5a05a685e9d12324c93526e1`, the merge of the floating studio work.
 
 ## Verified from current source
