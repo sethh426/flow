@@ -2,6 +2,12 @@
 
 ## 2026-10-15 operational check and reliability work
 
+### 2026-10-16 deployment gate follow-up
+
+- On the pending reliability branch, the manual deployment workflow now uses the same GitHub OIDC / Google workload identity path as the separate workflow branch in PR #19. It checks the two identity settings, grants `id-token: write`, and deploys only the selected `studio`, `productionWorker`, and `api` functions before checking Studio and releasing Hosting. The older `FIREBASE_TOKEN` path is removed from this workflow.
+- The workflow file parses and the deploy, check, and Hosting steps are ordered as intended. No GitHub-to-Google authentication or Firebase deployment was performed. The previously observed workload identity provider restriction and production project prerequisites still need live resolution.
+- A fresh `check-studio-live.mjs` probe on October 16 returned `503 text/html` from `/api/studio/status`. The release gate therefore remains closed. A successful workflow after backend setup would establish only public status/configuration; an authenticated provider generation must be exercised separately.
+
 - Direct HTTP probe of `https://affiliateflow-abzfy.web.app/` returned 200, while `/api/studio/status` returned 503 HTML. The public Firebase initialization JSON returned 200. The separate `flowearlyadopters.web.app` site is a legacy landing page and its Studio route returned 404.
 - The current deployed Studio backend is therefore unavailable. A successful static client build or configured Firebase Auth is not proof that AI creation or production jobs work live.
 - Local change on `codex/flow-reliability-20261015`: when the Studio service is unavailable, signed-in users can still create local drafts; explicit AI-media runs fail clearly rather than silently becoming local runs; an abandoned server job ID is removed from the local draft on fallback.
