@@ -52,6 +52,7 @@ import {
 } from "./model";
 import { drawFrame, loadImages, renderVideo } from "./video";
 import { createBundle } from "./bundle";
+import { studioApiUrl } from "./api-url";
 import styles from "./studio.module.css";
 
 const kinds: { id: CreationKind; label: string; icon: typeof Film }[] = [
@@ -131,7 +132,7 @@ export default function FlowStudio() {
     setFootageAvailable(false);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
-    void fetch("/api/studio/status", { signal: controller.signal })
+    void fetch(studioApiUrl("/api/studio/status"), { signal: controller.signal })
       .then(async (response) => {
         if (!response.ok || !response.headers.get("content-type")?.includes("application/json"))
           return false;
