@@ -1,28 +1,67 @@
-# Flow Studio on OVH
+# Cut over intothebattle.com to Flow on OVH
 
-This is a separate, single-replica API for the existing Firebase Spark hosted
-client. It does not need Firebase Functions, Firestore, or a service account key.
-It verifies Firebase ID-token signatures against Google's published certificates.
-It cannot detect token revocation until token expiry; the current API surface only
-creates drafts and does not expose account data.
+This Compose project serves Flow's static export and its Studio API on the
+same HTTPS domain. Firebase Authentication stays on project
+`affiliateflow-abzfy` with Firebase billing off. The IntoTheBattle app and its
+PostgreSQL/media volumes must be backed up and then stopped before this stack
+can bind ports 80 and 443. Do not delete those volumes: they are the rollback.
 
-1. Put this checkout in its own directory on the VPS. Do not replace another
-   site's Caddy configuration or Docker project.
-2. Copy `deploy/ovh/env.example` to `deploy/ovh/.env`, chmod it `600`, and
-   supply a server-side OpenAI key and a verified compatible model ID.
-3. Run `docker compose -f deploy/ovh/compose.yml up -d --build` from the repo
-   root. The port is accessible only on the VPS loopback address.
-4. Give the API its own DNS name pointing to the VPS. Configure an existing
-   HTTPS reverse proxy for that host with `reverse_proxy 127.0.0.1:8787`, or
-   provision an isolated proxy. Check `https://<api-host>/healthz` and
-   `/api/studio/status` before publishing the host to clients.
-5. Build the static client with `NEXT_PUBLIC_FLOW_STUDIO_API_ORIGIN=https://<api-host>`.
-   Run its checks, then deploy **Hosting only** to `affiliateflow-abzfy`.
+## Preflight before changing the live domain
 
-Keep `.env` and the provider key off GitHub and out of the static client. The
-daily limit is 20 attempts per Firebase user and 200 total attempts (UTC),
-stored on `studio_usage`. These are cost ceilings, not guarantees of cost.
-Run one replica; this file-backed limit is not a distributed rate limiter.
-The frontend's other production job endpoints still target the existing
-Firebase backend and have no OVH implementation; the status response disables
-AI media controls. Starter drafts and local export remain local.
+1. Confirm that `intothebattle.com` and `www.intothebattle.com` resolve to the
+   actual VPS selected for Flow. The installed IntoTheBattle deployment may be
+   on a different server from the OVH VPS discovered in account email. If DNS
+   points elsewhere, change it only after Flow passes local VPS health checks.
+2. Obtain SSH access and verify the host fingerprint against the OVH console.
+   Inspect `docker compose ps`, free memory/disk, and `/opt/intothebattle` on
+   that server. Save a verified database/media backup and a copy of its Compose
+   config and environment using the existing IntoTheBattle backup runbook.
+   Disable its GitHub Actions production auto-deploy before the cutover so a
+   later push cannot reclaim ports 80 and 443.
+3. In Firebase Authentication for `affiliateflow-abzfy`, add
+   `intothebattle.com` to Authorized domains. Keep the project's existing
+   `affiliateflow-abzfy.firebaseapp.com` auth domain for this build. Confirm
+   Google sign-in is enabled and test it after the cutover. Public Firebase
+   web config comes from the same project; do not use IntoTheBattle credentials.
+4. Copy `deploy/ovh/env.example` to `deploy/ovh/.env`, mode 0600. Fill the
+   actual Firebase *web* app values, `FLOW_STUDIO_MODEL`, and the server-only
+   `FLOW_STUDIO_OPENAI_KEY`. The public web API key and app ID are safe in the
+   client build; the provider key must never enter the client build or Git.
+
+## Cutover
+
+From the verified VPS, stage this Flow checkout in `/opt/flow` and run
+`docker compose --env-file deploy/ovh/.env -f deploy/ovh/compose.yml build`.
+Check the generated static export and test the Studio process on the Compose
+network. Then stop the old IntoTheBattle Compose project **without `down -v`**,
+preserving its database and media volumes. Run:
+
+```bash
+docker compose --env-file deploy/ovh/.env -f deploy/ovh/compose.yml up -d
+docker compose --env-file deploy/ovh/.env -f deploy/ovh/compose.yml ps
+```
+
+Flow's Caddy claims the existing domain and issues HTTPS certificates. Verify
+`https://intothebattle.com/`, `/healthz`, and `/api/studio/status`; confirm
+the latter reports `configured: true`. Then test Firebase Google sign-in and
+one authenticated creative request end-to-end. `www.intothebattle.com`
+redirects to the apex. If DNS does not yet target this VPS, update the apex A
+record and `www` record after the local checks, without altering mail records.
+
+## Rollback
+
+If the site or sign-in fails, stop Flow with
+`docker compose --env-file deploy/ovh/.env -f deploy/ovh/compose.yml down`
+(no `-v`), restore the previous DNS if it changed, and restart the existing
+IntoTheBattle Compose project from its original directory and environment.
+Verify its homepage, health check, and a signed-in route. Retain the backup and
+database/media volumes until recovery is tested.
+
+The Studio API verifies Firebase tokens with Google's public certificates and
+cannot detect revocation until token expiry. It caps attempts at 20 per user
+and 200 total per UTC day, using the persistent `studio_usage` volume and one
+replica. These are cost ceilings, not guarantees of cost. It handles creative
+generation only; AI narration, scene visuals, Veo footage, job persistence,
+and publishing are not connected in this OVH stack. Starter drafts and local
+video export continue to work. The separate Firebase Hosting site is left
+available as a fallback URL; this cutover does not enable Firebase billing.
