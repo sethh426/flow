@@ -76,6 +76,8 @@ No private service-account JSON, raw `.env` files, private keys, or secret-beari
 
 The imported deployment workflows are manual-only until the destination Firebase/GCP projects and repository secrets are reviewed. See [SECURITY.md](SECURITY.md) before deploying. The still-running early-adopter site was found to contain an old browser-side Gemini key; rotate/revoke that key and redeploy a server-mediated implementation.
 
+The `Deploy Flow to Firebase` workflow is a manual release for `affiliateflow-abzfy`, separate from the `flowearlyadopters` site. After the project, permissions, secrets, and backend access controls have been reviewed, run it from a tested commit. It builds the static client and selected Functions, writes a public `flow-release.json` containing that commit SHA, deploys, and checks that Hosting serves the same commit and `/api/studio/status` responds with AI creation configured. A green build alone does not prove a live release. The workflow currently requires the repository's `FIREBASE_TOKEN`; replace this long-lived token with workload identity federation before routine releases. Provider generation, sign-in, and production rendering still require live verification after a release.
+
 ## Recovery policy
 
 The active code is kept at the repository root. Historical variants are stored under `legacy/` with their provenance and dates, instead of silently overwriting newer files. Dependencies, build output, Firebase caches, raw archives, shell history, nested Git metadata, and credential files were intentionally excluded.
