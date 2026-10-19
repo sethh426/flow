@@ -6,9 +6,13 @@ Update: The owner authorized replacing IntoTheBattle at `intothebattle.com`
 with Flow while keeping the domain and Firebase billing disabled. The Flow
 OVH package now includes its own static client, Caddy HTTPS router, and Studio
 API on the same domain. This is a *prepared cutover only*: the live domain still
-serves IntoTheBattle, and the server's actual SSH access, DNS target, Firebase
-Auth domain authorization, provider key, backup and rollback state have not
-been verified. The old stack's auto-deploy must be disabled during cutover.
+serves IntoTheBattle. Read-only DNS from the connected Remote Desktop Commander
+device resolved both apex and `www` to `15.204.175.46`, the same IPv4 listed
+for `vps-6dd634b1.vps.ovh.us`; no DNS change appears necessary. The server's
+actual SSH access, Firebase Auth domain authorization, provider key, backup
+and rollback state have not been verified. The connected device has no SSH
+known-hosts file, so do not trust an unverified first-contact fingerprint.
+The old stack's auto-deploy must be disabled during cutover.
 Its PostgreSQL/media volumes must be retained. The new static image requires
 the public Firebase web app config at build time because OVH does not provide
 Firebase Hosting's `/__/firebase/init.json` runtime endpoint.
