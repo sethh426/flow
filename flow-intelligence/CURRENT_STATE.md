@@ -1,5 +1,13 @@
 # Current State — 2026-10-08
 
+## Live Hosting release — 2026-10-19
+
+The owner-authorized Firebase CLI account can access both `affiliateflow-abzfy` (the main app target in `.firebaserc`) and the separate `flowearlyadopters` project. After a clean static build, focused studio type check and lint, only Firebase Hosting was deployed to `affiliateflow-abzfy`. The live `flow-release.json` matches merged commit `0e1666ef248b28ec78c74d450be6183363b9be9e`; the homepage now has an October 19, 2026 Last-Modified timestamp and title `Flow — Your creative autopilot`.
+
+A mobile Chromium run against `https://affiliateflow-abzfy.web.app/` opened the floating interface, created a starter draft, and exported a ZIP with `creative.json` and a video, with zero page errors. This is a verified signed-out local workflow running on the live Hosting site. The early-adopter site was not changed.
+
+The connected backend remains unavailable. `functions:list` for the main project contains no `studio` Function; the Hosting deploy warned that its rewrite has no valid endpoint, and `/api/studio/status` returned HTTP 404 after the release. A metadata request for the `FLOW_STUDIO_OPENAI_KEY` secret returned HTTP 403 explicitly stating that billing is disabled for the project. No Function or secret was deployed or changed. AI creation, authenticated production, provider calls, server media, and publishing are unverified and unavailable through this site. The full manual release workflow remains blocked until a billing-backed backend and its secret/model configuration are ready, or a different backend is deliberately chosen.
+
 ## Verification update — 2026-10-19
 
 At `main` commit `65499c9dfa61aa7f6ce7b36abb1dfe9ad5611792`, the Veo footage implementation is merged, superseding the "under review" note below. In a fresh checkout, `npm run check` and the static client build passed, and all 10 studio Chromium tests passed, including local vertical video/ZIP export. These tests do not prove a live provider call.
