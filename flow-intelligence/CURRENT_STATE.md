@@ -1,5 +1,13 @@
 # Current State — 2026-10-08
 
+## Verification update — 2026-10-19
+
+At `main` commit `65499c9dfa61aa7f6ce7b36abb1dfe9ad5611792`, the Veo footage implementation is merged, superseding the "under review" note below. In a fresh checkout, `npm run check` and the static client build passed, and all 10 studio Chromium tests passed, including local vertical video/ZIP export. These tests do not prove a live provider call.
+
+The configured live Hosting target `https://affiliateflow-abzfy.web.app/` served an older Affiliate Flow build (HTTP 200; Last-Modified November 2025), while `/api/studio/status` returned HTTP 503 on October 19, 2026. Hosting's `/__/firebase/init.json` returned JSON successfully. The deploy workflow is manual by repository policy, and this workspace has no Firebase deploy credential. The separate `flowearlyadopters.web.app` site is a different Firebase project and is not affected by the primary Flow workflow.
+
+This branch adds a public commit marker to the manual release and verifies the deployed SHA and configured studio endpoint before claiming success. It does not itself deploy or prove authenticated AI generation. Before dispatching a release, review the destination project, credentials, access controls, and provider configuration per `SECURITY.md`.
+
 Baseline: `main` at `af6ee9bb6c83fd0c5a05a685e9d12324c93526e1`, the merge of the floating studio work.
 
 ## Verified from current source
