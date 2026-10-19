@@ -1,5 +1,29 @@
 # Current State — 2026-10-08
 
+## OVH backend preparation — 2026-10-19
+
+The owner chose to keep Firebase billing disabled and use an OVH VPS for the
+connected backend. A separate single-replica Studio API implementation is under
+review in this change. It verifies Firebase ID-token signatures using Google's
+public certificates, shares the current creative schema/prompt, holds the provider
+key on the server, enforces 20 attempts per user and 200 total per UTC day in a
+persistent Docker volume, and reports only AI creative generation as available.
+The static client accepts `NEXT_PUBLIC_FLOW_STUDIO_API_ORIGIN` at build time;
+without it, the existing same-origin behavior remains.
+
+Local evidence: new OVH request/token tests and all 22 existing Studio backend
+tests pass; client Studio type check, lint, and static build pass. Docker and a live provider call
+were not run here. No OVH deployment, DNS, proxy, key installation, or Firebase
+Hosting redeploy has occurred. The identified OVH Ubuntu VPS has no confirmed SSH
+credential in this workspace. The unrelated IntoTheBattle deployment workflow has
+recent successful runs with SSH steps skipped because required variables are absent.
+Do not treat the new service as connected until its HTTPS status and authenticated
+create calls succeed live and the static client is rebuilt with its API origin.
+
+Firebase billing remains off. The existing Firebase production-job endpoints are
+not implemented in the OVH service, so AI media and server job capabilities are
+not claimed as working on this route. Offline starter creation remains available.
+
 ## Live Hosting release — 2026-10-19
 
 The owner-authorized Firebase CLI account can access both `affiliateflow-abzfy` (the main app target in `.firebaserc`) and the separate `flowearlyadopters` project. After a clean static build, focused studio type check and lint, only Firebase Hosting was deployed to `affiliateflow-abzfy`. The live `flow-release.json` matches merged commit `0e1666ef248b28ec78c74d450be6183363b9be9e`; the homepage now has an October 19, 2026 Last-Modified timestamp and title `Flow — Your creative autopilot`.
