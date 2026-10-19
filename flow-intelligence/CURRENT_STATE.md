@@ -2,6 +2,17 @@
 
 ## OVH backend preparation — 2026-10-19
 
+Update: The owner authorized replacing IntoTheBattle at `intothebattle.com`
+with Flow while keeping the domain and Firebase billing disabled. The Flow
+OVH package now includes its own static client, Caddy HTTPS router, and Studio
+API on the same domain. This is a *prepared cutover only*: the live domain still
+serves IntoTheBattle, and the server's actual SSH access, DNS target, Firebase
+Auth domain authorization, provider key, backup and rollback state have not
+been verified. The old stack's auto-deploy must be disabled during cutover.
+Its PostgreSQL/media volumes must be retained. The new static image requires
+the public Firebase web app config at build time because OVH does not provide
+Firebase Hosting's `/__/firebase/init.json` runtime endpoint.
+
 The owner chose to keep Firebase billing disabled and use an OVH VPS for the
 connected backend. A separate single-replica Studio API implementation is under
 review in this change. It verifies Firebase ID-token signatures using Google's
