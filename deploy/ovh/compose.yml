@@ -1,0 +1,21 @@
+services:
+  studio:
+    build:
+      context: ../../services/neural-orchestrator
+      dockerfile: Dockerfile.ovh
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:8787:8787"
+    volumes:
+      - studio_usage:/var/lib/flow-studio
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 100
+    mem_limit: 768m
+
+volumes:
+  studio_usage:
