@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { studioApiUrl } from "./api-url";
 
 export const sceneSchema = z.object({
   label: z.string().min(1).max(40),
@@ -215,7 +216,7 @@ export async function generateCreative(
   token: string,
   signal: AbortSignal,
 ): Promise<Creative> {
-  const response = await fetch("/api/studio/create", {
+  const response = await fetch(studioApiUrl("/api/studio/create"), {
     method: "POST",
     signal,
     headers: {
