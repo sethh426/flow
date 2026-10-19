@@ -6,8 +6,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const nextConfig = {
-  // Canonical deployment model: static export on Firebase Hosting, with
-  // /api/** handled by Firebase Functions through the root firebase.json.
+  // Static export can run on Firebase Hosting or the OVH web container.
+  // The hosting layer routes /api/studio/** to its configured backend.
   output: 'export',
   reactStrictMode: true,
   compress: true,
