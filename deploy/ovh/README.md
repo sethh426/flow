@@ -8,10 +8,9 @@ can bind ports 80 and 443. Do not delete those volumes: they are the rollback.
 
 ## Preflight before changing the live domain
 
-1. Confirm that `intothebattle.com` and `www.intothebattle.com` resolve to the
-   actual VPS selected for Flow. The installed IntoTheBattle deployment may be
-   on a different server from the OVH VPS discovered in account email. If DNS
-   points elsewhere, change it only after Flow passes local VPS health checks.
+1. Confirm that `intothebattle.com` and `www.intothebattle.com` still resolve
+   to the VPS selected for Flow. On 2026-10-19 both resolved to
+   `15.204.175.46`, matching `vps-6dd634b1.vps.ovh.us`. Recheck at cutover.
 2. Obtain SSH access and verify the host fingerprint against the OVH console.
    Inspect `docker compose ps`, free memory/disk, and `/opt/intothebattle` on
    that server. Save a verified database/media backup and a copy of its Compose
