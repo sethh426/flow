@@ -48,6 +48,10 @@ test("Firebase token verification enforces signature, project, issuer, and subje
       .setIssuer(issuer)
       .setIssuedAt().setExpirationTime("1h").sign(key);
     assert.equal(await verifyFirebaseToken(await sign()), "firebase-user");
+    const signed = await sign();
+    const parts = signed.split(".");
+    parts[1] = Buffer.from(JSON.stringify({ sub: "attacker", aud: "affiliateflow-abzfy" })).toString("base64url");
+    await assert.rejects(verifyFirebaseToken(parts.join(".")));
     await assert.rejects(verifyFirebaseToken(await sign({}, "other-project")));
     await assert.rejects(verifyFirebaseToken(await sign({}, "affiliateflow-abzfy", "https://attacker.example")));
     await assert.rejects(verifyFirebaseToken(await sign({ auth_time: Math.floor(Date.now() / 1000) + 3600 })));
