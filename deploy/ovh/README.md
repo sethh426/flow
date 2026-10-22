@@ -1,4 +1,40 @@
-# Cut over intothebattle.com to Flow on OVH
+# Flow Studio on OVH
+
+## Current sidecar deployment (2026-10-22)
+
+`studio-sidecar.compose.yml` runs the Studio API on the existing
+`intothebattle_default` Docker network. It has no public port. The existing
+IntoTheBattle Caddy routes only `/api/studio/*` to `flow-studio:8787` and
+continues serving its app for every other path. The route is live at
+`https://intothebattle.com/api/studio/status`; Flow's client on Firebase
+Hosting uses that HTTPS origin. `intothebattle-Caddyfile.candidate` records
+exactly the Caddy config deployed on the VPS. Its old version is backed up
+under `/opt/intothebattle/backups/flow-cutover-20261021/`.
+
+The ignored `deploy/ovh/.env` on the VPS contains the server-held Groq key,
+`FLOW_STUDIO_PROVIDER=groq`, an explicit model, and the exact allowed Flow
+origins. Keep it mode 0600 and out of Git. From `/opt/flow`:
+
+```bash
+docker compose -f deploy/ovh/studio-sidecar.compose.yml up -d --build
+docker compose -f deploy/ovh/studio-sidecar.compose.yml ps
+```
+
+A future IntoTheBattle deploy may replace its Caddyfile. Draft
+[IntoTheBattle PR #6](https://github.com/sethh426/Intothebattle/pull/6)
+carries the `/api/studio/*` handle into that project's source. Merge and
+verify it before the next automated release; keep the sidecar network attached.
+The sidecar usage quota requires one replica and its persistent `studio_usage`
+volume. Roll back the
+route by restoring the backed-up Caddyfile and reloading Caddy, then stop the
+sidecar with `docker compose -f deploy/ovh/studio-sidecar.compose.yml down`
+(without `-v`). Keep the existing IntoTheBattle volumes intact.
+
+Only authenticated creative generation is provided by this endpoint. Client
+starter drafts and local export remain separate. Authentication via the live
+Flow domain and a complete signed-in generation still require a browser test.
+
+## Earlier full-domain cutover plan (not performed)
 
 This Compose project serves Flow's static export and its Studio API on the
 same HTTPS domain. Firebase Authentication stays on project

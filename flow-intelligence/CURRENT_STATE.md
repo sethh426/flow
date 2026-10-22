@@ -1,4 +1,34 @@
-# Current State — 2026-10-08
+# Current State — 2026-10-22
+
+## Flow domain and OVH Studio sidecar — 2026-10-22
+
+`uniflow.live` resolves to Firebase Hosting, serves the October 19 Flow
+release over HTTPS, and is the current Flow domain. Firebase billing remains
+off. The former full cutover plan below is historical: IntoTheBattle remains
+live at `intothebattle.com` on OVH. Its PostgreSQL and media volumes were
+backed up before changing the Caddy route.
+
+The OVH VPS now runs an isolated, single-replica Studio sidecar on the
+IntoTheBattle Docker network. Caddy sends `/api/studio/*` to it, while the
+IntoTheBattle homepage remains available. Public status responds HTTP 200,
+reports configured AI creative generation, and sends exact-origin CORS for
+`uniflow.live`; an unsigned create returns HTTP 401. A Groq model and API
+credential are installed only in the ignored, mode-0600 server environment.
+A direct provider JSON-mode completion succeeded. The focused OVH tests and
+Studio client type check/lint passed. The other supplied provider credentials
+have not been connected to capabilities in this sidecar.
+
+The Firebase Hosting client was rebuilt with
+`NEXT_PUBLIC_FLOW_STUDIO_API_ORIGIN=https://intothebattle.com` and deployed
+only to Hosting on `affiliateflow-abzfy`. The live `uniflow.live` homepage
+returned HTTP 200 with an October 22 Last-Modified timestamp. Firebase Auth
+Authorized domains and the existing browser API key referrer allowlist now
+include the apex and `www`; a public Auth project-config request from the
+apex returned HTTP 200 and both domains. A signed-in end-to-end creative
+request remains unverified. Draft IntoTheBattle PR #6 preserves the currently
+live Caddy route in that project's source but is not merged. Only creative
+generation is connected; narration, AI visuals, generated footage, durable
+server jobs, and publishing are not.
 
 ## OVH backend preparation — 2026-10-19
 
