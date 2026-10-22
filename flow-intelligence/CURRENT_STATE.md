@@ -24,9 +24,13 @@ only to Hosting on `affiliateflow-abzfy`. The live `uniflow.live` homepage
 returned HTTP 200 with an October 22 Last-Modified timestamp. Firebase Auth
 Authorized domains and the existing browser API key referrer allowlist now
 include the apex and `www`; a public Auth project-config request from the
-apex returned HTTP 200 and both domains. A signed-in end-to-end creative
-request remains unverified. Draft IntoTheBattle PR #6 preserves the currently
-live Caddy route in that project's source but is not merged. Only creative
+apex returned HTTP 200 and both domains. A temporary Firebase Auth account
+then made a live authenticated `POST /api/studio/create`; the response was
+HTTP 200, `source: ai`, with five scenes and six workflow steps. The test
+account was deleted successfully. This verifies the token, CORS, proxy,
+provider, and response schema path; a human Google sign-in through the browser
+UI remains untested. Draft IntoTheBattle PR #6 preserves the currently live
+Caddy route in that project's source but is not merged. Only creative
 generation is connected; narration, AI visuals, generated footage, durable
 server jobs, and publishing are not.
 
