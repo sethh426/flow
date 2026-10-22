@@ -31,8 +31,10 @@ sidecar with `docker compose -f deploy/ovh/studio-sidecar.compose.yml down`
 (without `-v`). Keep the existing IntoTheBattle volumes intact.
 
 Only authenticated creative generation is provided by this endpoint. Client
-starter drafts and local export remain separate. Authentication via the live
-Flow domain and a complete signed-in generation still require a browser test.
+starter drafts and local export remain separate. A live temporary Firebase
+account produced a schema-valid AI creative through this endpoint and was
+then deleted. Human Google sign-in through the Flow browser UI is not yet
+tested.
 
 ## Earlier full-domain cutover plan (not performed)
 
