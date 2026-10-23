@@ -8,17 +8,19 @@ creative but invented “2 clicks,” an app, a calendar/slots, and a confirmati
 screen despite “no invented claims.” The existing schema validates structure,
 not truth. This is a verified quality failure in the connected AI path.
 
-A candidate correction in the draft Flow branch explicitly limits audience
-copy to facts in the brief, detects several high-risk unsupported specifics,
-retries a rejected draft once, and fails closed rather than displaying a
-known-unsafe result. Three OVH tests and 22 existing Studio backend tests pass.
-The heuristic is deliberately narrow and cannot certify every claim. This
-candidate has **not** been deployed: the connected desktop command runner began
-timing out, including on a trivial command, before a revised live-model probe
-or sidecar rebuild could run. The live sidecar still uses the previous prompt.
-Next: restore the command runner, probe sparse and fact-rich briefs against the
-configured model, review output manually, deploy only after quality checks, and
-verify a signed-in browser creation plus exported artifact.
+The OVH sidecar now limits audience copy to facts in the brief, detects several
+high-risk unsupported specifics, retries a rejected draft once, and returns an
+actionable error rather than displaying a known-unsafe result. Three OVH tests
+and 22 existing Studio backend tests pass. The heuristic is deliberately narrow
+and cannot certify every claim. Direct Groq probes with sparse and fact-rich
+cleaning briefs still produced invented speed, booking mechanics, and service
+claims; the revised guard rejected the observed high-risk details. The service
+was rebuilt on October 23. Public status reports configured AI, unsigned create
+returns 401, and both `uniflow.live` and the IntoTheBattle homepage return 200.
+A signed-in browser creation and exported artifact with this revision remain
+unverified. The provider often needs a more reliable grounded creative method;
+rejection can occur even for a fact-rich brief, so this is an interim safety
+correction rather than a finished one-button production flow.
 
 ## Flow signed-out creation correction — 2026-10-23
 
