@@ -141,12 +141,12 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
       creative = candidate;
       break;
     }
-    if (!creative) return json(res, 502, { error: "Flow could not make a grounded draft from this brief. Add verified details and try again, or use an editable outline." });
+    if (!creative) return json(res, 502, { code: "ungrounded", error: "Flow could not make a grounded draft from this brief. Add verified details and try again, or use an editable outline." });
     json(res, 200, { creative, source: "ai" });
   } catch {
     // Never log the brief, token, provider response body, or SDK error text.
     console.error("Studio creation failed: provider or usage storage");
-    json(res, 502, { error: "Flow could not finish this draft. Try again, or switch to starter mode." });
+    json(res, 502, { error: "Flow could not finish this draft. Try again, or make an editable outline." });
   } finally { busy.delete(uid); }
 }
 
