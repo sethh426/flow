@@ -581,6 +581,11 @@ export default function FlowStudio() {
   };
   const activeScene = project?.creative.scenes[sceneIndex];
   const connected = Boolean(user && useAI && service === "configured");
+  const requestCreation = () => {
+    if (busy || rendering || service === "checking" || brief.prompt.trim().length < 3) return;
+    if (!user && useAI && service === "configured") setDialog("account");
+    else void create();
+  };
 
   return (
     <main className={styles.world}>
@@ -757,7 +762,7 @@ export default function FlowStudio() {
               onKeyDown={(event) => {
                 if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
                   event.preventDefault();
-                  void create();
+                  requestCreation();
                 }
               }}
             />
@@ -790,10 +795,7 @@ export default function FlowStudio() {
               </div>
               <button
                 className={styles.createButton}
-                onClick={() => {
-                  if (!user && useAI && service === "configured") setDialog("account");
-                  else void create();
-                }}
+                onClick={requestCreation}
                 disabled={busy || service === "checking" || brief.prompt.trim().length < 3}
               >
                 {busy ? (
@@ -816,7 +818,7 @@ export default function FlowStudio() {
             {service !== "checking" && (user || service === "configured") && (
               <button
                 className={styles.starterChoice}
-                disabled={busy}
+                disabled={busy || brief.prompt.trim().length < 3}
                 onClick={() => void create(true)}
               >
                 {user ? "Make an editable outline instead" : "Make an editable outline without signing in"}
