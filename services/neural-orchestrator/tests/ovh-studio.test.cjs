@@ -7,6 +7,26 @@ const { join } = require("node:path");
 const { execFileSync } = require("node:child_process");
 const { SignJWT, importPKCS8 } = require("jose");
 const { handle, verifyFirebaseToken } = require("../dist/ovh-studio");
+const { buildCreativePrompt, unsupportedCreativeClaims } = require("../dist/studio-contract");
+
+test("AI prompt and groundedness guard reject invented booking mechanics", () => {
+  const brief = {
+    prompt: "Make a 15-second video for an Indianapolis home-cleaning business explaining easy online booking. No invented claims.",
+    kind: "video", platform: "TikTok / Reels", tone: "Warm & personal", duration: 15, look: "ember",
+    narrationMode: "script", visualMode: "local", footageMode: "local",
+  };
+  assert.match(buildCreativePrompt(brief), /sole source of facts/);
+  const creative = {
+    title: "Easy online booking",
+    hook: "Book in 2 clicks",
+    alternateHooks: ["Online booking", "Book from our app"],
+    caption: "Pick a time in seconds.",
+    scenes: [{ text: "Confirm instantly", narration: "Choose a slot on our calendar.", direction: "If available, show the real calendar." }],
+  };
+  assert.deepEqual(unsupportedCreativeClaims(brief, creative), ["2 clicks", "in seconds", "instantly", "our app", "calendar"]);
+  const supplied = { ...brief, prompt: brief.prompt + " Customers can book in 2 clicks through our app with a calendar." };
+  assert.deepEqual(unsupportedCreativeClaims(supplied, { ...creative, caption: "Online booking", scenes: [{ text: "Online booking", narration: "See how it works.", direction: "" }] }), []);
+});
 
 test("OVH service reports only configured capabilities and rejects untrusted requests", async () => {
   const server = createServer((req, res) => { void handle(req, res); });
