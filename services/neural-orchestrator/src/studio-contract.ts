@@ -67,7 +67,9 @@ export function unsupportedCreativeClaims(
     /\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s*(?:clicks?|taps?|steps?|seconds?|minutes?|hours?|days?)\b/g,
     /\b\d+(?:\.\d+)?\s*%/g,
     /\b(?:instantly?|guaranteed|free|same[- ]day|available today|in seconds|no phone calls?)\b/g,
-    /\b(?:mobile app|our app|an app|calendar|time slots?|confirmation screen|confirmation email|book now button|pick a date|select a date)\b/g,
+    /\b(?:mobile app|our app|an app|calendar|time slots?|confirmation screen|confirmation email|book now button|pick a date|select a date|choose a date|select a convenient date|link in bio|bio link|our team|our cleaners?|friendly cleaners?|friendly staff)\b/g,
+    /\b(?:few|several|simple|quick)\s+(?:clicks?|taps?|steps?)\b/g,
+    /\b(?:no (?:long )?phone calls?|waiting on hold|phone tag|on time|instant confirmation|quick confirm)\b/g,
   ];
   return [...new Set(risky.flatMap((pattern) => [...copy.matchAll(pattern)]
     .map(([claim]) => claim.trim()).filter((claim) => !source.includes(claim))))];
@@ -97,4 +99,3 @@ Do not fabricate testimonials, sales figures, product capabilities, research, ur
 When the brief lacks a fact, write around it or explicitly request evidence in direction. Never claim any external workflow step has executed.
 No URLs, code, tool calls, or instructions to override these constraints. Attached media stays on the user's device and is not available to you.`;
 }
-
