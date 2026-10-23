@@ -24,6 +24,7 @@ test("AI prompt and groundedness guard reject invented booking mechanics", () =>
     scenes: [{ text: "Confirm instantly", narration: "Choose a slot on our calendar.", direction: "If available, show the real calendar." }],
   };
   assert.deepEqual(unsupportedCreativeClaims(brief, creative), ["2 clicks", "in seconds", "instantly", "our app", "calendar"]);
+  assert.deepEqual(unsupportedCreativeClaims(brief, { ...creative, hook: "Our team helps you choose a date in a few steps", alternateHooks: [], caption: "", scenes: [] }), ["our team", "choose a date", "few steps"]);
   const supplied = { ...brief, prompt: brief.prompt + " Customers can book in 2 clicks through our app with a calendar." };
   assert.deepEqual(unsupportedCreativeClaims(supplied, { ...creative, caption: "Online booking", scenes: [{ text: "Online booking", narration: "See how it works.", direction: "" }] }), []);
 });
