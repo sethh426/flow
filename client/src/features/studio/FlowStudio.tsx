@@ -85,6 +85,7 @@ export default function FlowStudio() {
   const [narrationAvailable, setNarrationAvailable] = useState(false);
   const [visualsAvailable, setVisualsAvailable] = useState(false);
   const [footageAvailable, setFootageAvailable] = useState(false);
+  const [productionAvailable, setProductionAvailable] = useState(false);
   const [connectionAttempt, setConnectionAttempt] = useState(0);
   const { user, loginWithGoogle, login, signup, logout, configured: isFirebaseConfigured, loading: authLoading, retryConnection } = useAuth();
   const [brief, setBrief] = useState<Brief>(initialBrief);
@@ -130,6 +131,7 @@ export default function FlowStudio() {
     setNarrationAvailable(false);
     setVisualsAvailable(false);
     setFootageAvailable(false);
+    setProductionAvailable(false);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
     void fetch(studioApiUrl("/api/studio/status"), { signal: controller.signal })
@@ -140,12 +142,13 @@ export default function FlowStudio() {
         if (typeof body !== "object" || body === null) return false;
         const status = body as {
           configured?: boolean;
-          capabilities?: { narration?: unknown; visuals?: unknown; footage?: unknown };
+          capabilities?: { narration?: unknown; visuals?: unknown; footage?: unknown; productionJobs?: unknown };
         };
         if (active && !controller.signal.aborted) {
           setNarrationAvailable(status.capabilities?.narration === "ai");
           setVisualsAvailable(status.capabilities?.visuals === "ai");
           setFootageAvailable(status.capabilities?.footage === "ai");
+          setProductionAvailable(status.capabilities?.productionJobs === true);
         }
         return status.configured === true;
       })
@@ -193,7 +196,7 @@ export default function FlowStudio() {
     drawFrame(canvas.current, project, time, { images });
   }, [project, time, images]);
   useEffect(() => {
-    if (!project?.productionJobId || !user || rendering) return;
+    if (!project?.productionJobId || !user || !productionAvailable || rendering) return;
     let active = true;
     void user.getIdToken()
       .then((token) => getProductionJob(project.productionJobId!, token))
@@ -219,7 +222,7 @@ export default function FlowStudio() {
         if (active) setWorkflowStage("");
       });
     return () => { active = false; };
-  }, [project?.productionJobId, user, rendering]);
+  }, [project?.productionJobId, user, productionAvailable, rendering]);
   useEffect(() => {
     if (!playing || !project) return;
     let frame = 0;
@@ -280,7 +283,7 @@ export default function FlowStudio() {
     const controller = new AbortController();
     abortRef.current = controller;
     try {
-      const connected = Boolean(user && useAI && !starterOnly);
+      const connected = Boolean(user && useAI && service === "configured" && !starterOnly);
       const creative = connected
         ? await generateCreative(
             brief,
@@ -358,7 +361,7 @@ export default function FlowStudio() {
     let generatedFootage: File | null = null;
     let renderImages = images;
     try {
-      if (user) {
+      if (user && productionAvailable) {
         try {
           token = await user.getIdToken();
           jobId = crypto.randomUUID();
@@ -419,7 +422,7 @@ export default function FlowStudio() {
             setWorkflowStage("Loading AI narration");
             generatedNarration = await fetchProductionNarration(jobId, token, controller.signal);
           }
-        } catch {
+        } catch (failure) {
           if (jobId && token) {
             try {
               await cancelProductionJob(jobId, token);
@@ -427,9 +430,7 @@ export default function FlowStudio() {
               // The saved job id lets Flow recover the authoritative state later.
             }
           }
-          token = null;
-          jobId = null;
-          setNotice("Server preparation is unavailable. Flow is continuing with a local-only run.");
+          throw failure;
         }
       }
 
@@ -579,7 +580,7 @@ export default function FlowStudio() {
     setPlaying(false);
   };
   const activeScene = project?.creative.scenes[sceneIndex];
-  const connected = Boolean(user && useAI);
+  const connected = Boolean(user && useAI && service === "configured");
 
   return (
     <main className={styles.world}>
@@ -790,7 +791,7 @@ export default function FlowStudio() {
               <button
                 className={styles.createButton}
                 onClick={() => {
-                  if (!user && service === "configured") setDialog("account");
+                  if (!user && useAI && service === "configured") setDialog("account");
                   else void create();
                 }}
                 disabled={busy || service === "checking" || brief.prompt.trim().length < 3}
@@ -804,7 +805,7 @@ export default function FlowStudio() {
                   ? "Creating your draft…"
                   : service === "checking"
                     ? "Checking AI connection…"
-                    : !user && service === "configured"
+                    : !user && useAI && service === "configured"
                       ? "Sign in for AI draft"
                       : connected
                         ? "Create with AI"
@@ -812,13 +813,13 @@ export default function FlowStudio() {
                 {!busy && <ArrowRight size={17} />}
               </button>
             </div>
-            {!user && service === "configured" && (
+            {service !== "checking" && (user || service === "configured") && (
               <button
                 className={styles.starterChoice}
                 disabled={busy}
                 onClick={() => void create(true)}
               >
-                Make an editable outline without signing in
+                {user ? "Make an editable outline instead" : "Make an editable outline without signing in"}
               </button>
             )}
           </div>
@@ -850,7 +851,7 @@ export default function FlowStudio() {
             <div className={styles.quietFooter}>
               <span>
                 <span className={styles.statusDot} />
-                {connected ? "AI studio" : !user && service === "configured" ? "AI available with sign-in" : "Outline mode"}
+                {connected ? "AI studio" : !user && useAI && service === "configured" ? "AI available with sign-in" : "Outline mode"}
                 <button
                   onClick={() => setDialog("settings")}
                   aria-label="Change creation mode"
@@ -864,8 +865,9 @@ export default function FlowStudio() {
             </div>
             {!connected && (
               <p className={styles.modeNote}>
-                Outlines are editable starting points. Sign in for original AI
-                scenes, script, and copy.
+                {service === "unavailable"
+                  ? "AI is unavailable right now. You can still make and export an editable outline."
+                  : "Outlines are editable starting points. Sign in for original AI scenes, script, and copy."}
               </p>
             )}
             {busy && (
