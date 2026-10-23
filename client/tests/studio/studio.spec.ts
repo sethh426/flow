@@ -70,6 +70,22 @@ test("local outline extracts the subject without echoing production instructions
   await expect(page.getByLabel("ON-SCREEN TEXT")).not.toHaveValue(/Friendly and specific|no invented claims/);
 });
 
+test("local outline carries supplied facts into scenes and post copy without inventing process", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await page.getByLabel("Describe what you want to create").fill(
+    "Create a 15-second video for an Indianapolis home-cleaning service. Online booking is available. The service covers Indianapolis. Use only verified facts. Do not mention prices.",
+  );
+  await page.getByRole("button", { name: "Create starter outline" }).click();
+  await page.getByRole("tabpanel").getByRole("button", { name: /From your brief/ }).click();
+  await expect(page.getByLabel("ON-SCREEN TEXT")).toHaveValue("Online booking is available.");
+  await page.getByRole("tabpanel").getByRole("button", { name: /Another detail/ }).click();
+  await expect(page.getByLabel("ON-SCREEN TEXT")).toHaveValue("The service covers Indianapolis.");
+  await page.getByRole("tab", { name: "Post copy" }).click();
+  await expect(page.getByLabel("YOUR CAPTION")).toHaveValue(/Online booking is available\. The service covers Indianapolis\./);
+  await expect(page.getByLabel("YOUR CAPTION")).not.toHaveValue(/Do not mention prices|Use only verified facts/);
+});
+
 test("mobile composer and settings remain usable without navigation clutter", async ({
   page,
 }) => {
