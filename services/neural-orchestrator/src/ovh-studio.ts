@@ -96,7 +96,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   }
   if (req.url === "/healthz" && req.method === "GET") return json(res, 200, { ok: true });
   if (req.url === "/api/studio/status" && req.method === "GET")
-    return json(res, 200, { configured: Boolean(model && apiKey), capabilities: { creative: model && apiKey ? "ai" : false, video: "local", workflow: "local", narration: false, visuals: false, footage: false, publishing: false } });
+    return json(res, 200, { configured: Boolean(model && apiKey), capabilities: { creative: model && apiKey ? "ai" : false, video: "local", workflow: "local", productionJobs: false, narration: false, visuals: false, footage: false, publishing: false } });
   if (req.url !== "/api/studio/create") return json(res, 404, { error: "Studio action not found." });
   if (req.method !== "POST") return json(res, 405, { error: "Use POST to create a draft." });
   const token = /^Bearer (.+)$/.exec(req.headers.authorization || "")?.[1];
