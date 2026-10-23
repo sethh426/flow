@@ -52,6 +52,27 @@ export const creativeSchema = z.object({
     .max(8),
 });
 
+/** A narrow guard for unsupported specifics in audience-facing copy, not a
+ * general proof that every statement is true. */
+export function unsupportedCreativeClaims(
+  brief: z.infer<typeof briefSchema>,
+  creative: z.infer<typeof creativeSchema>,
+): string[] {
+  const source = brief.prompt.toLowerCase();
+  const copy = [
+    creative.title, creative.hook, ...creative.alternateHooks, creative.caption,
+    ...creative.scenes.flatMap((scene) => [scene.text, scene.narration]),
+  ].join("\n").toLowerCase();
+  const risky = [
+    /\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s*(?:clicks?|taps?|steps?|seconds?|minutes?|hours?|days?)\b/g,
+    /\b\d+(?:\.\d+)?\s*%/g,
+    /\b(?:instantly?|guaranteed|free|same[- ]day|available today|in seconds|no phone calls?)\b/g,
+    /\b(?:mobile app|our app|an app|calendar|time slots?|confirmation screen|confirmation email|book now button|pick a date|select a date)\b/g,
+  ];
+  return [...new Set(risky.flatMap((pattern) => [...copy.matchAll(pattern)]
+    .map(([claim]) => claim.trim()).filter((claim) => !source.includes(claim))))];
+}
+
 export function buildCreativePrompt(
   brief: z.infer<typeof briefSchema>,
 ): string {
@@ -66,6 +87,9 @@ scenes: 5 objects, each with label (maximum 40 chars), text (on-screen headline 
 workflow: 6 objects, each with title (maximum 80 chars), detail (maximum 500 chars), requiresApproval (boolean).
 Use a strong opening in the first 2 seconds, a coherent narrative progression, a meaningful payoff, and one CTA.
 The narration across all scenes must be speakable within ${brief.duration} seconds, at around 2 words per second.
+Treat the brief as the sole source of facts about this business or product. The format, platform, duration, and tone are production instructions, not facts to advertise.
+In audience-facing title, hooks, caption, scene text, and narration, make only claims explicitly supplied by the brief. Do not infer a mobile app, site layout, buttons, booking steps, calendar, availability, confirmation, speed, prices, staff, outcomes, or number of clicks from a general phrase such as online booking.
+If the brief is sparse, make a modest but engaging concept around its exact known facts. Put unknown visual details in direction as conditional filming suggestions (“If available, show the real booking page”), not as facts or spoken copy. Never substitute invented specificity for usefulness.
 Make all hooks genuinely different. Use platform conventions and the requested tone without claiming measured performance.
 The workflow should cover drafting, evidence/rights review, rendering, user approval, publication through a future connected service, and analysis of real outcomes.
 Mark any publication, spending, or external communication step requiresApproval=true.
