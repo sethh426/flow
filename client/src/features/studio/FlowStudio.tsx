@@ -269,7 +269,7 @@ export default function FlowStudio() {
     setProject(updated);
     persist(updated);
   };
-  const create = async () => {
+  const create = async (starterOnly = false) => {
     if (busy || rendering || brief.prompt.trim().length < 3) {
       textarea.current?.focus();
       return;
@@ -280,7 +280,7 @@ export default function FlowStudio() {
     const controller = new AbortController();
     abortRef.current = controller;
     try {
-      const connected = Boolean(user && useAI);
+      const connected = Boolean(user && useAI && !starterOnly);
       const creative = connected
         ? await generateCreative(
             brief,
@@ -711,7 +711,7 @@ export default function FlowStudio() {
             </div>
             <span className={styles.sourceBadge}>
               <span />{" "}
-              {project.source === "ai" ? "AI creative" : "Starter draft"}
+              {project.source === "ai" ? "AI creative" : "Editable outline"}
             </span>
           </div>
         )}
@@ -789,18 +789,38 @@ export default function FlowStudio() {
               </div>
               <button
                 className={styles.createButton}
-                onClick={() => void create()}
-                disabled={busy || brief.prompt.trim().length < 3}
+                onClick={() => {
+                  if (!user && service === "configured") setDialog("account");
+                  else void create();
+                }}
+                disabled={busy || service === "checking" || brief.prompt.trim().length < 3}
               >
                 {busy ? (
                   <LoaderCircle className={styles.spin} size={17} />
                 ) : (
                   <Sparkles size={17} />
                 )}
-                {busy ? "Creating your draft…" : "Create with Flow"}
+                {busy
+                  ? "Creating your draft…"
+                  : service === "checking"
+                    ? "Checking AI connection…"
+                    : !user && service === "configured"
+                      ? "Sign in for AI draft"
+                      : connected
+                        ? "Create with AI"
+                        : "Create starter outline"}
                 {!busy && <ArrowRight size={17} />}
               </button>
             </div>
+            {!user && service === "configured" && (
+              <button
+                className={styles.starterChoice}
+                disabled={busy}
+                onClick={() => void create(true)}
+              >
+                Make an editable outline without signing in
+              </button>
+            )}
           </div>
         )}
         {!project && (
@@ -830,7 +850,7 @@ export default function FlowStudio() {
             <div className={styles.quietFooter}>
               <span>
                 <span className={styles.statusDot} />
-                {connected ? "AI studio" : "Starter mode"}
+                {connected ? "AI studio" : !user && service === "configured" ? "AI available with sign-in" : "Outline mode"}
                 <button
                   onClick={() => setDialog("settings")}
                   aria-label="Change creation mode"
@@ -844,8 +864,8 @@ export default function FlowStudio() {
             </div>
             {!connected && (
               <p className={styles.modeNote}>
-                Starter mode creates editable drafts on this device. Connect
-                your account for AI creation.
+                Outlines are editable starting points. Sign in for original AI
+                scenes, script, and copy.
               </p>
             )}
             {busy && (
