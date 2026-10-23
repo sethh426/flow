@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { execFileSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
 import AxeBuilder from "@axe-core/playwright";
 
 test("one floating workspace creates, edits, saves and restores real drafts", async ({
@@ -304,6 +305,11 @@ test("Hosting runtime configuration enables account controls without build-time 
 });
 
 test("malformed Hosting configuration and disconnected AI leave local creation usable", async ({ page }) => {
+  const envFile = ".env.production.local";
+  test.skip(
+    existsSync(envFile) && /^NEXT_PUBLIC_FIREBASE_API_KEY=.+/m.test(readFileSync(envFile, "utf8")),
+    "This case requires a client export without embedded Firebase configuration.",
+  );
   let recover = false;
   await page.route("**/__/firebase/init.json", (route) => route.fulfill({
     contentType: "application/json",
