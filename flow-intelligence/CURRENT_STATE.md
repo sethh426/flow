@@ -1,4 +1,25 @@
-# Current State — 2026-10-22
+# Current State — 2026-10-23
+
+## Flow signed-out creation correction — 2026-10-23
+
+The live signed-out Flow path was observed creating a generic local draft from a
+specific cleaning-business prompt while its main button implied a full Flow
+creation. The Hosting client now presents “Sign in for AI draft” as its primary
+action when the AI service is configured and a separate “Make an editable
+outline without signing in” choice. It waits for the service check before
+choosing a mode. Local output is labeled “Editable outline,” strips the leading
+production instruction from the title when possible, and uses concrete subject
+cues without invented claims. The same live prompt now yields “Easy online
+booking” as its title; the sign-in action opens the account panel. This is a
+small correction, not a claim that local outlines equal original AI writing.
+
+The static production build, Studio type check, and lint passed. Browser
+regression tests could not launch on the connected device: the matching
+Chromium downloaded, but required host libraries are absent and system-level
+installation is blocked. The live browser smoke check passed after a
+Hosting-only deploy to `affiliateflow-abzfy`; the OVH sidecar and
+IntoTheBattle homepage were not changed. The broader UX and a human
+authenticated AI creation session still need owner feedback and testing.
 
 ## Flow domain and OVH Studio sidecar — 2026-10-22
 
