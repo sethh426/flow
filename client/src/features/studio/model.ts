@@ -76,9 +76,19 @@ export const palettes: Record<
 
 /** An honest offline starting point, never presented as AI or market research. */
 export function starterCreative(brief: Brief): Creative {
-  // Keep production instructions out of the visible copy. This is a local
-  // outline, so use the first concrete subject without inventing details.
-  const request = brief.prompt.trim().replace(/\s+/g, " ").split(/(?<=[.!?])\s+/)[0].replace(/[.!?]$/, "");
+  // Reuse concise statements supplied by the user, never inferred operations
+  // or style instructions. Unknown steps remain explicitly editable cues.
+  const sentences = brief.prompt.trim().replace(/\s+/g, " ").split(/(?<=[.!?])\s+/);
+  const request = sentences[0].replace(/[.!?]$/, "");
+  const facts = sentences.slice(1)
+    .map((sentence) => sentence.trim())
+    .filter((sentence) =>
+      sentence.length <= 140 &&
+      /^(?:(?:the|our|my|this|we|it|[A-Z][a-z]+)\s+)[\w\s,'-]+(?:\s+(?:is|are|has|have|offers?|provides?|ships?|serves?|covers?|includes?|accepts?|starts?|takes?|opens?|closes?|works?|can)\s+|\s+(?:is|are|has|have|offers?|provides?|ships?|serves?|covers?|includes?|accepts?|starts?|takes?|opens?|closes?|works?|can)\s+)/i.test(sentence) &&
+      !/^(?:please|make|create|write|produce|draft|build|use|show|include|avoid|do|don't|never|keep|focus|mention|highlight|explain|friendly|specific|tone|style|no\b)/i.test(sentence) &&
+      !/\b(?:invented claims|verified facts|seconds?|minutes?|aspect ratio|hashtag|caption|scene|script|footage)\b/i.test(sentence),
+    )
+    .slice(0, 2);
   const subject = request.replace(/^(?:please\s+)?(?:make|create|write|produce|draft|build)\s+(?:me\s+)?(?:a|an|the)?\s*(?:(?:\d+\s*[- ]?\s*(?:second|minute)|short|vertical|quick)\s+)*(?:video|story|post|caption|workflow|campaign|ad)\s+(?:(?:that|which)\s+(?:helps?|shows?|explains?|introduces?)\s+|(?:about|for|on)\s+)?/i, "").trim();
   const focus = subject.match(/\b(?:explain|showcase|highlight|promote|introduce)\s+(?:its|the|my|our)\s+(.+)$/i)?.[1] || subject;
   const topic = focus.slice(0, 75).trim() || "your idea";
@@ -90,7 +100,9 @@ export function starterCreative(brief: Brief): Creative {
       `A closer look at ${topic}`,
       `What to know about ${topic}`,
     ],
-    caption: `${title}\n\nA first look at the real steps and details. Add your verified facts and a clear next step before posting.`,
+    caption: facts.length
+      ? `${title}\n\n${facts.join(" ")}\n\nConfirm these details and add a real next step before posting.`
+      : `${title}\n\nA first look at the real steps and details. Add your verified facts and a clear next step before posting.`,
     hashtags: [],
     scenes: [
       {
@@ -101,18 +113,20 @@ export function starterCreative(brief: Brief): Creative {
           "Open with a real image or screen recording that shows the subject clearly.",
       },
       {
-        label: "The idea",
-        text: "The first real step",
-        narration: "Start with what someone actually does first.",
-        direction:
-          "Replace this outline with the real first step. Show the actual process.",
+        label: facts[0] ? "From your brief" : "The idea",
+        text: facts[0] || "The first real step",
+        narration: facts[0] || "Start with what someone actually does first.",
+        direction: facts[0]
+          ? "Show this detail with real footage or an accurate screen recording. Confirm it before sharing."
+          : "Replace this outline with the real first step. Show the actual process.",
       },
       {
-        label: "The detail",
-        text: "One useful detail",
-        narration: "Here is one detail worth checking.",
-        direction:
-          "Use a relevant close-up. Replace this cue with one verified detail.",
+        label: facts[1] ? "Another detail" : "The detail",
+        text: facts[1] || "One useful detail",
+        narration: facts[1] || "Here is one detail worth checking.",
+        direction: facts[1]
+          ? "Show this detail with a relevant close-up. Confirm it before sharing."
+          : "Use a relevant close-up. Replace this cue with one verified detail.",
       },
       {
         label: "The payoff",
