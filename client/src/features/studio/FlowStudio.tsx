@@ -30,6 +30,7 @@ import {
   creativeSchema,
   downloadFile,
   generateCreative,
+  UngroundedCreativeError,
   createProductionJob,
   getProductionJob,
   waitForProductionPreparation,
@@ -301,8 +302,20 @@ export default function FlowStudio() {
       openProject(next);
       persist(next);
     } catch (failure) {
-      if (failure instanceof Error && failure.name !== "AbortError")
+      if (failure instanceof UngroundedCreativeError && !controller.signal.aborted) {
+        const next: Project = {
+          id: crypto.randomUUID(),
+          createdAt: new Date().toISOString(),
+          source: "starter",
+          brief: { ...brief },
+          creative: starterCreative(brief),
+        };
+        openProject(next);
+        persist(next);
+        setNotice("AI could not make a grounded draft. Flow made an editable outline from your brief instead.");
+      } else if (failure instanceof Error && failure.name !== "AbortError") {
         setError(failure.message);
+      }
     } finally {
       setBusy(false);
       abortRef.current = null;
