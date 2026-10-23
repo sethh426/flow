@@ -7,8 +7,14 @@ service state, primary action, settings dialog keyboard exit, outline editing,
 saved-draft recovery after reload, and local workflow packaging. The ZIP
 download event fired and the UI reached “Completed locally”; the contents of
 that specific browser download were not independently inspected in this pass.
-The earlier repository browser test validates ZIP structure, but cannot run on
-the connected device because its Chromium host libraries are missing.
+The version-matched Playwright suite ran in an isolated browser-ready OVH
+container. Eight of 11 cases passed on the first full run, including 390-pixel
+mobile layout and an axe scan with no serious accessibility violations. Two
+media cases initially lacked `ffprobe` and `unzip` in that container; after
+installing those tools in the disposable test container, both passed. The
+remaining malformed-runtime-config case assumes a build without Firebase
+configuration, whereas this production export embeds that public config; it
+remains unverified under the intended no-config build condition.
 
 The test found a genuine entry mismatch: Ctrl/⌘+Enter created a starter outline
 while the main button required sign-in for AI. The empty-brief outline shortcut
@@ -23,7 +29,7 @@ IntoTheBattle homepages both 200. Authenticated AI generation was not tested in
 this pass. The local outline still largely repeats the first prompt sentence
 and uses placeholder scenes, even when later sentences contain verified facts.
 It is a functional editing/export path, not a quality-approved video creation
-experience. Mobile viewport and screen-reader testing remain unverified here.
+experience. The 390-pixel viewport test passed; human screen-reader use remains unverified.
 
 ## Live client capability connection — 2026-10-23
 
