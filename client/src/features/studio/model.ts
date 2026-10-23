@@ -76,54 +76,58 @@ export const palettes: Record<
 
 /** An honest offline starting point, never presented as AI or market research. */
 export function starterCreative(brief: Brief): Creative {
-  const topic = brief.prompt.trim().replace(/\s+/g, " ").slice(0, 85);
+  // Keep production instructions out of the visible copy. This is a local
+  // outline, so use the first concrete subject without inventing details.
+  const request = brief.prompt.trim().replace(/\s+/g, " ").split(/(?<=[.!?])\s+/)[0].replace(/[.!?]$/, "");
+  const subject = request.replace(/^(?:please\s+)?(?:make|create|write|produce|draft|build)\s+(?:me\s+)?(?:a|an|the)?\s*(?:(?:\d+\s*[- ]?\s*(?:second|minute)|short|vertical|quick)\s+)*(?:video|story|post|caption|workflow|campaign|ad)\s+(?:(?:that|which)\s+(?:helps?|shows?|explains?|introduces?)\s+|(?:about|for|on)\s+)?/i, "").trim();
+  const focus = subject.match(/\b(?:explain|showcase|highlight|promote|introduce)\s+(?:its|the|my|our)\s+(.+)$/i)?.[1] || subject;
+  const topic = focus.slice(0, 75).trim() || "your idea";
   const title = topic.charAt(0).toUpperCase() + topic.slice(1);
   return {
     title,
-    hook: "A different way to look at it.",
+    hook: title,
     alternateHooks: [
-      "Small details. A different perspective.",
-      "Let’s take a closer look.",
+      `A closer look at ${topic}`,
+      `What to know about ${topic}`,
     ],
-    caption: `${title}\n\nA closer look at the idea, the details, and what matters. What would you like to see next?`,
-    hashtags: ["#BehindTheScenes", "#Discover", "#CreativeProcess"],
+    caption: `${title}\n\nA first look at the real steps and details. Add your verified facts and a clear next step before posting.`,
+    hashtags: [],
     scenes: [
       {
         label: "The hook",
-        text: "A different way to look at it.",
-        narration: `Let’s take a closer look at ${topic}.`,
+        text: title,
+        narration: `A quick look at ${topic}.`,
         direction:
-          "Open with your strongest product image. A slow push draws attention to the headline.",
+          "Open with a real image or screen recording that shows the subject clearly.",
       },
       {
         label: "The idea",
-        text: title,
-        narration: `The idea is simple: ${topic}.`,
+        text: "The first real step",
+        narration: "Start with what someone actually does first.",
         direction:
-          "Show a full view. Replace this line with one specific, verifiable detail.",
+          "Replace this outline with the real first step. Show the actual process.",
       },
       {
         label: "The detail",
-        text: "It’s all in the details.",
-        narration: "Show the detail that makes this worth a closer look.",
+        text: "One useful detail",
+        narration: "Here is one detail worth checking.",
         direction:
-          "Use a second image or close-up. Keep one visual idea on screen.",
+          "Use a relevant close-up. Replace this cue with one verified detail.",
       },
       {
         label: "The payoff",
-        text: "See it for yourself.",
-        narration:
-          "Show the product or process in use. Let the demonstration do the talking.",
+        text: "What to expect",
+        narration: "See what the real process looks like.",
         direction:
-          "Show a real demonstration. Add evidence before making performance claims.",
+          "Show the real result or process. Add evidence before making claims.",
       },
       {
         label: "The invitation",
-        text: "What would you try next?",
+        text: "Your next step",
         narration:
-          "What would you try next? Leave your answer in the comments.",
+          "Find the details and decide if this is right for you.",
         direction:
-          "End with one natural invitation, leaving enough time to read it.",
+          "End with a real destination or next step. Confirm it before sharing.",
       },
     ],
     workflow: [
