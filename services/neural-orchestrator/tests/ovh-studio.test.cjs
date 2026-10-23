@@ -38,7 +38,7 @@ test("OVH service reports only configured capabilities and rejects untrusted req
     assert.equal(status.status, 200);
     assert.equal(status.headers.get("access-control-allow-origin"), "https://affiliateflow-abzfy.web.app");
     assert.deepEqual((await status.json()).capabilities, {
-      creative: false, video: "local", workflow: "local", narration: false,
+      creative: false, video: "local", workflow: "local", productionJobs: false, narration: false,
       visuals: false, footage: false, publishing: false,
     });
     const preflight = await fetch(`${base}/api/studio/create`, {
