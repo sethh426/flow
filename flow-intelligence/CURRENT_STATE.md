@@ -274,3 +274,9 @@ Actual generated motion footage is under review:
 - Veo native audio is intentionally muted in the final composition while Flow's narration/uploaded audio remains authoritative.
 
 Truth boundary: a live Vertex Veo call is not proven by CI. Operation persistence sharply reduces duplicate-start risk after the start response is stored, but no claim is made that the upstream start endpoint itself provides an idempotency key.
+
+## Local outline usability follow-up — October 23, 2026
+
+The three-part UI/local-outline/smoke review found that the signed-out starter outline discarded facts after the first sentence. Branch `codex/ovh-studio-20261019` now copies up to two concise user-supplied declarative details into editable scenes, voiceover and caption, while leaving unknown process steps as cues and excluding common style/production instructions. These are user-provided claims, not independently verified facts; the caption asks for confirmation before posting.
+
+Focused studio TypeScript/lint and the two local-outline Chromium tests pass against the rebuilt production export. Hosting was deployed to `affiliateflow-abzfy`, and a refreshed browser session on `https://uniflow.live/` showed both supplied facts in scenes. The Firebase deploy emitted an unresolved `studio` function endpoint warning; authenticated AI generation remains unverified, and this change should not be read as a server-side AI proof.
