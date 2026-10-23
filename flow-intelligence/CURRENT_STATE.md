@@ -8,6 +8,8 @@ Correction: the sidecar returns `code: "ungrounded"` for that specific rejection
 
 Client type check/lint and production build passed. Backend tests: 3 OVH and 22 Studio passed. Production-export Chromium suite: 11 passed, 1 skipped. The skipped malformed Hosting config case requires an export without embedded Firebase config; this build embeds it. The suite verified a playable 1080×1920 video with audio and a valid local workflow ZIP. The OVH sidecar and Firebase Hosting client were redeployed; both homepages and Studio status remain up. Firebase Hosting still warns about an unresolved `studio` Function rewrite; the actual configured creative API origin uses the OVH sidecar.
 
+Dependency check: `npm audit --omit=dev` reports 11 advisories (2 high) in the backend dependency tree; the high entries are Zod 3 and its transitive OpenAI package path. The public request body is capped, but a Zod 4 migration or patched dependency path needs a separate compatibility review before claiming the audit clear.
+
 Current limit: signed-in AI writing can still fail groundedness and yield an outline. The groundedness guard catches observed booking inventions but cannot certify every possible claim. Production jobs, AI media, publishing, and server artifact persistence are not connected through the OVH sidecar. Next highest-leverage work is a constrained, source-grounded creative generation method with measured acceptance and factuality across diverse real briefs; do not relax the rejection guard to inflate success rate.
 
 ## Live usability, outline, and smoke pass — 2026-10-23
