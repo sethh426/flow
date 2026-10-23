@@ -1,5 +1,28 @@
 # Current State — 2026-10-23
 
+## Live client capability connection — 2026-10-23
+
+The signed-in client previously treated an authenticated user as AI-connected even
+when Studio status was unavailable. It also attempted production-job endpoints
+on the OVH creative-only sidecar and silently fell back after server errors.
+The live Hosting client now uses the status result to choose AI creation versus
+an explicitly labeled editable outline, offers the outline after AI errors,
+and attempts server production only when `productionJobs` is advertised. The
+OVH sidecar reports `productionJobs: false`. A server job failure in an
+environment that advertises the capability now surfaces as an error rather
+than being hidden by a local success.
+
+Studio TypeScript and lint passed; three OVH and 22 Studio backend tests passed.
+The production Next.js static build completed on the OVH machine after the
+connected device's 2 GB host killed two build attempts with exit 137. Hosting
+was deployed to `affiliateflow-abzfy` with the Studio API origin configured.
+A live browser at `uniflow.live` showed AI available with sign-in, created a
+signed-out editable outline, rendered a local video, and reached “Completed
+locally” from Run local workflow. Public Studio status responds with the new
+capability boundary and both homepages remain up. A signed-in browser AI draft
+and ZIP export with this revision remain unverified. Creative quality is still
+a major open constraint; the Groq output can invent facts or be rejected.
+
 ## Connected AI groundedness finding — 2026-10-23
 
 A direct call to the configured Groq model using the current Studio prompt and
