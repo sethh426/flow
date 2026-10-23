@@ -1,5 +1,30 @@
 # Current State — 2026-10-23
 
+## Live usability, outline, and smoke pass — 2026-10-23
+
+A live desktop browser pass on `uniflow.live` checked the floating entry,
+service state, primary action, settings dialog keyboard exit, outline editing,
+saved-draft recovery after reload, and local workflow packaging. The ZIP
+download event fired and the UI reached “Completed locally”; the contents of
+that specific browser download were not independently inspected in this pass.
+The earlier repository browser test validates ZIP structure, but cannot run on
+the connected device because its Chromium host libraries are missing.
+
+The test found a genuine entry mismatch: Ctrl/⌘+Enter created a starter outline
+while the main button required sign-in for AI. The empty-brief outline shortcut
+was also enabled. The live Hosting client now routes both primary controls
+through one decision and disables the outline shortcut until a brief exists.
+Studio type check and lint passed; a production static build passed on OVH and
+Hosting was redeployed. A second live browser check verified both fixes.
+
+Smoke checks: Studio status HTTP 200 with exact `uniflow.live` CORS and
+`productionJobs: false`; unsigned create 401; unknown route 404; Flow and
+IntoTheBattle homepages both 200. Authenticated AI generation was not tested in
+this pass. The local outline still largely repeats the first prompt sentence
+and uses placeholder scenes, even when later sentences contain verified facts.
+It is a functional editing/export path, not a quality-approved video creation
+experience. Mobile viewport and screen-reader testing remain unverified here.
+
 ## Live client capability connection — 2026-10-23
 
 The signed-in client previously treated an authenticated user as AI-connected even
