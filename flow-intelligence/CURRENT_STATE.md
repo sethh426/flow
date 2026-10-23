@@ -1,5 +1,25 @@
 # Current State — 2026-10-23
 
+## Connected AI groundedness finding — 2026-10-23
+
+A direct call to the configured Groq model using the current Studio prompt and
+an Indianapolis home-cleaning/easy-online-booking brief returned schema-valid
+creative but invented “2 clicks,” an app, a calendar/slots, and a confirmation
+screen despite “no invented claims.” The existing schema validates structure,
+not truth. This is a verified quality failure in the connected AI path.
+
+A candidate correction in the draft Flow branch explicitly limits audience
+copy to facts in the brief, detects several high-risk unsupported specifics,
+retries a rejected draft once, and fails closed rather than displaying a
+known-unsafe result. Three OVH tests and 22 existing Studio backend tests pass.
+The heuristic is deliberately narrow and cannot certify every claim. This
+candidate has **not** been deployed: the connected desktop command runner began
+timing out, including on a trivial command, before a revised live-model probe
+or sidecar rebuild could run. The live sidecar still uses the previous prompt.
+Next: restore the command runner, probe sparse and fact-rich briefs against the
+configured model, review output manually, deploy only after quality checks, and
+verify a signed-in browser creation plus exported artifact.
+
 ## Flow signed-out creation correction — 2026-10-23
 
 The live signed-out Flow path was observed creating a generic local draft from a
