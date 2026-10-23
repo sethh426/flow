@@ -229,6 +229,8 @@ export function saveProjects(projects: Project[]): boolean {
   }
 }
 
+export class UngroundedCreativeError extends Error {}
+
 export async function generateCreative(
   brief: Brief,
   token: string,
@@ -252,12 +254,13 @@ export async function generateCreative(
   const body: unknown = await response.json();
   const envelope = z.object({ creative: creativeSchema }).safeParse(body);
   if (!response.ok) {
-    const error = z.object({ error: z.string() }).safeParse(body);
-    throw new Error(
-      error.success
-        ? error.data.error
-        : "Flow could not create this draft. Please try again.",
-    );
+    const error = z.object({ error: z.string(), code: z.string().optional() }).safeParse(body);
+    const message = error.success
+      ? error.data.error
+      : "Flow could not create this draft. Please try again.";
+    if (response.status === 502 && error.success && error.data.code === "ungrounded")
+      throw new UngroundedCreativeError(message);
+    throw new Error(message);
   }
   if (!envelope.success)
     throw new Error("The creative response was incomplete. Please try again.");
