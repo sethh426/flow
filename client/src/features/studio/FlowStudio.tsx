@@ -285,22 +285,24 @@ export default function FlowStudio() {
     abortRef.current = controller;
     try {
       const connected = Boolean(user && useAI && service === "configured" && !starterOnly);
-      const creative = connected
+      const result = connected
         ? await generateCreative(
             brief,
             await user!.getIdToken(),
             controller.signal,
           )
-        : starterCreative(brief);
+        : { creative: starterCreative(brief), groundingEdits: false };
       const next: Project = {
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
         source: connected ? "ai" : "starter",
         brief: { ...brief },
-        creative,
+        creative: result.creative,
       };
       openProject(next);
       persist(next);
+      if (result.groundingEdits)
+        setNotice("Flow built the public-facing copy from your brief and used AI for scene planning. Review the draft before sharing.");
     } catch (failure) {
       if (failure instanceof UngroundedCreativeError && !controller.signal.aborted) {
         const next: Project = {
@@ -730,7 +732,7 @@ export default function FlowStudio() {
             </div>
             <span className={styles.sourceBadge}>
               <span />{" "}
-              {project.source === "ai" ? "AI creative" : "Editable outline"}
+              {project.source === "ai" ? "AI-assisted draft" : "Editable outline"}
             </span>
           </div>
         )}
