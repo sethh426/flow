@@ -1,5 +1,37 @@
 # Current State — 2026-10-24
 
+## Live Studio smoke and API-origin repair — 2026-10-24
+
+A phone-sized live smoke test found the deployed client requesting
+`https://uniflow.live/api/studio/status`, which returned HTTP 404. The OVH
+Studio status endpoint was healthy. The static build had passed a quoted value
+from `.env.production.local` through Docker `--env-file`; the client rejected
+that malformed origin and silently used a same-origin path. Rebuilding with
+Next.js reading its dotenv file directly embedded `https://intothebattle.com`.
+The live browser now receives Studio status HTTP 200 from that origin and shows
+“Sign in for AI draft” plus the signed-out editable-outline choice. A postbuild
+check now fails an export if its configured Studio origin is absent from the
+compiled JavaScript. The negative guard probe failed as intended.
+
+On the live site, an iPhone-sized WebKit browser opened Flow and produced a
+signed-out outline and creative-pack JSON. A mobile-sized Chromium run edited
+the draft, reloaded and restored it, rendered a video, and downloaded a valid
+ZIP containing `creative.json` and a video. The public status endpoint returned
+200 with `creative: ai` and `productionJobs: false`; unsigned create returned
+401 and an unknown route 404. No page JavaScript errors were observed.
+
+The headless WebKit environment does not expose `MediaRecorder`; its workflow
+therefore could not export video. Flow generated the appropriate unsupported
+browser error, but the message was outside the visible mobile panel. It now
+appears directly below the workflow action. A focused browser regression passed;
+a live iPhone-sized WebKit check found the alert 59 pixels below the action.
+The final Hosting release served HTTP 200 and its current client bundle embeds
+the OVH API origin. This environment cannot establish whether a physical
+iPhone Safari browser supports the local export. Authenticated AI creation
+through the browser was not rerun in this smoke; the earlier direct
+authenticated API calls remain the evidence for that path.
+
+
 ## Mobile entry clarity — 2026-10-24
 
 A user screenshot of `uniflow.live` showed a nearly empty dark viewport
