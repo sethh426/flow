@@ -270,6 +270,14 @@ export async function generateCreative(
 }
 
 
+export async function deleteWorkflowRun(executionId: string, token: string): Promise<void> {
+  const response = await fetch(studioApiUrl(`/api/studio/workflows/${executionId}`), {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error("Could not delete the saved AI run. Try again.");
+}
+
 export const productionJobSchema = z.object({
   jobId: z.string().uuid(),
   projectId: z.string(),
