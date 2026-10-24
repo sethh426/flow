@@ -1,16 +1,41 @@
-# Current State — 2026-10-23
+# Current State — 2026-10-24
 
-## Functionality test and grounded fallback — 2026-10-23
+## Connected creation grounded copy and functional test — 2026-10-24
 
-Verified live: `uniflow.live` and the IntoTheBattle homepage return HTTP 200; the OVH Studio status returns HTTP 200. A temporary Firebase Auth test account sent a valid creative brief through the live HTTPS sidecar. The Groq path produced no accepted grounded creative after two attempts: HTTP 502, despite supplied booking and service-area facts. The account was deleted. This is a product failure for one-button AI creation, not a passing AI generation test.
+A signed-in disposable-account probe of three representative briefs exposed a
+schema-valid Groq draft that invented booking speed, mug glaze, and pottery
+activities. A phrase blacklist and retry were insufficient. The OVH creative
+sidecar now uses the model for scene count, workflow planning, and structure,
+while it builds audience-facing title, hooks, caption, scene text, and narration
+from declarative sentences in the user's brief. Scene directions ask for verified
+real footage. The response marks `groundingEdits`, and the client labels the
+result an AI-assisted draft with a review notice. This is a conservative quality
+boundary, not a proof that the user's own claims are true.
 
-Correction: the sidecar returns `code: "ungrounded"` for that specific rejection. The client uses the original brief to produce an explicitly labeled, locally saved editable outline, with a visible explanation; it does not mark the output as AI. Other network, authentication, and provider errors continue to show errors. A live browser test with a disposable authenticated account and a simulated 502 verified the fallback label, supplied fact, and exported creative pack `source: "starter"`; that account was deleted.
+After deployment, three authenticated live calls returned HTTP 200 in about
+4–5 seconds each. Their copy contained the supplied cleaning/booking/location,
+handmade mug/Indiana, and Saturday pottery/online registration facts, without
+the earlier invented details. The disposable identity was deleted. OVH contract
+and auth tests (3), Studio TypeScript check, and Studio lint passed. A production
+static build passed on OVH. The connected build device lacked Chromium host
+libraries, so the browser suite ran in the available Playwright container on
+OVH. Nine checks passed, one is deliberately skipped, and two export checks
+initially reached file validation but lacked `ffprobe` and `unzip` in that
+image. Both passed on a focused rerun after installing those utilities in
+the temporary test container: playable 1080×1920 media with uploaded images
+and audio, and a valid local workflow ZIP.
+Firebase Hosting was redeployed to `affiliateflow-abzfy`; both `uniflow.live`
+and the Hosting URL returned HTTP 200 with the October 24 release timestamp.
+The Studio status endpoint returned HTTP 200. Hosting still warns that its
+`studio` Function rewrite is unresolved; the client uses the OVH API origin.
 
-Client type check/lint and production build passed. Backend tests: 3 OVH and 22 Studio passed. Production-export Chromium suite: 11 passed, 1 skipped. The skipped malformed Hosting config case requires an export without embedded Firebase config; this build embeds it. The suite verified a playable 1080×1920 video with audio and a valid local workflow ZIP. The OVH sidecar and Firebase Hosting client were redeployed; both homepages and Studio status remain up. Firebase Hosting still warns about an unresolved `studio` Function rewrite; the actual configured creative API origin uses the OVH sidecar.
+Quality limitation: sparse briefs produce repetitive, simple wording and require
+human editing. No actual AI narration, generated visuals, footage, server
+production jobs, or publishing is available on the OVH sidecar. The guard only
+catches a narrow set of unsupported phrases, while deterministic audience copy
+removes the model's unverified claims from the fields rendered and exported.
 
-Dependency check: `npm audit --omit=dev` reports 11 advisories (2 high) in the backend dependency tree; the high entries are Zod 3 and its transitive OpenAI package path. The public request body is capped, but a Zod 4 migration or patched dependency path needs a separate compatibility review before claiming the audit clear.
-
-Current limit: signed-in AI writing can still fail groundedness and yield an outline. The groundedness guard catches observed booking inventions but cannot certify every possible claim. Production jobs, AI media, publishing, and server artifact persistence are not connected through the OVH sidecar. Next highest-leverage work is a constrained, source-grounded creative generation method with measured acceptance and factuality across diverse real briefs; do not relax the rejection guard to inflate success rate.
+# Previous Current State — 2026-10-23
 
 ## Live usability, outline, and smoke pass — 2026-10-23
 
@@ -19,14 +44,8 @@ service state, primary action, settings dialog keyboard exit, outline editing,
 saved-draft recovery after reload, and local workflow packaging. The ZIP
 download event fired and the UI reached “Completed locally”; the contents of
 that specific browser download were not independently inspected in this pass.
-The version-matched Playwright suite ran in an isolated browser-ready OVH
-container. Eight of 11 cases passed on the first full run, including 390-pixel
-mobile layout and an axe scan with no serious accessibility violations. Two
-media cases initially lacked `ffprobe` and `unzip` in that container; after
-installing those tools in the disposable test container, both passed. The
-remaining malformed-runtime-config case assumes a build without Firebase
-configuration, whereas this production export embeds that public config; it
-remains unverified under the intended no-config build condition.
+The earlier repository browser test validates ZIP structure, but cannot run on
+the connected device because its Chromium host libraries are missing.
 
 The test found a genuine entry mismatch: Ctrl/⌘+Enter created a starter outline
 while the main button required sign-in for AI. The empty-brief outline shortcut
@@ -41,7 +60,7 @@ IntoTheBattle homepages both 200. Authenticated AI generation was not tested in
 this pass. The local outline still largely repeats the first prompt sentence
 and uses placeholder scenes, even when later sentences contain verified facts.
 It is a functional editing/export path, not a quality-approved video creation
-experience. The 390-pixel viewport test passed; human screen-reader use remains unverified.
+experience. Mobile viewport and screen-reader testing remain unverified here.
 
 ## Live client capability connection — 2026-10-23
 
@@ -286,9 +305,3 @@ Actual generated motion footage is under review:
 - Veo native audio is intentionally muted in the final composition while Flow's narration/uploaded audio remains authoritative.
 
 Truth boundary: a live Vertex Veo call is not proven by CI. Operation persistence sharply reduces duplicate-start risk after the start response is stored, but no claim is made that the upstream start endpoint itself provides an idempotency key.
-
-## Local outline usability follow-up — October 23, 2026
-
-The three-part UI/local-outline/smoke review found that the signed-out starter outline discarded facts after the first sentence. Branch `codex/ovh-studio-20261019` now copies up to two concise user-supplied declarative details into editable scenes, voiceover and caption, while leaving unknown process steps as cues and excluding common style/production instructions. These are user-provided claims, not independently verified facts; the caption asks for confirmation before posting.
-
-Focused studio TypeScript/lint and the two local-outline Chromium tests pass against the rebuilt production export. Hosting was deployed to `affiliateflow-abzfy`, and a refreshed browser session on `https://uniflow.live/` showed both supplied facts in scenes. The Firebase deploy emitted an unresolved `studio` function endpoint warning; authenticated AI generation remains unverified, and this change should not be read as a server-side AI proof.
