@@ -1,5 +1,26 @@
 # Current State — 2026-10-24
 
+## Authenticated draft workflow run — 2026-10-24
+
+The OVH Studio sidecar now accepts authenticated `POST /api/studio/workflows/execute`
+for the AI draft action. It validates the brief, applies the existing groundedness
+guard and daily limits, persists the completed creative to a per-user directory
+on the persistent Studio volume, and returns a UUID execution ID. Authenticated
+`GET /api/studio/workflows/{id}` retrieves the saved result; unsigned requests
+return 401. The client uses this execution endpoint for connected AI creation
+and retains the run ID with the local draft, displaying it on the Workflow tab.
+The legacy `/api/workflows/execute` Firebase rewrite remains unavailable; this
+is an AI draft workflow, not the legacy arbitrary-action executor.
+
+The OVH tests passed, and a temporary authenticated live API account created
+a five-scene run and retrieved the same saved result with HTTP 200. A live
+phone-sized Chromium browser signed in, created an AI draft via the new
+endpoint (HTTP 200), showed the saved run ID, and reported no page errors.
+The temporary test accounts were deleted. Static client build, postbuild
+origin check, Studio type check and lint passed. This does not establish
+scheduled runs, cross-device browsing of run history, external actions,
+publishing, or server video rendering.
+
 ## First-load blank viewport repair — 2026-10-24
 
 The live homepage was serving a working app but initializing the creation
