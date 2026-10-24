@@ -235,7 +235,7 @@ export async function generateCreative(
   brief: Brief,
   token: string,
   signal: AbortSignal,
-): Promise<Creative> {
+): Promise<{ creative: Creative; groundingEdits: boolean }> {
   const response = await fetch(studioApiUrl("/api/studio/create"), {
     method: "POST",
     signal,
@@ -252,7 +252,7 @@ export async function generateCreative(
     );
   }
   const body: unknown = await response.json();
-  const envelope = z.object({ creative: creativeSchema }).safeParse(body);
+  const envelope = z.object({ creative: creativeSchema, groundingEdits: z.boolean().optional() }).safeParse(body);
   if (!response.ok) {
     const error = z.object({ error: z.string(), code: z.string().optional() }).safeParse(body);
     const message = error.success
@@ -264,7 +264,7 @@ export async function generateCreative(
   }
   if (!envelope.success)
     throw new Error("The creative response was incomplete. Please try again.");
-  return envelope.data.creative;
+  return { creative: envelope.data.creative, groundingEdits: envelope.data.groundingEdits === true };
 }
 
 
