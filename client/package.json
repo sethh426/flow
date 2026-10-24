@@ -8,6 +8,7 @@
     "studio:test": "playwright test --config playwright.studio.config.ts",
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "node scripts/verify-studio-origin.mjs",
     "start": "node scripts/serve-export.mjs",
     "lint": "eslint",
     "type-check": "tsc --noEmit",
