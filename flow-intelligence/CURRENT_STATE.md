@@ -8,14 +8,14 @@ guard and daily limits, persists the completed creative to a per-user directory
 on the persistent Studio volume, and returns a UUID execution ID. Authenticated
 `GET /api/studio/workflows/{id}` retrieves the saved result; unsigned requests
 return 401. The client uses this execution endpoint for connected AI creation
-and retains the run ID with the local draft, displaying it on the Workflow tab.
+and retains the run ID with the local draft, showing connected save status on the Workflow tab.
 The legacy `/api/workflows/execute` Firebase rewrite remains unavailable; this
 is an AI draft workflow, not the legacy arbitrary-action executor.
 
 The OVH tests passed, and a temporary authenticated live API account created
 a five-scene run and retrieved the same saved result with HTTP 200. A live
 phone-sized Chromium browser signed in, created an AI draft via the new
-endpoint (HTTP 200), showed the saved run ID, and reported no page errors.
+endpoint (HTTP 200), showed connected save status, and reported no page errors.
 The temporary test accounts were deleted. Server-side DELETE now removes a saved\nrun for the authenticated owner; the History delete action calls it before removing\nthe device copy. A live run returned 200, DELETE returned 200, subsequent GET\nreturned 404, and a different signed-in account could not read another run\n(404). Static client build, postbuild origin check, Studio type check and lint passed. This does not establish
 scheduled runs, cross-device browsing of run history, external actions,
 publishing, or server video rendering.
