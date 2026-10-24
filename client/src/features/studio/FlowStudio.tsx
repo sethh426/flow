@@ -997,8 +997,7 @@ export default function FlowStudio() {
                 aria-labelledby={`flow-tab-${tab}`}
               >
                 {tab === "story" && (
-                  <>
-                    <div className={styles.sceneList}>
+                  <>                    <div className={styles.sceneList}>
                       {project.creative.scenes.map((scene, index) => (
                         <button
                           className={
@@ -1138,6 +1137,7 @@ export default function FlowStudio() {
                     >
                       <Workflow size={16} /> Run local workflow
                     </button>
+                    {error && <p className={styles.error} role="alert">{error}</p>}
                     <p className={styles.workflowIntro}>
                       Validates this draft, renders your video, and downloads a
                       ZIP with the video, caption, voiceover script and creative pack.
@@ -1228,7 +1228,7 @@ export default function FlowStudio() {
           </div>
         )}
 
-        {error && (
+        {error && (!project || tab !== "workflow") && (
           <div className={styles.error} role="alert">
             <span>{error}</span>
             <button onClick={() => setError("")} aria-label="Dismiss error">
