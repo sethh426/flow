@@ -48,6 +48,7 @@ export interface Project {
   brief: Brief;
   creative: Creative;
   productionJobId?: string;
+  executionId?: string;
 }
 
 export const palettes: Record<
@@ -202,6 +203,7 @@ export const projectSchema = z.object({
   }),
   // Persist unfinished edits too; final exports use the stricter schema above.
   productionJobId: z.string().uuid().optional(),
+  executionId: z.string().uuid().optional(),
   creative: creativeSchema.extend({
     caption: z.string().max(2200),
     scenes: z
@@ -235,8 +237,8 @@ export async function generateCreative(
   brief: Brief,
   token: string,
   signal: AbortSignal,
-): Promise<{ creative: Creative; groundingEdits: boolean }> {
-  const response = await fetch(studioApiUrl("/api/studio/create"), {
+): Promise<{ creative: Creative; groundingEdits: boolean; executionId?: string }> {
+  const response = await fetch(studioApiUrl("/api/studio/workflows/execute"), {
     method: "POST",
     signal,
     headers: {
@@ -252,7 +254,7 @@ export async function generateCreative(
     );
   }
   const body: unknown = await response.json();
-  const envelope = z.object({ creative: creativeSchema, groundingEdits: z.boolean().optional() }).safeParse(body);
+  const envelope = z.object({ creative: creativeSchema, groundingEdits: z.boolean().optional(), executionId: z.string().uuid().optional() }).safeParse(body);
   if (!response.ok) {
     const error = z.object({ error: z.string(), code: z.string().optional() }).safeParse(body);
     const message = error.success
@@ -264,7 +266,7 @@ export async function generateCreative(
   }
   if (!envelope.success)
     throw new Error("The creative response was incomplete. Please try again.");
-  return { creative: envelope.data.creative, groundingEdits: envelope.data.groundingEdits === true };
+  return { creative: envelope.data.creative, groundingEdits: envelope.data.groundingEdits === true, executionId: envelope.data.executionId };
 }
 
 
