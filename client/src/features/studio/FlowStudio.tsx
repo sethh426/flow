@@ -298,6 +298,7 @@ export default function FlowStudio() {
         source: connected ? "ai" : "starter",
         brief: { ...brief },
         creative: result.creative,
+        executionId: "executionId" in result ? result.executionId : undefined,
       };
       openProject(next);
       persist(next);
@@ -1130,6 +1131,7 @@ export default function FlowStudio() {
                 )}
                 {tab === "workflow" && (
                   <div className={styles.workflowList}>
+                    {project.executionId && <p className={styles.workflowIntro}>AI draft run saved · {project.executionId}</p>}
                     <button
                       className={styles.createButton}
                       disabled={busy || rendering}
