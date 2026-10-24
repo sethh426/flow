@@ -81,7 +81,7 @@ type Dialog = "settings" | "history" | "account" | null;
 type Tab = "story" | "copy" | "workflow";
 
 export default function FlowStudio() {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const [service, setService] = useState<"checking" | "configured" | "unavailable">("checking");
   const [narrationAvailable, setNarrationAvailable] = useState(false);
   const [visualsAvailable, setVisualsAvailable] = useState(false);
