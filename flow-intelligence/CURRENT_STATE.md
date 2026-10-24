@@ -27,6 +27,15 @@ Static client build, postbuild origin check, Studio type check and lint passed. 
 scheduled runs, cross-device browsing of run history, external actions,
 publishing, or server video rendering.
 
+The older `services/workflow-executor/index.js` should not be deployed as
+the next step without a security redesign: its manual trigger, webhook, and
+execution-status routes have no authentication or ownership checks in the
+current implementation, and several actions enqueue work or synthesize links
+rather than complete the named external action. The safe next vertical slice
+is an authenticated, allowlisted action with explicit approval and observable
+result, built on the connected Studio sidecar rather than activating the
+legacy service as-is.
+
 ## First-load blank viewport repair — 2026-10-24
 
 The live homepage was serving a working app but initializing the creation
