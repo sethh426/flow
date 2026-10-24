@@ -29,6 +29,7 @@ import FlowAssistant from "@/features/workflow/FlowAssistant";
 import {
   creativeSchema,
   downloadFile,
+  deleteWorkflowRun,
   generateCreative,
   UngroundedCreativeError,
   createProductionJob,
@@ -1570,15 +1571,23 @@ export default function FlowStudio() {
                       className={styles.iconButton}
                       aria-label={`Delete ${item.creative.title}`}
                       onClick={() => {
-                        const saved = projectsRef.current.filter(
-                          (saved) => saved.id !== item.id,
-                        );
+                        void (async () => {
+                          try {
+                            if (item.executionId) {
+                              if (!user) throw new Error("Sign in to delete this saved AI run.");
+                              await deleteWorkflowRun(item.executionId, await user.getIdToken());
+                            }
+                            const saved = projectsRef.current.filter(
+                              (saved) => saved.id !== item.id,
+                            );
                         projectsRef.current = saved;
                         setProjects(saved);
-                        if (!saveProjects(saved))
-                          setError(
-                            "Could not save this change to device storage.",
-                          );
+                            if (!saveProjects(saved))
+                              setError("Could not save this change to device storage.");
+                          } catch (failure) {
+                            setError(failure instanceof Error ? failure.message : "Could not delete this run.");
+                          }
+                        })();
                       }}
                     >
                       <X size={14} />
