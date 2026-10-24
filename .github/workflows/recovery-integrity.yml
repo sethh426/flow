@@ -9,9 +9,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: recovery-integrity-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Check out source
         uses: actions/checkout@v4
@@ -25,6 +30,11 @@ jobs:
             exit 1
           fi
           echo 'Secret-format check passed.'
+
+      - name: Validate active architecture contracts
+        run: |
+          node --test scripts/deployment/check-flow-config.test.mjs
+          node scripts/intelligence/validate-registry.mjs
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -49,15 +59,22 @@ jobs:
       - name: Install client dependencies
         run: npm ci --prefix client
 
+      - name: Check client production dependency vulnerabilities
+        run: npm audit --omit=dev --audit-level=critical --prefix client
+
       - name: Check the floating studio
         run: |
           npm run studio:type-check --prefix client
           npm run studio:lint --prefix client
 
+      - name: Install selected backend dependencies
+        run: npm ci --ignore-scripts --prefix services/neural-orchestrator
+
+      - name: Check backend production dependency vulnerabilities
+        run: npm audit --omit=dev --audit-level=critical --prefix services/neural-orchestrator
+
       - name: Build and test the selected backend
-        run: |
-          npm ci --ignore-scripts --prefix services/neural-orchestrator
-          npm run test:studio --prefix services/neural-orchestrator
+        run: npm run test:studio --prefix services/neural-orchestrator
 
       - name: Build recovered client
         run: npm run build --prefix client
@@ -71,3 +88,14 @@ jobs:
 
       - name: Verify studio creation and real video export
         run: npm run studio:test --prefix client
+
+      - name: Upload Playwright diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-playwright-diagnostics
+          path: |
+            client/playwright-report
+            client/test-results
+          if-no-files-found: ignore
+          retention-days: 7
