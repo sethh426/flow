@@ -1,5 +1,26 @@
 # Current State — 2026-10-24
 
+## Mobile entry clarity — 2026-10-24
+
+A user screenshot of `uniflow.live` showed a nearly empty dark viewport
+with an unlabeled orb in the lower corner. The collapsed Flow entry is an
+intentional product choice, but it gave no visible instruction to tap.
+The launcher now carries a compact “Start with an idea” prompt explaining that
+a tap opens video, post, and plan creation. The prompt follows the draggable
+orb, positions below it near the top edge and to its right near the left edge,
+and disappears when the workspace opens. It remains a single launcher button.
+
+Studio type check and lint passed; an OVH static production build passed.
+The mobile and launcher Playwright cases passed against the exported build.
+An iPhone 13 WebKit simulation against the deployed `uniflow.live` verified
+the prompt stays within the 390-pixel viewport and tapping it opens Flow;
+its visual screenshot was inspected after the avatar image loaded. Hosting
+was redeployed to `affiliateflow-abzfy`, and the live hashed JavaScript asset
+contains the new prompt. The homepage and Studio status returned HTTP 200.
+This improves discoverability; it does not change the backend capability
+boundary documented below.
+
+
 ## Connected creation grounded copy and functional test — 2026-10-24
 
 A signed-in disposable-account probe of three representative briefs exposed a
