@@ -7,7 +7,7 @@ const { join } = require("node:path");
 const { execFileSync } = require("node:child_process");
 const { SignJWT, importPKCS8 } = require("jose");
 const { handle, verifyFirebaseToken } = require("../dist/ovh-studio");
-const { buildCreativePrompt, unsupportedCreativeClaims } = require("../dist/studio-contract");
+const { buildCreativePrompt, unsupportedCreativeClaims, repairUnsupportedCreativeClaims, creativeSchema } = require("../dist/studio-contract");
 
 test("AI prompt and groundedness guard reject invented booking mechanics", () => {
   const brief = {
@@ -25,6 +25,34 @@ test("AI prompt and groundedness guard reject invented booking mechanics", () =>
   };
   assert.deepEqual(unsupportedCreativeClaims(brief, creative), ["2 clicks", "in seconds", "instantly", "our app", "calendar"]);
   assert.deepEqual(unsupportedCreativeClaims(brief, { ...creative, hook: "Our team helps you choose a date in a few steps", alternateHooks: [], caption: "", scenes: [] }), ["our team", "choose a date", "few steps"]);
+  const forbidden = { ...brief, prompt: brief.prompt + " Do not claim 2 clicks or an app." };
+  assert.deepEqual(unsupportedCreativeClaims(forbidden, { ...creative, alternateHooks: [], caption: "", scenes: [] }), ["2 clicks"]);
+  const complete = {
+    ...creative,
+    scenes: [
+      { label: "Open", text: "Book in 2 clicks", narration: "It takes seconds.", direction: "Show the calendar." },
+      { label: "Detail", text: "Online booking", narration: "Indianapolis home cleaning.", direction: "If available, show real footage." },
+      { label: "Close", text: "Get started", narration: "Learn more.", direction: "Show real footage." },
+    ],
+    workflow: [
+      { title: "Draft", detail: "Prepare draft", requiresApproval: false },
+      { title: "Review", detail: "Check evidence", requiresApproval: true },
+      { title: "Share", detail: "Await approval", requiresApproval: true },
+    ],
+    hashtags: ["#Cleaning"],
+  };
+  const repaired = repairUnsupportedCreativeClaims(brief, complete);
+  assert.equal(repaired.edited, true);
+  assert.equal(creativeSchema.safeParse(repaired.creative).success, true);
+  assert.deepEqual(unsupportedCreativeClaims(brief, repaired.creative), []);
+  assert.equal(repaired.creative.scenes[0].text, repaired.creative.hook);
+  assert.match(repaired.creative.scenes[1].text, /Indianapolis home-cleaning business/);
+  assert.equal(repaired.creative.scenes.at(-1).text, "Learn more");
+  assert.doesNotMatch(JSON.stringify(repaired.creative), /Book in 2 clicks|It takes seconds|Show the calendar/);
+  const invented = { ...complete, caption: "Warm glaze and unique shape. Tap to shop.", scenes: complete.scenes.map((scene) => ({ ...scene, narration: "Warm glaze and unique shape." })) };
+  const constrained = repairUnsupportedCreativeClaims({ ...brief, prompt: "Create a video about a handmade ceramic coffee mug. It is handmade in Indiana. Use only these facts." }, invented);
+  assert.doesNotMatch(JSON.stringify(constrained.creative), /warm glaze|unique shape|tap to shop/i);
+  assert.match(constrained.creative.caption, /handmade in Indiana/i);
   const supplied = { ...brief, prompt: brief.prompt + " Customers can book in 2 clicks through our app with a calendar." };
   assert.deepEqual(unsupportedCreativeClaims(supplied, { ...creative, caption: "Online booking", scenes: [{ text: "Online booking", narration: "See how it works.", direction: "" }] }), []);
 });
