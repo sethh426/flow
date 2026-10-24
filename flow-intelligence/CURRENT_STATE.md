@@ -16,7 +16,14 @@ The OVH tests passed, and a temporary authenticated live API account created
 a five-scene run and retrieved the same saved result with HTTP 200. A live
 phone-sized Chromium browser signed in, created an AI draft via the new
 endpoint (HTTP 200), showed connected save status, and reported no page errors.
-The temporary test accounts were deleted. Server-side DELETE now removes a saved\nrun for the authenticated owner; the History delete action calls it before removing\nthe device copy. A live run returned 200, DELETE returned 200, subsequent GET\nreturned 404, and a different signed-in account could not read another run\n(404). Static client build, postbuild origin check, Studio type check and lint passed. This does not establish
+The temporary test accounts were deleted. Server-side DELETE now removes a saved
+run for the authenticated owner; the History delete action calls it before removing
+the device copy. A live run returned 200, DELETE returned 200, subsequent GET
+returned 404, and a different signed-in account could not read another run
+(404). The live phone-sized browser also created an AI draft, clicked Delete
+in History, observed DELETE 200 and GET 404, and saw the History item disappear.
+The server record is the original AI draft; later edits remain on the device.
+Static client build, postbuild origin check, Studio type check and lint passed. This does not establish
 scheduled runs, cross-device browsing of run history, external actions,
 publishing, or server video rendering.
 
