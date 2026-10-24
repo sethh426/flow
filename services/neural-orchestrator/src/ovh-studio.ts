@@ -1,5 +1,5 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { importX509, jwtVerify, type KeyLike } from "jose";
@@ -97,13 +97,22 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   if (req.url === "/healthz" && req.method === "GET") return json(res, 200, { ok: true });
   if (req.url === "/api/studio/status" && req.method === "GET")
     return json(res, 200, { configured: Boolean(model && apiKey), capabilities: { creative: model && apiKey ? "ai" : false, video: "local", workflow: "local", productionJobs: false, narration: false, visuals: false, footage: false, publishing: false } });
-  if (req.url !== "/api/studio/create") return json(res, 404, { error: "Studio action not found." });
-  if (req.method !== "POST") return json(res, 405, { error: "Use POST to create a draft." });
+  const workflowRun = req.url === "/api/studio/workflows/execute";
+  const workflowResult = /^\/api\/studio\/workflows\/([0-9a-f-]{36})$/.exec(req.url || "");
+  if (req.url !== "/api/studio/create" && !workflowRun && !workflowResult)
+    return json(res, 404, { error: "Studio action not found." });
+  if (workflowResult ? req.method !== "GET" : req.method !== "POST")
+    return json(res, 405, { error: "Method not allowed." });
   const token = /^Bearer (.+)$/.exec(req.headers.authorization || "")?.[1];
   if (!token) return json(res, 401, { error: "Sign in to use connected Studio actions." });
   let uid: string;
   try { uid = await verifyFirebaseToken(token); }
   catch { return json(res, 401, { error: "Your session expired. Sign in again." }); }
+  if (workflowResult) {
+    const path = join(usageDir, "workflow-runs", createHash("sha256").update(uid).digest("hex"), `${workflowResult[1]}.json`);
+    try { return json(res, 200, JSON.parse(readFileSync(path, "utf8")) as object); }
+    catch { return json(res, 404, { error: "Workflow run not found." }); }
+  }
   let body: unknown;
   try { body = await readJson(req); }
   catch { return json(res, 400, { error: "Provide a complete brief with supported creative settings." }); }
@@ -149,6 +158,16 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
       break;
     }
     if (!creative) return json(res, 502, { code: "ungrounded", error: "Flow could not make a grounded draft from this brief. Add verified details and try again, or use an editable outline." });
+    if (workflowRun) {
+      const executionId = randomUUID();
+      const dir = join(usageDir, "workflow-runs", createHash("sha256").update(uid).digest("hex"));
+      mkdirSync(dir, { recursive: true, mode: 0o700 });
+      const result = { executionId, status: "completed", action: "create_ai_draft", createdAt: new Date().toISOString(), creative, source: "ai", groundingEdits };
+      const temp = join(dir, `${executionId}.${process.pid}.tmp`);
+      writeFileSync(temp, JSON.stringify(result), { mode: 0o600 });
+      renameSync(temp, join(dir, `${executionId}.json`));
+      return json(res, 200, result);
+    }
     json(res, 200, { creative, source: "ai", groundingEdits });
   } catch {
     // Never log the brief, token, provider response body, or SDK error text.
