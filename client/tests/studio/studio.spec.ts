@@ -9,7 +9,7 @@ test("one floating workspace creates, edits, saves and restores real drafts", as
   const failures: string[] = [];
   page.on("pageerror", (error) => failures.push(error.message));
   await page.goto("/");
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Big ideas. One little button." }),
   ).toBeVisible();
@@ -44,7 +44,7 @@ test("one floating workspace creates, edits, saves and restores real drafts", as
   expect(saved.creative.scenes[0].text).toBe("Make mornings meaningful.");
   expect(saved.creative.caption).toBe("Small moments. Handmade details.");
   await page.reload();
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   await page.getByRole("button", { name: "Open saved creations" }).click();
   await page
     .getByRole("button", { name: /^A handmade ceramic coffee mug/ })
@@ -61,7 +61,7 @@ test("one floating workspace creates, edits, saves and restores real drafts", as
 
 test("local outline extracts the subject without echoing production instructions", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   await page.getByLabel("Describe what you want to create").fill(
     "Make a 15-second video that helps an Indianapolis home-cleaning business explain its easy online booking. Friendly and specific, no invented claims.",
   );
@@ -73,7 +73,7 @@ test("local outline extracts the subject without echoing production instructions
 
 test("local outline carries supplied facts into scenes and post copy without inventing process", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   await page.getByLabel("Describe what you want to create").fill(
     "Create a 15-second video for an Indianapolis home-cleaning service. Online booking is available. The service covers Indianapolis. Use only verified facts. Do not mention prices.",
   );
@@ -92,7 +92,7 @@ test("mobile composer and settings remain usable without navigation clutter", as
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/dashboard/");
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Big ideas. One little button." }),
   ).toBeVisible();
@@ -130,7 +130,7 @@ test("workflow reports unavailable video export next to its action", async ({ pa
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   await page.getByRole("button", { name: "Workflow", exact: true }).click();
   await page.getByLabel("Describe what you want to create").fill("A local product launch");
   await page.getByRole("button", { name: "Create starter outline" }).click();
@@ -147,7 +147,7 @@ test("exports a playable 1080 by 1920 video with uploaded images and audio", asy
   page,
 }, testInfo) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   const png = await page.evaluate(() => {
     const canvas = document.createElement("canvas");
     canvas.width = 100;
@@ -231,7 +231,7 @@ test("canceling a video export stops work without downloading a partial video", 
   let downloads = 0;
   page.on("download", () => downloads++);
   await page.goto("/");
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   await page
     .getByLabel("Describe what you want to create")
     .fill("An elegant launch");
@@ -248,7 +248,7 @@ test("the composer has no serious accessibility violations", async ({
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   const scan = await new AxeBuilder({ page }).analyze();
   expect(
     scan.violations.filter(
@@ -257,12 +257,14 @@ test("the composer has no serious accessibility violations", async ({
   ).toEqual([]);
 });
 
-test("only Flow is visible at idle; dragging, keyboard opening, and minimizing preserve the draft", async ({ page }) => {
+test("workspace opens on first load; the avatar can minimize, move, and reopen it", async ({ page }) => {
   await page.goto("/");
+  const studio = page.getByRole("region", { name: "Flow creation studio" });
+  await expect(studio).toBeVisible();
+  await expect(page.getByLabel("Describe what you want to create")).toBeVisible();
+  await page.getByRole("button", { name: "Close creation studio" }).click();
   const avatar = page.getByRole("button", { name: "Open Flow", exact: true });
-  await expect(page.getByRole("region", { name: "Flow creation studio" })).not.toBeVisible();
-  await expect(page.getByRole("button")).toHaveCount(1);
-  await expect(page.getByText("Start with an idea")).toBeVisible();
+  await expect(studio).not.toBeVisible();
   const bounds = (await avatar.boundingBox())!;
   await page.mouse.move(bounds.x + 40, bounds.y + 40);
   await page.mouse.down();
@@ -272,6 +274,8 @@ test("only Flow is visible at idle; dragging, keyboard opening, and minimizing p
   const moved = (await avatar.boundingBox())!;
   expect(moved.x).toBeLessThan(bounds.x - 80);
   await page.reload();
+  await expect(studio).toBeVisible();
+  await page.getByRole("button", { name: "Close creation studio" }).click();
   expect((await avatar.boundingBox())!.x).toBeCloseTo(moved.x, 0);
   await avatar.focus();
   await page.keyboard.press("Enter");
@@ -289,7 +293,7 @@ test("only Flow is visible at idle; dragging, keyboard opening, and minimizing p
 
 test("creative packs can be imported and invalid files do not replace a draft", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   await page.getByLabel("Describe what you want to create").fill("A reusable content campaign");
   await page.getByRole("button", { name: "Create starter outline" }).click();
   const download = page.waitForEvent("download");
@@ -316,7 +320,7 @@ test("Hosting runtime configuration enables account controls without build-time 
     body: JSON.stringify({ configured: true }),
   }));
   await page.goto("/");
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   await page.getByRole("button", { name: "Open account", exact: true }).click();
   await expect(page.getByText("Account connection configured.", { exact: false })).toBeVisible();
   await expect(page.getByRole("button", { name: "Continue with Google", exact: true })).toBeEnabled();
@@ -336,7 +340,7 @@ test("malformed Hosting configuration and disconnected AI leave local creation u
     body: JSON.stringify(recover ? { apiKey: "public-test-config", authDomain: "runtime-test.firebaseapp.com", projectId: "runtime-test", appId: "runtime-test-app" } : { projectId: "incomplete" }),
   }));
   await page.goto("/");
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   await page.getByRole("button", { name: "Open account", exact: true }).click();
   await expect(page.getByText("Account connection unavailable in this build.", { exact: false })).toBeVisible();
   await expect(page.getByRole("button", { name: "Continue with Google", exact: true })).toBeDisabled();
@@ -359,7 +363,7 @@ test("malformed Hosting configuration and disconnected AI leave local creation u
 
 test("local workflow renders and packages verified files into a valid ZIP", async ({ page }, testInfo) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   await page.getByRole("button", { name: "Workflow", exact: true }).click();
   await page.getByLabel("Describe what you want to create").fill("A local product launch");
   await page.getByRole("button", { name: "Create starter outline" }).click();
