@@ -243,6 +243,7 @@ test("only Flow is visible at idle; dragging, keyboard opening, and minimizing p
   const avatar = page.getByRole("button", { name: "Open Flow", exact: true });
   await expect(page.getByRole("region", { name: "Flow creation studio" })).not.toBeVisible();
   await expect(page.getByRole("button")).toHaveCount(1);
+  await expect(page.getByText("Start with an idea")).toBeVisible();
   const bounds = (await avatar.boundingBox())!;
   await page.mouse.move(bounds.x + 40, bounds.y + 40);
   await page.mouse.down();
