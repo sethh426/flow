@@ -30,6 +30,7 @@ import {
   creativeSchema,
   downloadFile,
   generateCreative,
+  UngroundedCreativeError,
   createProductionJob,
   getProductionJob,
   waitForProductionPreparation,
@@ -52,6 +53,7 @@ import {
 } from "./model";
 import { drawFrame, loadImages, renderVideo } from "./video";
 import { createBundle } from "./bundle";
+import { studioApiUrl } from "./api-url";
 import styles from "./studio.module.css";
 
 const kinds: { id: CreationKind; label: string; icon: typeof Film }[] = [
@@ -84,6 +86,7 @@ export default function FlowStudio() {
   const [narrationAvailable, setNarrationAvailable] = useState(false);
   const [visualsAvailable, setVisualsAvailable] = useState(false);
   const [footageAvailable, setFootageAvailable] = useState(false);
+  const [productionAvailable, setProductionAvailable] = useState(false);
   const [connectionAttempt, setConnectionAttempt] = useState(0);
   const { user, loginWithGoogle, login, signup, logout, configured: isFirebaseConfigured, loading: authLoading, retryConnection } = useAuth();
   const [brief, setBrief] = useState<Brief>(initialBrief);
@@ -129,9 +132,10 @@ export default function FlowStudio() {
     setNarrationAvailable(false);
     setVisualsAvailable(false);
     setFootageAvailable(false);
+    setProductionAvailable(false);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
-    void fetch("/api/studio/status", { signal: controller.signal })
+    void fetch(studioApiUrl("/api/studio/status"), { signal: controller.signal })
       .then(async (response) => {
         if (!response.ok || !response.headers.get("content-type")?.includes("application/json"))
           return false;
@@ -139,12 +143,13 @@ export default function FlowStudio() {
         if (typeof body !== "object" || body === null) return false;
         const status = body as {
           configured?: boolean;
-          capabilities?: { narration?: unknown; visuals?: unknown; footage?: unknown };
+          capabilities?: { narration?: unknown; visuals?: unknown; footage?: unknown; productionJobs?: unknown };
         };
         if (active && !controller.signal.aborted) {
           setNarrationAvailable(status.capabilities?.narration === "ai");
           setVisualsAvailable(status.capabilities?.visuals === "ai");
           setFootageAvailable(status.capabilities?.footage === "ai");
+          setProductionAvailable(status.capabilities?.productionJobs === true);
         }
         return status.configured === true;
       })
@@ -192,7 +197,7 @@ export default function FlowStudio() {
     drawFrame(canvas.current, project, time, { images });
   }, [project, time, images]);
   useEffect(() => {
-    if (!project?.productionJobId || !user || rendering) return;
+    if (!project?.productionJobId || !user || !productionAvailable || rendering) return;
     let active = true;
     void user.getIdToken()
       .then((token) => getProductionJob(project.productionJobId!, token))
@@ -218,7 +223,7 @@ export default function FlowStudio() {
         if (active) setWorkflowStage("");
       });
     return () => { active = false; };
-  }, [project?.productionJobId, user, rendering]);
+  }, [project?.productionJobId, user, productionAvailable, rendering]);
   useEffect(() => {
     if (!playing || !project) return;
     let frame = 0;
@@ -268,7 +273,7 @@ export default function FlowStudio() {
     setProject(updated);
     persist(updated);
   };
-  const create = async () => {
+  const create = async (starterOnly = false) => {
     if (busy || rendering || brief.prompt.trim().length < 3) {
       textarea.current?.focus();
       return;
@@ -279,26 +284,40 @@ export default function FlowStudio() {
     const controller = new AbortController();
     abortRef.current = controller;
     try {
-      const connected = Boolean(user && useAI);
-      const creative = connected
+      const connected = Boolean(user && useAI && service === "configured" && !starterOnly);
+      const result = connected
         ? await generateCreative(
             brief,
             await user!.getIdToken(),
             controller.signal,
           )
-        : starterCreative(brief);
+        : { creative: starterCreative(brief), groundingEdits: false };
       const next: Project = {
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
         source: connected ? "ai" : "starter",
         brief: { ...brief },
-        creative,
+        creative: result.creative,
       };
       openProject(next);
       persist(next);
+      if (result.groundingEdits)
+        setNotice("Flow built the public-facing copy from your brief and used AI for scene planning. Review the draft before sharing.");
     } catch (failure) {
-      if (failure instanceof Error && failure.name !== "AbortError")
+      if (failure instanceof UngroundedCreativeError && !controller.signal.aborted) {
+        const next: Project = {
+          id: crypto.randomUUID(),
+          createdAt: new Date().toISOString(),
+          source: "starter",
+          brief: { ...brief },
+          creative: starterCreative(brief),
+        };
+        openProject(next);
+        persist(next);
+        setNotice("AI could not make a grounded draft. Flow made an editable outline from your brief instead.");
+      } else if (failure instanceof Error && failure.name !== "AbortError") {
         setError(failure.message);
+      }
     } finally {
       setBusy(false);
       abortRef.current = null;
@@ -357,7 +376,7 @@ export default function FlowStudio() {
     let generatedFootage: File | null = null;
     let renderImages = images;
     try {
-      if (user) {
+      if (user && productionAvailable) {
         try {
           token = await user.getIdToken();
           jobId = crypto.randomUUID();
@@ -418,7 +437,7 @@ export default function FlowStudio() {
             setWorkflowStage("Loading AI narration");
             generatedNarration = await fetchProductionNarration(jobId, token, controller.signal);
           }
-        } catch {
+        } catch (failure) {
           if (jobId && token) {
             try {
               await cancelProductionJob(jobId, token);
@@ -426,9 +445,7 @@ export default function FlowStudio() {
               // The saved job id lets Flow recover the authoritative state later.
             }
           }
-          token = null;
-          jobId = null;
-          setNotice("Server preparation is unavailable. Flow is continuing with a local-only run.");
+          throw failure;
         }
       }
 
@@ -578,7 +595,12 @@ export default function FlowStudio() {
     setPlaying(false);
   };
   const activeScene = project?.creative.scenes[sceneIndex];
-  const connected = Boolean(user && useAI);
+  const connected = Boolean(user && useAI && service === "configured");
+  const requestCreation = () => {
+    if (busy || rendering || service === "checking" || brief.prompt.trim().length < 3) return;
+    if (!user && useAI && service === "configured") setDialog("account");
+    else void create();
+  };
 
   return (
     <main className={styles.world}>
@@ -710,7 +732,7 @@ export default function FlowStudio() {
             </div>
             <span className={styles.sourceBadge}>
               <span />{" "}
-              {project.source === "ai" ? "AI creative" : "Starter draft"}
+              {project.source === "ai" ? "AI-assisted draft" : "Editable outline"}
             </span>
           </div>
         )}
@@ -755,7 +777,7 @@ export default function FlowStudio() {
               onKeyDown={(event) => {
                 if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
                   event.preventDefault();
-                  void create();
+                  requestCreation();
                 }
               }}
             />
@@ -788,18 +810,35 @@ export default function FlowStudio() {
               </div>
               <button
                 className={styles.createButton}
-                onClick={() => void create()}
-                disabled={busy || brief.prompt.trim().length < 3}
+                onClick={requestCreation}
+                disabled={busy || service === "checking" || brief.prompt.trim().length < 3}
               >
                 {busy ? (
                   <LoaderCircle className={styles.spin} size={17} />
                 ) : (
                   <Sparkles size={17} />
                 )}
-                {busy ? "Creating your draft…" : "Create with Flow"}
+                {busy
+                  ? "Creating your draft…"
+                  : service === "checking"
+                    ? "Checking AI connection…"
+                    : !user && useAI && service === "configured"
+                      ? "Sign in for AI draft"
+                      : connected
+                        ? "Create with AI"
+                        : "Create starter outline"}
                 {!busy && <ArrowRight size={17} />}
               </button>
             </div>
+            {service !== "checking" && (user || service === "configured") && (
+              <button
+                className={styles.starterChoice}
+                disabled={busy || brief.prompt.trim().length < 3}
+                onClick={() => void create(true)}
+              >
+                {user ? "Make an editable outline instead" : "Make an editable outline without signing in"}
+              </button>
+            )}
           </div>
         )}
         {!project && (
@@ -829,7 +868,7 @@ export default function FlowStudio() {
             <div className={styles.quietFooter}>
               <span>
                 <span className={styles.statusDot} />
-                {connected ? "AI studio" : "Starter mode"}
+                {connected ? "AI studio" : !user && useAI && service === "configured" ? "AI available with sign-in" : "Outline mode"}
                 <button
                   onClick={() => setDialog("settings")}
                   aria-label="Change creation mode"
@@ -843,8 +882,9 @@ export default function FlowStudio() {
             </div>
             {!connected && (
               <p className={styles.modeNote}>
-                Starter mode creates editable drafts on this device. Connect
-                your account for AI creation.
+                {service === "unavailable"
+                  ? "AI is unavailable right now. You can still make and export an editable outline."
+                  : "Outlines are editable starting points. Sign in for original AI scenes, script, and copy."}
               </p>
             )}
             {busy && (

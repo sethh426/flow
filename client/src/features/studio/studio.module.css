@@ -344,6 +344,20 @@
 .createButton:active:not(:disabled) {
   transform: translateY(0);
 }
+.starterChoice {
+  display: block;
+  margin: 0 auto 14px;
+  padding: 4px 12px;
+  background: none;
+  border: 0;
+  color: #c1ad9c;
+  font-size: 11px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.starterChoice:hover:not(:disabled) {
+  color: #f5c69f;
+}
 .suggestions {
   display: flex;
   justify-content: center;

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { studioApiUrl } from "./api-url";
 
 export const sceneSchema = z.object({
   label: z.string().min(1).max(40),
@@ -75,54 +76,72 @@ export const palettes: Record<
 
 /** An honest offline starting point, never presented as AI or market research. */
 export function starterCreative(brief: Brief): Creative {
-  const topic = brief.prompt.trim().replace(/\s+/g, " ").slice(0, 85);
+  // Reuse concise statements supplied by the user, never inferred operations
+  // or style instructions. Unknown steps remain explicitly editable cues.
+  const sentences = brief.prompt.trim().replace(/\s+/g, " ").split(/(?<=[.!?])\s+/);
+  const request = sentences[0].replace(/[.!?]$/, "");
+  const facts = sentences.slice(1)
+    .map((sentence) => sentence.trim())
+    .filter((sentence) =>
+      sentence.length <= 140 &&
+      /^(?:(?:the|our|my|this|we|it|[A-Z][a-z]+)\s+)[\w\s,'-]+(?:\s+(?:is|are|has|have|offers?|provides?|ships?|serves?|covers?|includes?|accepts?|starts?|takes?|opens?|closes?|works?|can)\s+|\s+(?:is|are|has|have|offers?|provides?|ships?|serves?|covers?|includes?|accepts?|starts?|takes?|opens?|closes?|works?|can)\s+)/i.test(sentence) &&
+      !/^(?:please|make|create|write|produce|draft|build|use|show|include|avoid|do|don't|never|keep|focus|mention|highlight|explain|friendly|specific|tone|style|no\b)/i.test(sentence) &&
+      !/\b(?:invented claims|verified facts|seconds?|minutes?|aspect ratio|hashtag|caption|scene|script|footage)\b/i.test(sentence),
+    )
+    .slice(0, 2);
+  const subject = request.replace(/^(?:please\s+)?(?:make|create|write|produce|draft|build)\s+(?:me\s+)?(?:a|an|the)?\s*(?:(?:\d+\s*[- ]?\s*(?:second|minute)|short|vertical|quick)\s+)*(?:video|story|post|caption|workflow|campaign|ad)\s+(?:(?:that|which)\s+(?:helps?|shows?|explains?|introduces?)\s+|(?:about|for|on)\s+)?/i, "").trim();
+  const focus = subject.match(/\b(?:explain|showcase|highlight|promote|introduce)\s+(?:its|the|my|our)\s+(.+)$/i)?.[1] || subject;
+  const topic = focus.slice(0, 75).trim() || "your idea";
   const title = topic.charAt(0).toUpperCase() + topic.slice(1);
   return {
     title,
-    hook: "A different way to look at it.",
+    hook: title,
     alternateHooks: [
-      "Small details. A different perspective.",
-      "Let’s take a closer look.",
+      `A closer look at ${topic}`,
+      `What to know about ${topic}`,
     ],
-    caption: `${title}\n\nA closer look at the idea, the details, and what matters. What would you like to see next?`,
-    hashtags: ["#BehindTheScenes", "#Discover", "#CreativeProcess"],
+    caption: facts.length
+      ? `${title}\n\n${facts.join(" ")}\n\nConfirm these details and add a real next step before posting.`
+      : `${title}\n\nA first look at the real steps and details. Add your verified facts and a clear next step before posting.`,
+    hashtags: [],
     scenes: [
       {
         label: "The hook",
-        text: "A different way to look at it.",
-        narration: `Let’s take a closer look at ${topic}.`,
-        direction:
-          "Open with your strongest product image. A slow push draws attention to the headline.",
-      },
-      {
-        label: "The idea",
         text: title,
-        narration: `The idea is simple: ${topic}.`,
+        narration: `A quick look at ${topic}.`,
         direction:
-          "Show a full view. Replace this line with one specific, verifiable detail.",
+          "Open with a real image or screen recording that shows the subject clearly.",
       },
       {
-        label: "The detail",
-        text: "It’s all in the details.",
-        narration: "Show the detail that makes this worth a closer look.",
-        direction:
-          "Use a second image or close-up. Keep one visual idea on screen.",
+        label: facts[0] ? "From your brief" : "The idea",
+        text: facts[0] || "The first real step",
+        narration: facts[0] || "Start with what someone actually does first.",
+        direction: facts[0]
+          ? "Show this detail with real footage or an accurate screen recording. Confirm it before sharing."
+          : "Replace this outline with the real first step. Show the actual process.",
+      },
+      {
+        label: facts[1] ? "Another detail" : "The detail",
+        text: facts[1] || "One useful detail",
+        narration: facts[1] || "Here is one detail worth checking.",
+        direction: facts[1]
+          ? "Show this detail with a relevant close-up. Confirm it before sharing."
+          : "Use a relevant close-up. Replace this cue with one verified detail.",
       },
       {
         label: "The payoff",
-        text: "See it for yourself.",
-        narration:
-          "Show the product or process in use. Let the demonstration do the talking.",
+        text: "What to expect",
+        narration: "See what the real process looks like.",
         direction:
-          "Show a real demonstration. Add evidence before making performance claims.",
+          "Show the real result or process. Add evidence before making claims.",
       },
       {
         label: "The invitation",
-        text: "What would you try next?",
+        text: "Your next step",
         narration:
-          "What would you try next? Leave your answer in the comments.",
+          "Find the details and decide if this is right for you.",
         direction:
-          "End with one natural invitation, leaving enough time to read it.",
+          "End with a real destination or next step. Confirm it before sharing.",
       },
     ],
     workflow: [
@@ -210,12 +229,14 @@ export function saveProjects(projects: Project[]): boolean {
   }
 }
 
+export class UngroundedCreativeError extends Error {}
+
 export async function generateCreative(
   brief: Brief,
   token: string,
   signal: AbortSignal,
-): Promise<Creative> {
-  const response = await fetch("/api/studio/create", {
+): Promise<{ creative: Creative; groundingEdits: boolean }> {
+  const response = await fetch(studioApiUrl("/api/studio/create"), {
     method: "POST",
     signal,
     headers: {
@@ -231,18 +252,19 @@ export async function generateCreative(
     );
   }
   const body: unknown = await response.json();
-  const envelope = z.object({ creative: creativeSchema }).safeParse(body);
+  const envelope = z.object({ creative: creativeSchema, groundingEdits: z.boolean().optional() }).safeParse(body);
   if (!response.ok) {
-    const error = z.object({ error: z.string() }).safeParse(body);
-    throw new Error(
-      error.success
-        ? error.data.error
-        : "Flow could not create this draft. Please try again.",
-    );
+    const error = z.object({ error: z.string(), code: z.string().optional() }).safeParse(body);
+    const message = error.success
+      ? error.data.error
+      : "Flow could not create this draft. Please try again.";
+    if (response.status === 502 && error.success && error.data.code === "ungrounded")
+      throw new UngroundedCreativeError(message);
+    throw new Error(message);
   }
   if (!envelope.success)
     throw new Error("The creative response was incomplete. Please try again.");
-  return envelope.data.creative;
+  return { creative: envelope.data.creative, groundingEdits: envelope.data.groundingEdits === true };
 }
 
 

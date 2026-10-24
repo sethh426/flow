@@ -1,0 +1,59 @@
+name: flow
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - web
+      - studio
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    security_opt:
+      - no-new-privileges:true
+
+  web:
+    build:
+      context: ../../client
+      dockerfile: Dockerfile.ovh
+      args:
+        NEXT_PUBLIC_FIREBASE_API_KEY: ${NEXT_PUBLIC_FIREBASE_API_KEY:?Set Firebase web API key}
+        NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN:?Set Firebase auth domain}
+        NEXT_PUBLIC_FIREBASE_PROJECT_ID: affiliateflow-abzfy
+        NEXT_PUBLIC_FIREBASE_APP_ID: ${NEXT_PUBLIC_FIREBASE_APP_ID:?Set Firebase app ID}
+        NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET:-}
+        NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID:-}
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 100
+    mem_limit: 768m
+
+  studio:
+    build:
+      context: ../../services/neural-orchestrator
+      dockerfile: Dockerfile.ovh
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - studio_usage:/var/lib/flow-studio
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 100
+    mem_limit: 768m
+
+volumes:
+  studio_usage:
+  caddy_data:
+  caddy_config:
