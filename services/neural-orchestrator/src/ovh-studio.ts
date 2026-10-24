@@ -1,6 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { createHash, randomUUID } from "node:crypto";
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { importX509, jwtVerify, type KeyLike } from "jose";
 import OpenAI from "openai";
@@ -90,7 +90,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   if (origin) res.setHeader("Access-Control-Allow-Origin", origin);
   res.setHeader("Vary", "Origin");
   if (req.method === "OPTIONS") {
-    res.writeHead(204, { "Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Access-Control-Allow-Headers": "Authorization, Content-Type", "Access-Control-Max-Age": "600" });
+    res.writeHead(204, { "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS", "Access-Control-Allow-Headers": "Authorization, Content-Type", "Access-Control-Max-Age": "600" });
     res.end();
     return;
   }
@@ -101,7 +101,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   const workflowResult = /^\/api\/studio\/workflows\/([0-9a-f-]{36})$/.exec(req.url || "");
   if (req.url !== "/api/studio/create" && !workflowRun && !workflowResult)
     return json(res, 404, { error: "Studio action not found." });
-  if (workflowResult ? req.method !== "GET" : req.method !== "POST")
+  if (workflowResult ? req.method !== "GET" && req.method !== "DELETE" : req.method !== "POST")
     return json(res, 405, { error: "Method not allowed." });
   const token = /^Bearer (.+)$/.exec(req.headers.authorization || "")?.[1];
   if (!token) return json(res, 401, { error: "Sign in to use connected Studio actions." });
@@ -110,8 +110,17 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   catch { return json(res, 401, { error: "Your session expired. Sign in again." }); }
   if (workflowResult) {
     const path = join(usageDir, "workflow-runs", createHash("sha256").update(uid).digest("hex"), `${workflowResult[1]}.json`);
-    try { return json(res, 200, JSON.parse(readFileSync(path, "utf8")) as object); }
-    catch { return json(res, 404, { error: "Workflow run not found." }); }
+    try {
+      if (req.method === "DELETE") {
+        unlinkSync(path);
+        return json(res, 200, { deleted: true });
+      }
+      return json(res, 200, JSON.parse(readFileSync(path, "utf8")) as object);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT")
+        return json(res, 404, { error: "Workflow run not found." });
+      throw error;
+    }
   }
   let body: unknown;
   try { body = await readJson(req); }
