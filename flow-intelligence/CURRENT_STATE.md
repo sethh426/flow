@@ -1,5 +1,21 @@
 # Current State — 2026-10-24
 
+## First-load blank viewport repair — 2026-10-24
+
+The live homepage was serving a working app but initializing the creation
+workspace closed, leaving the dark background and floating orb as the only
+obvious UI. User refresh still looked blank. Flow now opens its workspace on
+first load (including server-rendered HTML), with the brief composer visible.
+The user can minimize it and reopen via the orb. Firebase Hosting now serves
+the homepage with `Cache-Control: no-cache, max-age=0, must-revalidate` so
+future deployments can be picked up by a normal refresh.
+
+The deployment to `uniflow.live` was verified with HTTP 200 and the new cache
+header. Live phone-sized Chromium and WebKit both showed the workspace heading
+and brief prompt immediately, with Studio API HTTP 200 and no page errors.
+The focused first-load/minimize/reopen regression passed; type check and lint
+passed. This does not observe the user's physical Safari cache directly.
+
 ## Live Studio smoke and API-origin repair — 2026-10-24
 
 A phone-sized live smoke test found the deployed client requesting
