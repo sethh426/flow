@@ -275,7 +275,8 @@ export async function deleteWorkflowRun(executionId: string, token: string): Pro
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });
-  if (!response.ok) throw new Error("Could not delete the saved AI run. Try again.");
+  if (!response.ok && response.status !== 404)
+    throw new Error("Could not delete the saved AI run. Try again.");
 }
 
 export const productionJobSchema = z.object({
