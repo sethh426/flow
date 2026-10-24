@@ -1132,7 +1132,7 @@ export default function FlowStudio() {
                 )}
                 {tab === "workflow" && (
                   <div className={styles.workflowList}>
-                    {project.executionId && <p className={styles.workflowIntro}>AI draft saved to your account</p>}
+                    {project.executionId && <p className={styles.workflowIntro}>Original AI draft saved. Edits remain on this device.</p>}
                     <button
                       className={styles.createButton}
                       disabled={busy || rendering}
