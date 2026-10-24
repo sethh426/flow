@@ -124,6 +124,25 @@ test("mobile composer and settings remain usable without navigation clutter", as
   ).toBe(true);
 });
 
+test("workflow reports unavailable video export next to its action", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, "MediaRecorder", { configurable: true, value: undefined });
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await page.getByRole("button", { name: "Workflow", exact: true }).click();
+  await page.getByLabel("Describe what you want to create").fill("A local product launch");
+  await page.getByRole("button", { name: "Create starter outline" }).click();
+  await page.getByRole("button", { name: "Run local workflow", exact: true }).click();
+  const alert = page.getByRole("tabpanel").getByRole("alert");
+  await expect(alert).toContainText("Video export is unavailable in this browser");
+  const action = (await page.getByRole("button", { name: "Run local workflow", exact: true }).boundingBox())!;
+  const message = (await alert.boundingBox())!;
+  expect(message.y).toBeGreaterThan(action.y);
+  expect(message.y - action.y).toBeLessThan(180);
+});
+
 test("exports a playable 1080 by 1920 video with uploaded images and audio", async ({
   page,
 }, testInfo) => {
