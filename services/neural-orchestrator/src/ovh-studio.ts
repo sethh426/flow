@@ -4,7 +4,7 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { importX509, jwtVerify, type KeyLike } from "jose";
 import OpenAI from "openai";
-import { briefSchema, creativeSchema, buildCreativePrompt, unsupportedCreativeClaims } from "./studio-contract";
+import { briefSchema, creativeSchema, buildCreativePrompt, unsupportedCreativeClaims, repairUnsupportedCreativeClaims } from "./studio-contract";
 
 const project = "affiliateflow-abzfy";
 const certificateUrl = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com";
@@ -116,9 +116,13 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
     if (!reserve(uid)) return json(res, 429, { error: "You reached the daily AI draft limit. You can still create starter drafts." });
     const client = new OpenAI({ apiKey, baseURL: provider === "groq" ? "https://api.groq.com/openai/v1" : undefined, timeout: 80_000, maxRetries: 0 });
     let creative: typeof creativeSchema._type | undefined;
+    let rejectedClaims: string[] = [];
+    let groundingEdits = false;
     for (let attempt = 0; attempt < 2; attempt++) {
       const prompt = buildCreativePrompt(parsed.data) + (attempt
-        ? "\nThe prior draft was rejected for unsupported factual detail. Revise from the original brief only; omit invented mechanics, quantities, speed, and outcomes from all audience-facing copy."
+        ? rejectedClaims.length
+          ? `\nThe prior draft contained unsupported audience-facing claims: ${JSON.stringify(rejectedClaims)}. Remove each of these phrases and related mechanics entirely. Use only facts explicitly stated in the original brief. A general feature such as online booking does not establish the steps, screen, speed, staff, or result. Prefer a short, accurate line to a detailed invented one.`
+          : "\nThe prior response was not valid JSON matching the requested schema. Return all required fields with valid JSON, using only supplied facts."
         : "");
       const completion = await client.chat.completions.create({
         model, response_format: { type: "json_object" }, max_tokens: 3500,
@@ -134,15 +138,18 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
       const result = creativeSchema.safeParse(body);
       if (!result.success) continue;
       const candidate = { ...result.data, scenes: result.data.scenes.map((scene, index) => index === 0 ? { ...scene, text: result.data.hook } : scene) };
-      if (unsupportedCreativeClaims(parsed.data, candidate).length) {
-        console.warn("Studio draft rejected: ungrounded audience-facing claims");
+      const constrained = repairUnsupportedCreativeClaims(parsed.data, candidate);
+      rejectedClaims = unsupportedCreativeClaims(parsed.data, constrained.creative);
+      if (!creativeSchema.safeParse(constrained.creative).success || rejectedClaims.length) {
+        console.warn("Studio draft rejected: audience copy could not be grounded");
         continue;
       }
-      creative = candidate;
+      creative = constrained.creative;
+      groundingEdits = constrained.edited;
       break;
     }
     if (!creative) return json(res, 502, { code: "ungrounded", error: "Flow could not make a grounded draft from this brief. Add verified details and try again, or use an editable outline." });
-    json(res, 200, { creative, source: "ai" });
+    json(res, 200, { creative, source: "ai", groundingEdits });
   } catch {
     // Never log the brief, token, provider response body, or SDK error text.
     console.error("Studio creation failed: provider or usage storage");
