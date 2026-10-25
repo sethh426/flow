@@ -2,6 +2,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import { createHash, randomUUID } from "node:crypto";
 import { mkdirSync, readFileSync, readdirSync, renameSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { handleStudioAction, removeStudioVideo, startStudioScheduler } from "./studio-actions";
 import { importX509, jwtVerify, type KeyLike } from "jose";
 import OpenAI from "openai";
 import { briefSchema, creativeSchema, buildCreativePrompt, unsupportedCreativeClaims, repairUnsupportedCreativeClaims } from "./studio-contract";
@@ -96,19 +97,21 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   }
   if (req.url === "/healthz" && req.method === "GET") return json(res, 200, { ok: true });
   if (req.url === "/api/studio/status" && req.method === "GET")
-    return json(res, 200, { configured: Boolean(model && apiKey), capabilities: { creative: model && apiKey ? "ai" : false, video: "local", workflow: "local", productionJobs: false, narration: false, visuals: false, footage: false, publishing: false } });
+    return json(res, 200, { configured: Boolean(model && apiKey), capabilities: { creative: model && apiKey ? "ai" : false, video: "local", workflow: "local", productionJobs: false, serverRender: true, renderScheduling: true, narration: false, visuals: false, footage: false, publishing: false } });
+  const actionMatch = /^\/api\/studio\/workflows\/([0-9a-f-]{36})\/(render|video)$/.exec(req.url || "");
   const workflowRun = req.url === "/api/studio/workflows/execute";
   const workflowList = req.url === "/api/studio/workflows";
   const workflowResult = /^\/api\/studio\/workflows\/([0-9a-f-]{36})$/.exec(req.url || "");
-  if (req.url !== "/api/studio/create" && !workflowRun && !workflowResult && !workflowList)
+  if (req.url !== "/api/studio/create" && !workflowRun && !workflowResult && !workflowList && !actionMatch)
     return json(res, 404, { error: "Studio action not found." });
-  if (workflowResult ? req.method !== "GET" && req.method !== "PUT" && req.method !== "DELETE" : workflowList ? req.method !== "GET" : req.method !== "POST")
+  if (actionMatch ? (actionMatch[2] === "render" ? req.method !== "POST" : req.method !== "GET") : workflowResult ? req.method !== "GET" && req.method !== "PUT" && req.method !== "DELETE" : workflowList ? req.method !== "GET" : req.method !== "POST")
     return json(res, 405, { error: "Method not allowed." });
   const token = /^Bearer (.+)$/.exec(req.headers.authorization || "")?.[1];
   if (!token) return json(res, 401, { error: "Sign in to use connected Studio actions." });
   let uid: string;
   try { uid = await verifyFirebaseToken(token); }
   catch { return json(res, 401, { error: "Your session expired. Sign in again." }); }
+  if (actionMatch) return handleStudioAction(req, res, uid, actionMatch[1], actionMatch[2]);
   if (workflowList) {
     const dir = join(usageDir, "workflow-runs", createHash("sha256").update(uid).digest("hex"));
     try {
@@ -133,11 +136,15 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
     const path = join(usageDir, "workflow-runs", createHash("sha256").update(uid).digest("hex"), `${workflowResult[1]}.json`);
     try {
       if (req.method === "DELETE") {
+        const existing = JSON.parse(readFileSync(path, "utf8"));
+        if (existing.production?.status === "running") return json(res, 409, { error: "Video is rendering. Delete it after production finishes." });
         unlinkSync(path);
+        removeStudioVideo(uid, workflowResult[1]);
         return json(res, 200, { deleted: true });
       }
       const record = JSON.parse(readFileSync(path, "utf8"));
       if (req.method === "PUT") {
+        if (record.production) return json(res, 409, { error: "This draft has an approved production action. Create a new draft to revise it." });
         let body: unknown;
         try { body = await readJson(req); }
         catch { return json(res, 400, { error: "Invalid edited draft." }); }
@@ -226,6 +233,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
 }
 
 if (require.main === module) {
+  startStudioScheduler();
   const port = Number(process.env.PORT || 8787);
   createServer((req, res) => { void handle(req, res).catch(() => json(res, 500, { error: "Studio service unavailable." })); })
     .listen(port, "0.0.0.0", () => console.log(`Flow studio listening on ${port}`));
