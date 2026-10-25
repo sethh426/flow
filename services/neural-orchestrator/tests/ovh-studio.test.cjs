@@ -76,6 +76,7 @@ test("OVH service reports only configured capabilities and rejects untrusted req
     assert.equal((await fetch(`${base}/api/studio/status`, { headers: { Origin: "https://attacker.example" } })).status, 403);
     assert.equal((await fetch(`${base}/api/studio/create`, { method: "POST" })).status, 401);
     assert.equal((await fetch(`${base}/api/studio/workflows/execute`, { method: "POST" })).status, 401);
+    assert.equal((await fetch(`${base}/api/studio/workflows`)).status, 401);
     assert.equal((await fetch(`${base}/api/studio/workflows/00000000-0000-4000-8000-000000000000`)).status, 401);
     assert.equal((await fetch(`${base}/api/studio/workflows/00000000-0000-4000-8000-000000000000`, { method: "DELETE" })).status, 401);
     assert.equal((await fetch(`${base}/api/studio/jobs/abc`)).status, 404);
