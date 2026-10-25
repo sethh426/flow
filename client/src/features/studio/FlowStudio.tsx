@@ -1159,9 +1159,9 @@ export default function FlowStudio() {
                             setBusy(true); setError("");
                             try {
                               const version = await saveWorkflowEdits(project, await user.getIdToken());
-                              const updated = { ...project, cloudVersion: version };
-                              setProject(updated);
-                              persist(updated);
+                              const latest = projectsRef.current.find((item) => item.id === project.id) || project;
+                              persist({ ...latest, cloudVersion: version });
+                              setProject((current) => current?.id === project.id ? { ...current, cloudVersion: version } : current);
                               setNotice("Edits saved to your account.");
                             } catch (failure) {
                               setError(failure instanceof Error ? failure.message : "Could not save edits.");
