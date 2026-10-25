@@ -90,7 +90,10 @@ const suggestions = [
 type Dialog = "settings" | "history" | "account" | "plugins" | null;
 type Tab = "story" | "copy" | "workflow";
 
-export default function FlowStudio() {
+export default function FlowStudio({ initialKind = "video", initialPluginId }: {
+  initialKind?: CreationKind;
+  initialPluginId?: string;
+}) {
   const [expanded, setExpanded] = useState(true);
   const [service, setService] = useState<"checking" | "configured" | "unavailable">("checking");
   const [narrationAvailable, setNarrationAvailable] = useState(false);
@@ -99,12 +102,12 @@ export default function FlowStudio() {
   const [productionAvailable, setProductionAvailable] = useState(false);
   const [connectionAttempt, setConnectionAttempt] = useState(0);
   const { user, loginWithGoogle, login, signup, logout, configured: isFirebaseConfigured, loading: authLoading, retryConnection } = useAuth();
-  const [brief, setBrief] = useState<Brief>(initialBrief);
+  const [brief, setBrief] = useState<Brief>({ ...initialBrief, kind: initialKind });
   const [project, setProject] = useState<Project | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [remoteRuns, setRemoteRuns] = useState<SavedWorkflowRun[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
-  const [dialog, setDialog] = useState<Dialog>(null);
+  const [dialog, setDialog] = useState<Dialog>(initialPluginId ? "plugins" : null);
   const [tab, setTab] = useState<Tab>("story");
   const [busy, setBusy] = useState(false);
   const [rendering, setRendering] = useState(false);
@@ -1427,7 +1430,7 @@ export default function FlowStudio() {
               <X size={19} />
             </button>
           </div>
-          {dialog === "plugins" && <PluginCatalog />}
+          {dialog === "plugins" && <PluginCatalog initialPluginId={initialPluginId} />}
           {dialog === "settings" && (
             <div className={styles.settings}>
               <label>
