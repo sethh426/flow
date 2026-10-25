@@ -1,5 +1,22 @@
 # Current State — 2026-10-24
 
+## Cross-device AI draft restoration — 2026-10-24
+
+Signed-in AI draft runs now store the validated original brief alongside the
+grounded creative output. Authenticated `GET /api/studio/workflows` lists up
+to 30 recent runs from that user's directory, and the existing per-run GET
+returns enough to restore the original draft. Flow's History shows account
+drafts absent from local device storage, restores one to an editable local
+project, and can delete an account draft. Local edits remain on the device.
+
+OVH tests, Studio type check, lint, and the static build passed. A live
+authenticated API probe created a run, found it in the list, and retrieved
+the same brief. A phone-sized Chromium test created a draft in one isolated
+browser session, signed into the same account in a second clean session,
+found it under Saved AI Drafts, and restored an editable scene. Both
+temporary accounts and the successful probe's run were removed. No claim
+is made for syncing edits, media assets, scheduling, or external actions.
+
 ## Authenticated draft workflow run — 2026-10-24
 
 The OVH Studio sidecar now accepts authenticated `POST /api/studio/workflows/execute`
