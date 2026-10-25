@@ -1303,3 +1303,7 @@
     transition: none;
   }
 }
+.workflowStep > div { min-width: 0; flex: 1; }
+.workflowStep label { display: block; margin: 12px 0 8px; color: var(--muted); font-size: 11px; }
+.workflowStep input[type="datetime-local"] { display: block; width: 100%; max-width: 290px; margin-top: 7px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #221d1b; color: var(--ink); color-scheme: dark; font: inherit; }
+.workflowStep button { margin: 6px 8px 6px 0; }
