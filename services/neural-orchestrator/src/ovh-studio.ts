@@ -90,7 +90,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   if (origin) res.setHeader("Access-Control-Allow-Origin", origin);
   res.setHeader("Vary", "Origin");
   if (req.method === "OPTIONS") {
-    res.writeHead(204, { "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS", "Access-Control-Allow-Headers": "Authorization, Content-Type", "Access-Control-Max-Age": "600" });
+    res.writeHead(204, { "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS", "Access-Control-Allow-Headers": "Authorization, Content-Type", "Access-Control-Max-Age": "600" });
     res.end();
     return;
   }
@@ -102,7 +102,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   const workflowResult = /^\/api\/studio\/workflows\/([0-9a-f-]{36})$/.exec(req.url || "");
   if (req.url !== "/api/studio/create" && !workflowRun && !workflowResult && !workflowList)
     return json(res, 404, { error: "Studio action not found." });
-  if (workflowResult ? req.method !== "GET" && req.method !== "DELETE" : workflowList ? req.method !== "GET" : req.method !== "POST")
+  if (workflowResult ? req.method !== "GET" && req.method !== "PUT" && req.method !== "DELETE" : workflowList ? req.method !== "GET" : req.method !== "POST")
     return json(res, 405, { error: "Method not allowed." });
   const token = /^Bearer (.+)$/.exec(req.headers.authorization || "")?.[1];
   if (!token) return json(res, 401, { error: "Sign in to use connected Studio actions." });
@@ -136,7 +136,26 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
         unlinkSync(path);
         return json(res, 200, { deleted: true });
       }
-      return json(res, 200, JSON.parse(readFileSync(path, "utf8")) as object);
+      const record = JSON.parse(readFileSync(path, "utf8"));
+      if (req.method === "PUT") {
+        let body: unknown;
+        try { body = await readJson(req); }
+        catch { return json(res, 400, { error: "Invalid edited draft." }); }
+        const input = body as { creative?: unknown; brief?: unknown; expectedVersion?: unknown };
+        const creative = creativeSchema.safeParse(input?.creative);
+        const brief = briefSchema.safeParse(input?.brief);
+        if (!creative.success || !brief.success || !Number.isInteger(input?.expectedVersion))
+          return json(res, 400, { error: "Complete the draft before saving." });
+        const currentVersion = Number.isInteger(record.version) ? record.version : 1;
+        if (input.expectedVersion !== currentVersion)
+          return json(res, 409, { error: "This draft changed on another device. Download your local creative pack before restoring the latest version." });
+        const updated = { ...record, creative: creative.data, brief: brief.data, version: currentVersion + 1, updatedAt: new Date().toISOString() };
+        const temp = `${path}.${process.pid}.tmp`;
+        writeFileSync(temp, JSON.stringify(updated), { mode: 0o600 });
+        renameSync(temp, path);
+        return json(res, 200, { version: updated.version, updatedAt: updated.updatedAt });
+      }
+      return json(res, 200, record);
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === "ENOENT")
         return json(res, 404, { error: "Workflow run not found." });
@@ -192,7 +211,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
       const executionId = randomUUID();
       const dir = join(usageDir, "workflow-runs", createHash("sha256").update(uid).digest("hex"));
       mkdirSync(dir, { recursive: true, mode: 0o700 });
-      const result = { executionId, status: "completed", action: "create_ai_draft", createdAt: new Date().toISOString(), creative, brief: parsed.data, source: "ai", groundingEdits };
+      const result = { executionId, status: "completed", action: "create_ai_draft", createdAt: new Date().toISOString(), creative, brief: parsed.data, source: "ai", groundingEdits, version: 1 };
       const temp = join(dir, `${executionId}.${process.pid}.tmp`);
       writeFileSync(temp, JSON.stringify(result), { mode: 0o600 });
       renameSync(temp, join(dir, `${executionId}.json`));
