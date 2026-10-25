@@ -348,16 +348,10 @@ test("malformed Hosting configuration and disconnected AI leave local creation u
   await page.getByRole("button", { name: "Retry connections", exact: true }).click();
   await expect(page.getByRole("button", { name: "Continue with Google", exact: true })).toBeEnabled();
   await page.getByRole("button", { name: "Back to creating", exact: false }).click();
-  await expect(page.getByRole("button", { name: "Sign in for AI draft" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Create starter outline" })).toBeDisabled();
   await page.getByLabel("Describe what you want to create").fill("A locally useful draft");
+  await expect(page.getByRole("button", { name: "Create starter outline" })).toBeEnabled();
   await page.getByLabel("Describe what you want to create").press("Control+Enter");
-  await expect(page.getByRole("button", { name: "Continue with Google", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Back to creating", exact: false }).click();
-  await expect(page.getByRole("button", { name: "Sign in for AI draft" })).toBeVisible();
-  await page.getByRole("button", { name: "Sign in for AI draft" }).click();
-  await expect(page.getByRole("button", { name: "Continue with Google", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Back to creating", exact: false }).click();
-  await page.getByRole("button", { name: "Make an editable outline without signing in" }).click();
   await expect(page.getByRole("heading", { name: "A locally useful draft", exact: true })).toBeVisible();
 });
 
