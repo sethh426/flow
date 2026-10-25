@@ -49,6 +49,7 @@ export interface Project {
   creative: Creative;
   productionJobId?: string;
   executionId?: string;
+  cloudVersion?: number;
 }
 
 export const palettes: Record<
@@ -204,6 +205,7 @@ export const projectSchema = z.object({
   // Persist unfinished edits too; final exports use the stricter schema above.
   productionJobId: z.string().uuid().optional(),
   executionId: z.string().uuid().optional(),
+  cloudVersion: z.number().int().positive().optional(),
   creative: creativeSchema.extend({
     caption: z.string().max(2200),
     scenes: z
@@ -237,7 +239,7 @@ export async function generateCreative(
   brief: Brief,
   token: string,
   signal: AbortSignal,
-): Promise<{ creative: Creative; groundingEdits: boolean; executionId?: string }> {
+): Promise<{ creative: Creative; groundingEdits: boolean; executionId?: string; version?: number }> {
   const response = await fetch(studioApiUrl("/api/studio/workflows/execute"), {
     method: "POST",
     signal,
@@ -254,7 +256,7 @@ export async function generateCreative(
     );
   }
   const body: unknown = await response.json();
-  const envelope = z.object({ creative: creativeSchema, groundingEdits: z.boolean().optional(), executionId: z.string().uuid().optional() }).safeParse(body);
+  const envelope = z.object({ creative: creativeSchema, groundingEdits: z.boolean().optional(), executionId: z.string().uuid().optional(), version: z.number().int().positive().optional() }).safeParse(body);
   if (!response.ok) {
     const error = z.object({ error: z.string(), code: z.string().optional() }).safeParse(body);
     const message = error.success
@@ -266,7 +268,7 @@ export async function generateCreative(
   }
   if (!envelope.success)
     throw new Error("The creative response was incomplete. Please try again.");
-  return { creative: envelope.data.creative, groundingEdits: envelope.data.groundingEdits === true, executionId: envelope.data.executionId };
+  return { creative: envelope.data.creative, groundingEdits: envelope.data.groundingEdits === true, executionId: envelope.data.executionId, version: envelope.data.version };
 }
 
 
@@ -297,13 +299,30 @@ export async function loadWorkflowRun(executionId: string, token: string): Promi
   const body: unknown = await response.json();
   const run = z.object({
     executionId: z.string().uuid(), createdAt: z.string(),
-    brief: projectSchema.shape.brief, creative: creativeSchema,
+    brief: projectSchema.shape.brief, creative: creativeSchema, version: z.number().int().positive().optional(),
   }).parse(body);
   return projectSchema.parse({
     id: run.executionId, executionId: run.executionId,
     createdAt: run.createdAt, source: "ai", brief: run.brief,
-    creative: run.creative,
+    creative: run.creative, cloudVersion: run.version || 1,
   });
+}
+
+export async function saveWorkflowEdits(project: Project, token: string): Promise<number> {
+  if (!project.executionId) throw new Error("This draft has no connected run.");
+  const creative = creativeSchema.safeParse(project.creative);
+  if (!creative.success) throw new Error("Complete the creative fields before saving to your account.");
+  const response = await fetch(studioApiUrl(`/api/studio/workflows/${project.executionId}`), {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ creative: creative.data, brief: project.brief, expectedVersion: project.cloudVersion || 1 }),
+  });
+  const body: unknown = await response.json();
+  if (!response.ok) {
+    const error = z.object({ error: z.string() }).safeParse(body);
+    throw new Error(error.success ? error.data.error : "Could not save this draft to your account.");
+  }
+  return z.object({ version: z.number().int().positive() }).parse(body).version;
 }
 
 export async function deleteWorkflowRun(executionId: string, token: string): Promise<void> {
