@@ -36,6 +36,7 @@ import {
   saveWorkflowEdits,
   getServerProduction,
   approveServerRender,
+  syncServerMedia,
   downloadServerVideo,
   type ServerProduction,
   type SavedWorkflowRun,
@@ -119,6 +120,7 @@ export default function FlowStudio({ initialKind = "video", initialPluginId }: {
   const [notice, setNotice] = useState("");
   const [images, setImages] = useState<HTMLImageElement[]>([]);
   const [imageNames, setImageNames] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [audio, setAudio] = useState<File | null>(null);
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState(0);
@@ -405,6 +407,7 @@ export default function FlowStudio({ initialKind = "video", initialPluginId }: {
       const saved = await loadWorkflowRun(project.executionId, token);
       if (JSON.stringify(saved.creative) !== JSON.stringify(project.creative) || JSON.stringify(saved.brief) !== JSON.stringify(project.brief))
         throw new Error("Save your latest edits to your account before approving production.");
+      await syncServerMedia(project, token, imageFiles, audio);
       const when = scheduled ? new Date(scheduleAt).toISOString() : undefined;
       const production = await approveServerRender(project, token, when);
       setServerProduction(production);
@@ -576,6 +579,7 @@ export default function FlowStudio({ initialKind = "video", initialPluginId }: {
       const next: Project = { ...parsed.data, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
       setImages([]);
       setImageNames([]);
+      setImageFiles([]);
       setAudio(null);
       openProject(next);
       persist(next);
@@ -602,6 +606,7 @@ export default function FlowStudio({ initialKind = "video", initialPluginId }: {
     try {
       setImages(await loadImages(selected));
       setImageNames(selected.map((file) => file.name));
+      setImageFiles(selected);
       setNotice("Images added. Your preview now uses them.");
     } catch (failure) {
       setError(
@@ -1252,7 +1257,7 @@ export default function FlowStudio({ initialKind = "video", initialPluginId }: {
                         <span><Film size={16} /></span>
                         <div>
                           <strong>Server video production</strong>
-                          <p>Approve this saved draft for a 360 × 640 silent MP4 with scene titles. Production uses the saved text and look; local images and audio stay on your device.</p>
+                          <p>Approve this saved draft for a 360 × 640 MP4 with scene titles. Attached images and audio are securely copied to your account for this render; without them the video uses a quiet color background. AI narration is not connected.</p>
                           {serverProduction ? (
                             <>
                               <p role="status">Status: {serverProduction.status}{serverProduction.scheduledAt ? ` · ${new Date(serverProduction.scheduledAt).toLocaleString()}` : ""}</p>
@@ -1644,6 +1649,7 @@ export default function FlowStudio({ initialKind = "video", initialPluginId }: {
                     onClick={() => {
                       setImages([]);
                       setImageNames([]);
+      setImageFiles([]);
                       setAudio(null);
                     }}
                   >
@@ -1669,6 +1675,7 @@ export default function FlowStudio({ initialKind = "video", initialPluginId }: {
                         openProject(item);
                         setImages([]);
                         setImageNames([]);
+      setImageFiles([]);
                         setAudio(null);
                         setDialog(null);
                       }}
@@ -1732,7 +1739,7 @@ export default function FlowStudio({ initialKind = "video", initialPluginId }: {
                             const restored = await loadWorkflowRun(run.executionId, await user.getIdToken());
                             openProject(restored);
                             persist(restored);
-                            setImages([]); setImageNames([]); setAudio(null);
+                            setImages([]); setImageNames([]); setImageFiles([]); setAudio(null);
                             setDialog(null);
                           } catch (failure) {
                             setError(failure instanceof Error ? failure.message : "Could not restore this draft.");
