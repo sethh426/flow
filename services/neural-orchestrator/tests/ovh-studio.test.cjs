@@ -1,7 +1,8 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const { createServer } = require("node:http");
-const { mkdtempSync, readFileSync, rmSync } = require("node:fs");
+const { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } = require("node:fs");
+const { createHash, randomUUID } = require("node:crypto");
 const { tmpdir } = require("node:os");
 const { join } = require("node:path");
 const { execFileSync } = require("node:child_process");
@@ -69,7 +70,7 @@ test("OVH service reports only configured capabilities and rejects untrusted req
     assert.equal(status.headers.get("access-control-allow-origin"), "https://affiliateflow-abzfy.web.app");
     assert.deepEqual((await status.json()).capabilities, {
       creative: false, video: "local", workflow: "local", productionJobs: false, serverRender: true, renderScheduling: true, narration: false,
-      visuals: false, footage: false, publishing: false,
+      visuals: false, footage: false, publishing: false, serverMedia: true,
     });
     const preflight = await fetch(`${base}/api/studio/create`, {
       method: "OPTIONS", headers: { Origin: "https://affiliateflow-abzfy.web.app", "Access-Control-Request-Method": "POST" },
@@ -87,6 +88,8 @@ test("OVH service reports only configured capabilities and rejects untrusted req
     assert.equal((await fetch(`${base}/api/studio/workflows/00000000-0000-4000-8000-000000000000`, { method: "PUT" })).status, 401);
     assert.equal((await fetch(`${base}/api/studio/workflows/00000000-0000-4000-8000-000000000000/render`, { method: "POST" })).status, 401);
     assert.equal((await fetch(`${base}/api/studio/workflows/00000000-0000-4000-8000-000000000000/video`)).status, 401);
+    assert.equal((await fetch(`${base}/api/studio/workflows/00000000-0000-4000-8000-000000000000/media/images/0`, { method: "PUT" })).status, 401);
+    assert.equal((await fetch(`${base}/api/studio/workflows/00000000-0000-4000-8000-000000000000/media`, { method: "DELETE" })).status, 401);
     assert.equal((await fetch(`${base}/api/studio/jobs/abc`)).status, 404);
     assert.equal((await fetch(`${base}/healthz`)).status, 200);
   } finally {
@@ -133,6 +136,20 @@ test("Firebase token verification enforces signature, project, issuer, and subje
       assert.equal((await list(alice)).length, 1);
       assert.equal((await previousFetch(base + "/api/studio/tools/" + id, { method: "DELETE", headers: { Authorization: `Bearer ${alice}` } })).status, 200);
       assert.deepEqual(await list(alice), []);
+      const runId = randomUUID();
+      const ownerDir = join(routeStore, "workflow-runs", createHash("sha256").update("alice").digest("hex"));
+      mkdirSync(ownerDir, { recursive: true });
+      writeFileSync(join(ownerDir, runId + ".json"), JSON.stringify({ executionId: runId, version: 1 }));
+      const mediaUrl = base + "/api/studio/workflows/" + runId + "/media";
+      const sample = Buffer.from([255, 216, 255, 224, 0, 1, 2, 3]);
+      const upload = (token, version, bytes, type = "image/jpeg") => previousFetch(mediaUrl + "/images/0", { method: "PUT", headers: { Authorization: `Bearer ${token}`, "X-Flow-Draft-Version": String(version), "Content-Type": type }, body: bytes });
+      assert.equal((await upload(bob, 1, sample)).status, 404);
+      assert.equal((await upload(alice, 2, sample)).status, 409);
+      assert.equal((await upload(alice, 1, Buffer.from("not an image"))).status, 415);
+      assert.equal((await upload(alice, 1, sample)).status, 201);
+      assert.equal((await previousFetch(mediaUrl, { method: "DELETE", headers: { Authorization: `Bearer ${bob}` } })).status, 404);
+      assert.equal((await previousFetch(mediaUrl, { method: "DELETE", headers: { Authorization: `Bearer ${alice}` } })).status, 200);
+      assert.equal(require("../dist/studio-media").savedMedia("alice", runId).images.length, 0);
     } finally { await new Promise((resolve) => server.close(resolve)); }
   } finally {
     global.fetch = previousFetch;
