@@ -33,6 +33,10 @@ import {
   listWorkflowRuns,
   loadWorkflowRun,
   saveWorkflowEdits,
+  getServerProduction,
+  approveServerRender,
+  downloadServerVideo,
+  type ServerProduction,
   type SavedWorkflowRun,
   generateCreative,
   UngroundedCreativeError,
@@ -104,6 +108,8 @@ export default function FlowStudio() {
   const [busy, setBusy] = useState(false);
   const [rendering, setRendering] = useState(false);
   const [workflowStage, setWorkflowStage] = useState("");
+  const [serverProduction, setServerProduction] = useState<ServerProduction | null>(null);
+  const [scheduleAt, setScheduleAt] = useState("");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -375,6 +381,35 @@ export default function FlowStudio() {
       abortRef.current = null;
     }
   };
+  useEffect(() => {
+    if (!user || !project?.executionId) { setServerProduction(null); return; }
+    const executionId = project.executionId;
+    let alive = true;
+    const refresh = () => { void user.getIdToken().then((token) => getServerProduction(executionId, token))
+      .then((production) => { if (alive) setServerProduction(production); })
+      .catch(() => { if (alive) setServerProduction(null); }); };
+    refresh();
+    const timer = setInterval(refresh, 5000);
+    return () => { alive = false; clearInterval(timer); };
+  }, [project?.executionId, user]);
+
+  const startServerRender = async (scheduled: boolean) => {
+    if (!user || !project?.executionId) return;
+    setBusy(true); setError("");
+    try {
+      const token = await user.getIdToken();
+      const saved = await loadWorkflowRun(project.executionId, token);
+      if (JSON.stringify(saved.creative) !== JSON.stringify(project.creative) || JSON.stringify(saved.brief) !== JSON.stringify(project.brief))
+        throw new Error("Save your latest edits to your account before approving production.");
+      const when = scheduled ? new Date(scheduleAt).toISOString() : undefined;
+      const production = await approveServerRender(project, token, when);
+      setServerProduction(production);
+      setNotice(scheduled ? "Server video production scheduled." : "Server video production queued.");
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : "Could not start server production.");
+    } finally { setBusy(false); }
+  };
+
   const runLocalWorkflow = async () => {
     if (!project || rendering || busy) return;
     if (!creativeSchema.safeParse(project.creative).success) {
@@ -1199,8 +1234,36 @@ export default function FlowStudio() {
                         </div>
                       </div>
                     ))}
+                    {project.executionId && (
+                      <div className={styles.workflowStep}>
+                        <span><Film size={16} /></span>
+                        <div>
+                          <strong>Server video production</strong>
+                          <p>Approve this saved draft for a 360 × 640 silent MP4 with scene titles. Production uses the saved text and look; local images and audio stay on your device.</p>
+                          {serverProduction ? (
+                            <>
+                              <p role="status">Status: {serverProduction.status}{serverProduction.scheduledAt ? ` · ${new Date(serverProduction.scheduledAt).toLocaleString()}` : ""}</p>
+                              {serverProduction.failure && <p role="alert">{serverProduction.failure}</p>}
+                              {serverProduction.status === "completed" && (
+                                <button className={styles.secondaryButton} disabled={busy} onClick={() => {
+                                  void (async () => { try { await downloadServerVideo(project.executionId!, await user!.getIdToken()); } catch (failure) { setError(failure instanceof Error ? failure.message : "Download failed."); } })();
+                                }}>Download server MP4</button>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <button className={styles.secondaryButton} disabled={!user || busy || rendering} onClick={() => void startServerRender(false)}>Approve and render now</button>
+                              <label>Schedule server render
+                                <input type="datetime-local" value={scheduleAt} onChange={(event) => setScheduleAt(event.target.value)} />
+                              </label>
+                              <button className={styles.secondaryButton} disabled={!user || busy || !scheduleAt || rendering} onClick={() => void startServerRender(true)}>Approve and schedule</button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    )}
                     <span className={styles.planBadge}>
-                      Plan only · No external actions have run
+                      Publishing is not connected · No posts have been sent
                     </span>
                   </div>
                 )}
