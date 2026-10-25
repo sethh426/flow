@@ -1,5 +1,30 @@
 # Current State — 2026-10-24
 
+## Edited AI draft account save — 2026-10-24
+
+The connected Studio service now accepts authenticated PUT on the owner's
+saved run. It validates the brief and creative package, writes atomically to
+the persistent volume, increments a version, and rejects a stale version
+with HTTP 409. Flow's Workflow tab has an explicit Save edits to account
+action. Restoring on another device retrieves the saved revision; unsaved
+local edits remain local. The client preserves any local edits made while
+the save request is in flight.
+
+Live authenticated API verification returned create 200, save 200 with
+version 2, stale save 409, and GET with the edited caption. A phone-sized
+Chromium browser edited a caption, saved via the button (200), then a clean
+second browser session restored the edited caption. Temporary identities
+and completed test runs were deleted. OVH tests, client type check, lint,
+and static build passed.
+
+Remaining work, ordered by capability: authenticated execution of
+allowlisted workflow actions with approval and durable status; server media
+production rather than browser-only export; connected publishing and
+scheduled triggers; then broader legacy feature integration. The old
+workflow executor must not be deployed as-is because its routes lack
+authentication and ownership checks. The Firebase `/api/workflows/execute`
+rewrite still returns 503 and is not used by this Studio path.
+
 ## Cross-device AI draft restoration — 2026-10-24
 
 Signed-in AI draft runs now store the validated original brief alongside the
