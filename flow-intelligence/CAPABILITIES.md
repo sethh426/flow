@@ -5,12 +5,12 @@
 | Floating intent surface | Working baseline | One simple interaction can launch/inspect/cancel durable jobs |
 | Content package | Working baseline | Research-grounded, brand-aware outputs with evals |
 | Local vertical render | Working baseline | Deterministic high-quality render with captions/audio/provenance |
-| Image generation/editing | Merged | Live staging verification, editing/reference-image workflow and provider benchmark/fallback remain |
+| Image generation/editing | Historical Firebase source only; OVH Studio reports unavailable | Review auth, provider setup, storage, live output and editor integration before enabling |
 | AI video generation | In review | Veo 3.1 async adapter, private storage and renderer integration; add live staging proof, benchmark and second-provider fallback |
-| Narration | Merged | Live staging verification, timing controls and provider benchmark/fallback remain |
+| Narration | Historical Firebase source only; OVH Studio reports unavailable | Review provider setup, timing, storage and live output before enabling |
 | Research/search | Fragmented | Source-aware research service with citations + freshness |
-| Workflow execution | Durable server preparation + local render | Expand queued capability execution beyond preparation while preserving retries, idempotency, cancellation and honest state |
-| Artifact persistence | Local/device-centric | User-isolated server storage + retention policy |
+| Workflow execution | Ten live local tools plus authenticated saved draft and approved server render/schedule | Add allowlisted connected actions with ownership, receipts, retries and honest state |
+| Artifact persistence | Device-local workflow exports; account-scoped AI drafts and server MP4 | Retention, quota and complete media persistence policy |
 | TikTok publishing | Not connected | Approved OAuth scopes, latest creator info, explicit consent, status reconciliation |
 | YouTube publishing | Not connected | OAuth upload, audit/private-mode handling, resumable/retry behavior |
 | Performance learning | Missing | Import platform metrics, normalized evidence store, experiment attribution |
