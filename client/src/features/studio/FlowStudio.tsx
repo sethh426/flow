@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import FlowAssistant from "@/features/workflow/FlowAssistant";
+import PluginCatalog from "@/features/plugins/PluginCatalog";
 import {
   creativeSchema,
   downloadFile,
@@ -86,7 +87,7 @@ const suggestions = [
   "Tell a better story",
   "Turn an idea into a campaign",
 ];
-type Dialog = "settings" | "history" | "account" | null;
+type Dialog = "settings" | "history" | "account" | "plugins" | null;
 type Tab = "story" | "copy" | "workflow";
 
 export default function FlowStudio() {
@@ -725,6 +726,15 @@ export default function FlowStudio() {
               title="Your creations"
             >
               <History size={18} />
+            </button>
+            <button
+              className={styles.iconButton}
+              onClick={() => setDialog("plugins")}
+              disabled={busy || rendering}
+              aria-label="Open free workflows"
+              title="Ten free workflows"
+            >
+              <Workflow size={18} />
             </button>
             <button
               className={styles.iconButton}
@@ -1386,6 +1396,7 @@ export default function FlowStudio() {
       <dialog
         ref={dialogElement}
         className={styles.dialog}
+        style={dialog === "plugins" ? { width: "min(960px, calc(100vw - 24px))", maxWidth: "960px" } : undefined}
         onCancel={(event) => {
           event.preventDefault();
           setDialog(null);
@@ -1399,8 +1410,10 @@ export default function FlowStudio() {
             <div>
               <p className={styles.eyebrow}>JUST WHAT YOU NEED</p>
               <h2>
-                {dialog === "settings"
-                  ? "Make it yours."
+                {dialog === "plugins"
+                  ? "Free workflows."
+                  : dialog === "settings"
+                    ? "Make it yours."
                   : dialog === "history"
                     ? "Your creations."
                     : "Your Flow account."}
@@ -1414,6 +1427,7 @@ export default function FlowStudio() {
               <X size={19} />
             </button>
           </div>
+          {dialog === "plugins" && <PluginCatalog />}
           {dialog === "settings" && (
             <div className={styles.settings}>
               <label>
