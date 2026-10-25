@@ -54,7 +54,7 @@ test("one floating workspace creates, edits, saves and restores real drafts", as
   );
   await page.getByRole("tab", { name: "Workflow", exact: true }).click();
   await expect(
-    page.getByText("Plan only · No external actions have run"),
+    page.getByText("Publishing is not connected · No posts have been sent"),
   ).toBeVisible();
   expect(failures).toEqual([]);
 });
