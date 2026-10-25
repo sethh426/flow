@@ -7,6 +7,7 @@ COPY src ./src
 RUN npm run build && npm prune --omit=dev
 
 FROM node:20-bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg fonts-dejavu-core && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production PORT=8787 FLOW_STUDIO_USAGE_DIR=/var/lib/flow-studio
 WORKDIR /app
 COPY --from=build /app/package.json /app/package-lock.json ./
