@@ -1,5 +1,13 @@
 # Current State — 2026-10-25
 
+## Authenticated media in server production — 2026-10-25
+
+The canonical floating Studio now copies user-attached JPEG/PNG/WebP images (up to eight, 5 MB each) and MP3/WAV/M4A audio (12 MB) to the owner's saved draft only when they approve server video production. The OVH sidecar validates the token, ownership, version, file signature and size, limits account media storage to 150 MB, and locks attachments after approval. FFmpeg renders portrait scene images with text overlays and muxes audio into the persistent MP4. Without attachments it still renders a silent color-backed video. Draft deletion removes its server media. The client keeps ordinary local preview/export behavior.
+
+Backend compilation and four tests passed; the signed-token route test covers cross-user upload denial, stale version, invalid bytes, owner upload and clear. A production-container FFmpeg test produced both image/audio and silent MP4s with expected streams. A live two-account probe returned 404 for cross-user upload, 409 for stale version, 415 for invalid media, 201 for valid JPEG/WAV, and a completed owner-downloadable MP4 with audio and video streams. A live mobile Chromium test used the floating UI to attach image/audio, create a draft, approve the render and download an MP4 without page errors. Disposable accounts and runs were removed. Studio type check, lint, static build, 30 browser tests (one skipped), and Firebase Hosting/OVH releases passed.
+
+Groq's Orpheus narration endpoint is documented, but the configured organization's API returned model_terms_required. AI narration remains off until its administrator accepts the model terms. Generated images, generated footage and publishing still lack configured authenticated providers and are not exposed as working actions. Source: https://console.groq.com/docs/text-to-speech/orpheus (verified October 25, 2026; English input max 200 characters, available voices, pricing and model terms apply).
+
 ## Cross-device archive for local workflow versions — 2026-10-25
 
 The ten local tools now offer an explicit **Save files to my account** action after producing a result. The OVH sidecar validates the plugin ID and artifacts, caps saves at 14 KB and 30 records per account, and stores records in a UID-scoped persistent directory. Signed-in users can list, restore, download and delete their saved results from the floating catalog. Inputs remain on the device unless incorporated in the finished files the user elects to save; added-tool selections are still device-local.
