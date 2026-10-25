@@ -32,6 +32,7 @@ import {
   deleteWorkflowRun,
   listWorkflowRuns,
   loadWorkflowRun,
+  saveWorkflowEdits,
   type SavedWorkflowRun,
   generateCreative,
   UngroundedCreativeError,
@@ -315,6 +316,7 @@ export default function FlowStudio() {
         brief: { ...brief },
         creative: result.creative,
         executionId: "executionId" in result ? result.executionId : undefined,
+        cloudVersion: "version" in result ? result.version : undefined,
       };
       openProject(next);
       persist(next);
@@ -1014,7 +1016,8 @@ export default function FlowStudio() {
                 aria-labelledby={`flow-tab-${tab}`}
               >
                 {tab === "story" && (
-                  <>                    <div className={styles.sceneList}>
+                  <>
+                    <div className={styles.sceneList}>
                       {project.creative.scenes.map((scene, index) => (
                         <button
                           className={
@@ -1147,7 +1150,26 @@ export default function FlowStudio() {
                 )}
                 {tab === "workflow" && (
                   <div className={styles.workflowList}>
-                    {project.executionId && <p className={styles.workflowIntro}>Original AI draft saved. Edits remain on this device.</p>}
+                    {project.executionId && (
+                      <>
+                        <p className={styles.workflowIntro}>Save edits to make this draft available on your other devices.</p>
+                        <button className={styles.secondaryButton} disabled={!user || busy || rendering} onClick={() => {
+                          void (async () => {
+                            if (!user) return;
+                            setBusy(true); setError("");
+                            try {
+                              const version = await saveWorkflowEdits(project, await user.getIdToken());
+                              const updated = { ...project, cloudVersion: version };
+                              setProject(updated);
+                              persist(updated);
+                              setNotice("Edits saved to your account.");
+                            } catch (failure) {
+                              setError(failure instanceof Error ? failure.message : "Could not save edits.");
+                            } finally { setBusy(false); }
+                          })();
+                        }}>Save edits to account</button>
+                      </>
+                    )}
                     <button
                       className={styles.createButton}
                       disabled={busy || rendering}
