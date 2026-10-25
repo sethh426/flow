@@ -1,6 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { createHash, randomUUID } from "node:crypto";
-import { mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, readdirSync, renameSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { importX509, jwtVerify, type KeyLike } from "jose";
 import OpenAI from "openai";
@@ -98,16 +98,37 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   if (req.url === "/api/studio/status" && req.method === "GET")
     return json(res, 200, { configured: Boolean(model && apiKey), capabilities: { creative: model && apiKey ? "ai" : false, video: "local", workflow: "local", productionJobs: false, narration: false, visuals: false, footage: false, publishing: false } });
   const workflowRun = req.url === "/api/studio/workflows/execute";
+  const workflowList = req.url === "/api/studio/workflows";
   const workflowResult = /^\/api\/studio\/workflows\/([0-9a-f-]{36})$/.exec(req.url || "");
-  if (req.url !== "/api/studio/create" && !workflowRun && !workflowResult)
+  if (req.url !== "/api/studio/create" && !workflowRun && !workflowResult && !workflowList)
     return json(res, 404, { error: "Studio action not found." });
-  if (workflowResult ? req.method !== "GET" && req.method !== "DELETE" : req.method !== "POST")
+  if (workflowResult ? req.method !== "GET" && req.method !== "DELETE" : workflowList ? req.method !== "GET" : req.method !== "POST")
     return json(res, 405, { error: "Method not allowed." });
   const token = /^Bearer (.+)$/.exec(req.headers.authorization || "")?.[1];
   if (!token) return json(res, 401, { error: "Sign in to use connected Studio actions." });
   let uid: string;
   try { uid = await verifyFirebaseToken(token); }
   catch { return json(res, 401, { error: "Your session expired. Sign in again." }); }
+  if (workflowList) {
+    const dir = join(usageDir, "workflow-runs", createHash("sha256").update(uid).digest("hex"));
+    try {
+      const files = readdirSync(dir).filter((name) => /^[0-9a-f-]{36}\.json$/.test(name))
+        .map((name) => ({ name, modified: statSync(join(dir, name)).mtimeMs }))
+        .sort((a, b) => b.modified - a.modified).slice(0, 30);
+      const runs = files.flatMap(({ name }) => {
+        try {
+          const record = JSON.parse(readFileSync(join(dir, name), "utf8"));
+          return briefSchema.safeParse(record.brief).success
+            ? [{ executionId: record.executionId, createdAt: record.createdAt, title: record.creative?.title || "Untitled draft", duration: record.brief.duration }]
+            : [];
+        } catch { return []; }
+      });
+      return json(res, 200, { runs });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") return json(res, 200, { runs: [] });
+      throw error;
+    }
+  }
   if (workflowResult) {
     const path = join(usageDir, "workflow-runs", createHash("sha256").update(uid).digest("hex"), `${workflowResult[1]}.json`);
     try {
@@ -171,7 +192,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
       const executionId = randomUUID();
       const dir = join(usageDir, "workflow-runs", createHash("sha256").update(uid).digest("hex"));
       mkdirSync(dir, { recursive: true, mode: 0o700 });
-      const result = { executionId, status: "completed", action: "create_ai_draft", createdAt: new Date().toISOString(), creative, source: "ai", groundingEdits };
+      const result = { executionId, status: "completed", action: "create_ai_draft", createdAt: new Date().toISOString(), creative, brief: parsed.data, source: "ai", groundingEdits };
       const temp = join(dir, `${executionId}.${process.pid}.tmp`);
       writeFileSync(temp, JSON.stringify(result), { mode: 0o600 });
       renameSync(temp, join(dir, `${executionId}.json`));
