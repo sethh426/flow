@@ -3,6 +3,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdirSync, readFileSync, readdirSync, renameSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { handleStudioAction, removeStudioVideo, startStudioScheduler } from "./studio-actions";
+import { listToolArchives, saveToolArchive, deleteToolArchive } from "./tool-archive";
 import { importX509, jwtVerify, type KeyLike } from "jose";
 import OpenAI from "openai";
 import { briefSchema, creativeSchema, buildCreativePrompt, unsupportedCreativeClaims, repairUnsupportedCreativeClaims } from "./studio-contract";
@@ -99,18 +100,32 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   if (req.url === "/api/studio/status" && req.method === "GET")
     return json(res, 200, { configured: Boolean(model && apiKey), capabilities: { creative: model && apiKey ? "ai" : false, video: "local", workflow: "local", productionJobs: false, serverRender: true, renderScheduling: true, narration: false, visuals: false, footage: false, publishing: false } });
   const actionMatch = /^\/api\/studio\/workflows\/([0-9a-f-]{36})\/(render|video)$/.exec(req.url || "");
+  const toolList = req.url === "/api/studio/tools";
+  const toolItem = /^\/api\/studio\/tools\/([0-9a-f-]{36})$/.exec(req.url || "");
   const workflowRun = req.url === "/api/studio/workflows/execute";
   const workflowList = req.url === "/api/studio/workflows";
   const workflowResult = /^\/api\/studio\/workflows\/([0-9a-f-]{36})$/.exec(req.url || "");
-  if (req.url !== "/api/studio/create" && !workflowRun && !workflowResult && !workflowList && !actionMatch)
+  if (req.url !== "/api/studio/create" && !workflowRun && !workflowResult && !workflowList && !actionMatch && !toolList && !toolItem)
     return json(res, 404, { error: "Studio action not found." });
-  if (actionMatch ? (actionMatch[2] === "render" ? req.method !== "POST" : req.method !== "GET") : workflowResult ? req.method !== "GET" && req.method !== "PUT" && req.method !== "DELETE" : workflowList ? req.method !== "GET" : req.method !== "POST")
+  if (toolItem ? req.method !== "DELETE" : toolList ? req.method !== "GET" && req.method !== "POST" : actionMatch ? (actionMatch[2] === "render" ? req.method !== "POST" : req.method !== "GET") : workflowResult ? req.method !== "GET" && req.method !== "PUT" && req.method !== "DELETE" : workflowList ? req.method !== "GET" : req.method !== "POST")
     return json(res, 405, { error: "Method not allowed." });
   const token = /^Bearer (.+)$/.exec(req.headers.authorization || "")?.[1];
   if (!token) return json(res, 401, { error: "Sign in to use connected Studio actions." });
   let uid: string;
   try { uid = await verifyFirebaseToken(token); }
   catch { return json(res, 401, { error: "Your session expired. Sign in again." }); }
+  if (toolList) {
+    if (req.method === "GET") return json(res, 200, { runs: listToolArchives(usageDir, uid) });
+    let input: unknown;
+    try { input = await readJson(req); }
+    catch { return json(res, 400, { error: "Provide a valid workflow result under 14 KB." }); }
+    const record = saveToolArchive(usageDir, uid, input);
+    if (!record) return json(res, 400, { error: "Invalid or oversized result, or 30 saved results reached. Remove one to continue." });
+    return json(res, 201, { run: record });
+  }
+  if (toolItem) {
+    return json(res, deleteToolArchive(usageDir, uid, toolItem[1]) ? 200 : 404, { deleted: true });
+  }
   if (actionMatch) return handleStudioAction(req, res, uid, actionMatch[1], actionMatch[2]);
   if (workflowList) {
     const dir = join(usageDir, "workflow-runs", createHash("sha256").update(uid).digest("hex"));
