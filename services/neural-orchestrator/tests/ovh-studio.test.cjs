@@ -6,6 +6,8 @@ const { tmpdir } = require("node:os");
 const { join } = require("node:path");
 const { execFileSync } = require("node:child_process");
 const { SignJWT, importPKCS8 } = require("jose");
+const routeStore = mkdtempSync(join(tmpdir(), "flow-route-tools-"));
+process.env.FLOW_STUDIO_USAGE_DIR = routeStore;
 const { handle, verifyFirebaseToken } = require("../dist/ovh-studio");
 const { buildCreativePrompt, unsupportedCreativeClaims, repairUnsupportedCreativeClaims, creativeSchema } = require("../dist/studio-contract");
 
@@ -100,9 +102,9 @@ test("Firebase token verification enforces signature, project, issuer, and subje
     const cert = readFileSync(join(directory, "cert.pem"), "utf8");
     const key = await importPKCS8(readFileSync(join(directory, "key.pem"), "utf8"), "RS256");
     global.fetch = async () => new Response(JSON.stringify({ test: cert }), { status: 200, headers: { "Cache-Control": "max-age=300" } });
-    const sign = (claims = {}, audience = "affiliateflow-abzfy", issuer = "https://securetoken.google.com/affiliateflow-abzfy") => new SignJWT({ auth_time: Math.floor(Date.now() / 1000), ...claims })
+    const sign = (claims = {}, audience = "affiliateflow-abzfy", issuer = "https://securetoken.google.com/affiliateflow-abzfy", subject = "firebase-user") => new SignJWT({ auth_time: Math.floor(Date.now() / 1000), ...claims })
       .setProtectedHeader({ alg: "RS256", kid: "test" })
-      .setSubject("firebase-user")
+      .setSubject(subject)
       .setAudience(audience)
       .setIssuer(issuer)
       .setIssuedAt().setExpirationTime("1h").sign(key);
@@ -114,9 +116,28 @@ test("Firebase token verification enforces signature, project, issuer, and subje
     await assert.rejects(verifyFirebaseToken(await sign({}, "other-project")));
     await assert.rejects(verifyFirebaseToken(await sign({}, "affiliateflow-abzfy", "https://attacker.example")));
     await assert.rejects(verifyFirebaseToken(await sign({ auth_time: Math.floor(Date.now() / 1000) + 3600 })));
+    const server = createServer((req, res) => { void handle(req, res); });
+    await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+    try {
+      const base = `http://127.0.0.1:${server.address().port}`;
+      const alice = await sign({}, undefined, undefined, "alice");
+      const bob = await sign({}, undefined, undefined, "bob");
+      const input = { pluginId: "brief-check", version: "1.0.0", title: "Brief check", artifacts: [{ name: "brief-review.json", type: "application/json", content: "{\"ready\":true}" }] };
+      const create = await previousFetch(base + "/api/studio/tools", { method: "POST", headers: { Authorization: `Bearer ${alice}`, "Content-Type": "application/json" }, body: JSON.stringify(input) });
+      assert.equal(create.status, 201);
+      const id = (await create.json()).run.id;
+      const list = async (token) => (await (await previousFetch(base + "/api/studio/tools", { headers: { Authorization: `Bearer ${token}` } })).json()).runs;
+      assert.equal((await list(alice)).length, 1);
+      assert.deepEqual(await list(bob), []);
+      assert.equal((await previousFetch(base + "/api/studio/tools/" + id, { method: "DELETE", headers: { Authorization: `Bearer ${bob}` } })).status, 404);
+      assert.equal((await list(alice)).length, 1);
+      assert.equal((await previousFetch(base + "/api/studio/tools/" + id, { method: "DELETE", headers: { Authorization: `Bearer ${alice}` } })).status, 200);
+      assert.deepEqual(await list(alice), []);
+    } finally { await new Promise((resolve) => server.close(resolve)); }
   } finally {
     global.fetch = previousFetch;
     rmSync(directory, { recursive: true, force: true });
+    rmSync(routeStore, { recursive: true, force: true });
   }
 });
 
