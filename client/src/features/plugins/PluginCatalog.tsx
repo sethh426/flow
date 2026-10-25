@@ -7,8 +7,8 @@ import styles from "./plugins.module.css";
 
 const STORAGE = "flow.plugins.installed.v1";
 
-export default function PluginCatalog() {
-  const [selected, setSelected] = useState(plugins[0].id);
+export default function PluginCatalog({ initialPluginId }: { initialPluginId?: string }) {
+  const [selected, setSelected] = useState(plugins.find((item) => item.id === initialPluginId)?.id || plugins[0].id);
   const [values, setValues] = useState<Record<string, string>>({});
   const [installed, setInstalled] = useState<string[]>([]);
   const [result, setResult] = useState<Run | null>(null);
