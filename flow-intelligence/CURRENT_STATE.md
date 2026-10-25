@@ -1,5 +1,11 @@
 # Current State — 2026-10-25
 
+## Cross-device archive for local workflow versions — 2026-10-25
+
+The ten local tools now offer an explicit **Save files to my account** action after producing a result. The OVH sidecar validates the plugin ID and artifacts, caps saves at 14 KB and 30 records per account, and stores records in a UID-scoped persistent directory. Signed-in users can list, restore, download and delete their saved results from the floating catalog. Inputs remain on the device unless incorporated in the finished files the user elects to save; added-tool selections are still device-local.
+
+TypeScript, lint, the static build, 18 focused browser tests, and four backend tests passed. A live two-account probe saved an artifact (201), found it for the owner (200), found an empty list for the other account, rejected the other account's delete (404), and allowed owner deletion (200). The disposable accounts and record were removed. Firebase Hosting and the OVH sidecar were released. A live mobile Chromium smoke test opened /workflows/, generated a downloadable brief review and found no page error or horizontal overflow. The save/restore controls still need a signed-in browser exercise across two devices; the live authenticated API behavior is verified.
+
 ## Connecting Flow versions — 2026-10-25
 
 The canonical live app remains `uniflow.live` (Firebase Hosting `affiliateflow-abzfy` with an OVH Studio API). The separate `flowearlyadopters.web.app` waitlist now exposes an “Open Flow” link to the app; its Hosting release and the live browser link were verified. Waitlist records and authentication have not been merged. A separate Firebase site, `flow-69826693-f6d27.web.app`, displays “Product Mapper Dashboard”; no auth or data bridge was made without confirming its implementation and ownership model. The repository's historical branches are code snapshots, not independently proven live capabilities.
