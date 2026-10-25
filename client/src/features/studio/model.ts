@@ -344,6 +344,29 @@ export async function getServerProduction(executionId: string, token: string): P
   return z.object({ production: serverProductionSchema.optional() }).parse(body).production || null;
 }
 
+export async function syncServerMedia(project: Project, token: string, images: File[], audio: File | null): Promise<void> {
+  if (!project.executionId) throw new Error("Save an AI draft to your account first.");
+  if (images.length > 8 || images.some((file) => file.size > 5 * 1024 * 1024) ||
+      audio && audio.size > 12 * 1024 * 1024)
+    throw new Error("For server video, choose up to 8 images under 5 MB each and audio under 12 MB.");
+  const base = `/api/studio/workflows/${project.executionId}/media`;
+  const headers = { Authorization: `Bearer ${token}`, "X-Flow-Draft-Version": String(project.cloudVersion || 1) };
+  const clear = await fetch(studioApiUrl(base), { method: "DELETE", headers });
+  if (!clear.ok) throw new Error("Could not prepare server attachments.");
+  for (const [index, file] of images.entries()) {
+    const response = await fetch(studioApiUrl(`${base}/images/${index}`), {
+      method: "PUT", headers: { ...headers, "Content-Type": file.type }, body: file,
+    });
+    if (!response.ok) throw new Error(`Could not save image ${index + 1} for the server video.`);
+  }
+  if (audio) {
+    const response = await fetch(studioApiUrl(`${base}/audio`), {
+      method: "PUT", headers: { ...headers, "Content-Type": audio.type }, body: audio,
+    });
+    if (!response.ok) throw new Error("Could not save audio for the server video. Use MP3, WAV or M4A.");
+  }
+}
+
 export async function approveServerRender(project: Project, token: string, scheduledAt?: string): Promise<ServerProduction> {
   if (!project.executionId) throw new Error("Save an AI draft to your account first.");
   const response = await fetch(studioApiUrl(`/api/studio/workflows/${project.executionId}/render`), {
