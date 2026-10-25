@@ -66,7 +66,7 @@ test("OVH service reports only configured capabilities and rejects untrusted req
     assert.equal(status.status, 200);
     assert.equal(status.headers.get("access-control-allow-origin"), "https://affiliateflow-abzfy.web.app");
     assert.deepEqual((await status.json()).capabilities, {
-      creative: false, video: "local", workflow: "local", productionJobs: false, narration: false,
+      creative: false, video: "local", workflow: "local", productionJobs: false, serverRender: true, renderScheduling: true, narration: false,
       visuals: false, footage: false, publishing: false,
     });
     const preflight = await fetch(`${base}/api/studio/create`, {
@@ -80,6 +80,8 @@ test("OVH service reports only configured capabilities and rejects untrusted req
     assert.equal((await fetch(`${base}/api/studio/workflows/00000000-0000-4000-8000-000000000000`)).status, 401);
     assert.equal((await fetch(`${base}/api/studio/workflows/00000000-0000-4000-8000-000000000000`, { method: "DELETE" })).status, 401);
     assert.equal((await fetch(`${base}/api/studio/workflows/00000000-0000-4000-8000-000000000000`, { method: "PUT" })).status, 401);
+    assert.equal((await fetch(`${base}/api/studio/workflows/00000000-0000-4000-8000-000000000000/render`, { method: "POST" })).status, 401);
+    assert.equal((await fetch(`${base}/api/studio/workflows/00000000-0000-4000-8000-000000000000/video`)).status, 401);
     assert.equal((await fetch(`${base}/api/studio/jobs/abc`)).status, 404);
     assert.equal((await fetch(`${base}/healthz`)).status, 200);
   } finally {
