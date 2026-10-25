@@ -15,9 +15,10 @@ export default function ClientLayout({
     pathname.startsWith("/auth/") ||
     pathname === "/login" ||
     pathname === "/signup";
-  const workflowEntry = pathname === "/workflows" || pathname === "/dashboard/workflows";
-  const calendarEntry = pathname === "/scheduler" || pathname === "/dashboard/scheduler";
-  const contentEntry = pathname === "/content-studio" || pathname === "/dashboard/content-studio";
+  const route = pathname.replace(/\/+$/, "") || "/";
+  const workflowEntry = route === "/workflows" || route === "/dashboard/workflows";
+  const calendarEntry = route === "/scheduler" || route === "/dashboard/scheduler";
+  const contentEntry = route === "/content-studio" || route === "/dashboard/content-studio";
   return (
     <AuthProvider>
       {authenticationPage ? children : (
