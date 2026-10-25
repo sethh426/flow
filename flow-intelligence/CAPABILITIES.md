@@ -10,7 +10,7 @@
 | Narration | Historical Firebase source only; OVH Studio reports unavailable | Review provider setup, timing, storage and live output before enabling |
 | Research/search | Fragmented | Source-aware research service with citations + freshness |
 | Workflow execution | Ten live local tools plus authenticated saved draft and approved server render/schedule | Add allowlisted connected actions with ownership, receipts, retries and honest state |
-| Artifact persistence | Device-local workflow exports; account-scoped AI drafts and server MP4 | Retention, quota and complete media persistence policy |
+| Artifact persistence | Device-local workflow exports with explicit account-scoped finished-file archive; account-scoped AI drafts and server MP4 | Retention, quota and complete media persistence policy |
 | TikTok publishing | Not connected | Approved OAuth scopes, latest creator info, explicit consent, status reconciliation |
 | YouTube publishing | Not connected | OAuth upload, audit/private-mode handling, resumable/retry behavior |
 | Performance learning | Missing | Import platform metrics, normalized evidence store, experiment attribution |
