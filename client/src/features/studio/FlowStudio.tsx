@@ -30,6 +30,9 @@ import {
   creativeSchema,
   downloadFile,
   deleteWorkflowRun,
+  listWorkflowRuns,
+  loadWorkflowRun,
+  type SavedWorkflowRun,
   generateCreative,
   UngroundedCreativeError,
   createProductionJob,
@@ -93,6 +96,8 @@ export default function FlowStudio() {
   const [brief, setBrief] = useState<Brief>(initialBrief);
   const [project, setProject] = useState<Project | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [remoteRuns, setRemoteRuns] = useState<SavedWorkflowRun[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [tab, setTab] = useState<Tab>("story");
   const [busy, setBusy] = useState(false);
@@ -176,6 +181,16 @@ export default function FlowStudio() {
     setProjects(saved);
     projectsRef.current = saved;
   }, []);
+  useEffect(() => {
+    if (dialog !== "history" || !user) { setRemoteRuns([]); return; }
+    let active = true;
+    setHistoryLoading(true);
+    void user.getIdToken().then(listWorkflowRuns)
+      .then((runs) => { if (active) setRemoteRuns(runs); })
+      .catch(() => { if (active) setError("Could not load account drafts. Device drafts are still available."); })
+      .finally(() => { if (active) setHistoryLoading(false); });
+    return () => { active = false; };
+  }, [dialog, user]);
   useEffect(() => () => abortRef.current?.abort(), []);
   useEffect(() => {
     const element = dialogElement.current;
@@ -1543,7 +1558,7 @@ export default function FlowStudio() {
           )}
           {dialog === "history" && (
             <div className={styles.historyList}>
-              {projects.length ? (
+              {projects.length || remoteRuns.length || historyLoading ? (
                 projects.map((item) => (
                   <div className={styles.historyItem} key={item.id}>
                     <button
@@ -1576,6 +1591,7 @@ export default function FlowStudio() {
                             if (item.executionId) {
                               if (!user) throw new Error("Sign in to delete this saved AI run.");
                               await deleteWorkflowRun(item.executionId, await user.getIdToken());
+                              setRemoteRuns((runs) => runs.filter((run) => run.executionId !== item.executionId));
                             }
                             const saved = projectsRef.current.filter(
                               (saved) => saved.id !== item.id,
@@ -1599,6 +1615,44 @@ export default function FlowStudio() {
                   <History size={30} />
                   <h3>Your next idea starts here.</h3>
                   <p>Create something and it will be saved on this device.</p>
+                </div>
+              )}
+              {user && (
+                <div>
+                  <p className={styles.label}>SAVED AI DRAFTS</p>
+                  {historyLoading && <p role="status">Loading account drafts…</p>}
+                  {remoteRuns.filter((run) => !projects.some((item) => item.executionId === run.executionId)).map((run) => (
+                    <div className={styles.historyItem} key={run.executionId}>
+                      <button disabled={busy || rendering} onClick={() => {
+                        void (async () => {
+                          setBusy(true);
+                          try {
+                            const restored = await loadWorkflowRun(run.executionId, await user.getIdToken());
+                            openProject(restored);
+                            persist(restored);
+                            setImages([]); setImageNames([]); setAudio(null);
+                            setDialog(null);
+                          } catch (failure) {
+                            setError(failure instanceof Error ? failure.message : "Could not restore this draft.");
+                          } finally { setBusy(false); }
+                        })();
+                      }}>
+                        <Film size={18} />
+                        <span><strong>{run.title}</strong><small>{new Date(run.createdAt).toLocaleDateString()} · AI · {run.duration}s · Original draft</small></span>
+                        <ArrowRight size={15} />
+                      </button>
+                      <button className={styles.iconButton} aria-label={`Delete saved ${run.title}`} onClick={() => {
+                        void (async () => {
+                          try {
+                            await deleteWorkflowRun(run.executionId, await user.getIdToken());
+                            setRemoteRuns((runs) => runs.filter((item) => item.executionId !== run.executionId));
+                          } catch (failure) {
+                            setError(failure instanceof Error ? failure.message : "Could not delete this draft.");
+                          }
+                        })();
+                      }}><X size={14} /></button>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
