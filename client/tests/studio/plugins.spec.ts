@@ -78,3 +78,13 @@ test('free catalog runs, downloads, saves selection and rejects invalid changes'
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(failures).toEqual([]);
 });
+
+test('legacy workflow, scheduler and content URLs open working Flow capabilities', async ({page}) => {
+  await page.goto('/workflows/');
+  await expect(page.getByRole('dialog').getByRole('heading', {name:'Free workflows.'})).toBeVisible();
+  await expect(page.getByRole('heading', {name:'Brief Readiness Check'})).toBeVisible();
+  await page.goto('/scheduler/');
+  await expect(page.getByRole('heading', {name:'Content Calendar Export'})).toBeVisible();
+  await page.goto('/content-studio/');
+  await expect(page.getByRole('button', {name:'Content', exact:true})).toHaveAttribute('aria-pressed','true');
+});
