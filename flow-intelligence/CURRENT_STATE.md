@@ -6,6 +6,100 @@ The OVH Studio sidecar now accepts `POST /api/studio/workflows/{id}/render` only
 
 The live signed-in disposable-account test approved and rendered one draft, checked an invalid approval (400), stale version (409), unauthorized download (401), premature download (409), duplicate action (409), and received a valid MP4. A second draft was scheduled about a minute ahead, observed persisted as scheduled, then completed automatically and downloaded as MP4. Both runs and the account were removed. The server contract/auth tests (3), Studio type check and lint passed. The client offers immediate or scheduled approval, status, and owner download in the Workflow tab, while local ZIP rendering remains available. No publishing or external account action is connected; AI narration, still imagery, and footage are not produced by this server renderer.
 
+## Edited AI draft account save — 2026-10-24
+
+The connected Studio service now accepts authenticated PUT on the owner's
+saved run. It validates the brief and creative package, writes atomically to
+the persistent volume, increments a version, and rejects a stale version
+with HTTP 409. Flow's Workflow tab has an explicit Save edits to account
+action. Restoring on another device retrieves the saved revision; unsaved
+local edits remain local. The client preserves any local edits made while
+the save request is in flight.
+
+Live authenticated API verification returned create 200, save 200 with
+version 2, stale save 409, and GET with the edited caption. A phone-sized
+Chromium browser edited a caption, saved via the button (200), then a clean
+second browser session restored the edited caption. Temporary identities
+and completed test runs were deleted. OVH tests, client type check, lint,
+and static build passed.
+
+Remaining work, ordered by capability: authenticated execution of
+allowlisted workflow actions with approval and durable status; server media
+production rather than browser-only export; connected publishing and
+scheduled triggers; then broader legacy feature integration. The old
+workflow executor must not be deployed as-is because its routes lack
+authentication and ownership checks. The Firebase `/api/workflows/execute`
+rewrite still returns 503 and is not used by this Studio path.
+
+## Cross-device AI draft restoration — 2026-10-24
+
+Signed-in AI draft runs now store the validated original brief alongside the
+grounded creative output. Authenticated `GET /api/studio/workflows` lists up
+to 30 recent runs from that user's directory, and the existing per-run GET
+returns enough to restore the original draft. Flow's History shows account
+drafts absent from local device storage, restores one to an editable local
+project, and can delete an account draft. Local edits remain on the device.
+
+OVH tests, Studio type check, lint, and the static build passed. A live
+authenticated API probe created a run, found it in the list, and retrieved
+the same brief. A phone-sized Chromium test created a draft in one isolated
+browser session, signed into the same account in a second clean session,
+found it under Saved AI Drafts, and restored an editable scene. Both
+temporary accounts and the successful probe's run were removed. No claim
+is made for syncing edits, media assets, scheduling, or external actions.
+
+## Authenticated draft workflow run — 2026-10-24
+
+The OVH Studio sidecar now accepts authenticated `POST /api/studio/workflows/execute`
+for the AI draft action. It validates the brief, applies the existing groundedness
+guard and daily limits, persists the completed creative to a per-user directory
+on the persistent Studio volume, and returns a UUID execution ID. Authenticated
+`GET /api/studio/workflows/{id}` retrieves the saved result; unsigned requests
+return 401. The client uses this execution endpoint for connected AI creation
+and retains the run ID with the local draft, showing connected save status on the Workflow tab.
+The legacy `/api/workflows/execute` Firebase rewrite remains unavailable; this
+is an AI draft workflow, not the legacy arbitrary-action executor.
+
+The OVH tests passed, and a temporary authenticated live API account created
+a five-scene run and retrieved the same saved result with HTTP 200. A live
+phone-sized Chromium browser signed in, created an AI draft via the new
+endpoint (HTTP 200), showed connected save status, and reported no page errors.
+The temporary test accounts were deleted. Server-side DELETE now removes a saved
+run for the authenticated owner; the History delete action calls it before removing
+the device copy. A live run returned 200, DELETE returned 200, subsequent GET
+returned 404, and a different signed-in account could not read another run
+(404). The live phone-sized browser also created an AI draft, clicked Delete
+in History, observed DELETE 200 and GET 404, and saw the History item disappear.
+The server record is the original AI draft; later edits remain on the device.
+Static client build, postbuild origin check, Studio type check and lint passed. This does not establish
+scheduled runs, cross-device browsing of run history, external actions,
+publishing, or server video rendering.
+
+The older `services/workflow-executor/index.js` should not be deployed as
+the next step without a security redesign: its manual trigger, webhook, and
+execution-status routes have no authentication or ownership checks in the
+current implementation, and several actions enqueue work or synthesize links
+rather than complete the named external action. The safe next vertical slice
+is an authenticated, allowlisted action with explicit approval and observable
+result, built on the connected Studio sidecar rather than activating the
+legacy service as-is.
+
+## First-load blank viewport repair — 2026-10-24
+
+The live homepage was serving a working app but initializing the creation
+workspace closed, leaving the dark background and floating orb as the only
+obvious UI. User refresh still looked blank. Flow now opens its workspace on
+first load (including server-rendered HTML), with the brief composer visible.
+The user can minimize it and reopen via the orb. Firebase Hosting now serves
+the homepage with `Cache-Control: no-cache, max-age=0, must-revalidate` so
+future deployments can be picked up by a normal refresh.
+
+The deployment to `uniflow.live` was verified with HTTP 200 and the new cache
+header. Live phone-sized Chromium and WebKit both showed the workspace heading
+and brief prompt immediately, with Studio API HTTP 200 and no page errors.
+The focused first-load/minimize/reopen regression passed; type check and lint
+passed. This does not observe the user's physical Safari cache directly.
+
 ## Live Studio smoke and API-origin repair — 2026-10-24
 
 A phone-sized live smoke test found the deployed client requesting
