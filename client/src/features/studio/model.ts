@@ -270,6 +270,42 @@ export async function generateCreative(
 }
 
 
+export interface SavedWorkflowRun {
+  executionId: string;
+  createdAt: string;
+  title: string;
+  duration: number;
+}
+
+export async function listWorkflowRuns(token: string): Promise<SavedWorkflowRun[]> {
+  const response = await fetch(studioApiUrl("/api/studio/workflows"), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error("Could not load saved AI drafts.");
+  const body: unknown = await response.json();
+  return z.object({ runs: z.array(z.object({
+    executionId: z.string().uuid(), createdAt: z.string(),
+    title: z.string(), duration: z.number(),
+  })).max(30) }).parse(body).runs;
+}
+
+export async function loadWorkflowRun(executionId: string, token: string): Promise<Project> {
+  const response = await fetch(studioApiUrl(`/api/studio/workflows/${executionId}`), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error("Could not restore this AI draft.");
+  const body: unknown = await response.json();
+  const run = z.object({
+    executionId: z.string().uuid(), createdAt: z.string(),
+    brief: projectSchema.shape.brief, creative: creativeSchema,
+  }).parse(body);
+  return projectSchema.parse({
+    id: run.executionId, executionId: run.executionId,
+    createdAt: run.createdAt, source: "ai", brief: run.brief,
+    creative: run.creative,
+  });
+}
+
 export async function deleteWorkflowRun(executionId: string, token: string): Promise<void> {
   const response = await fetch(studioApiUrl(`/api/studio/workflows/${executionId}`), {
     method: "DELETE",
