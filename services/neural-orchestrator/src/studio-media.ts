@@ -88,6 +88,10 @@ export async function handleStudioMedia(req: IncomingMessage, res: ServerRespons
   catch { return respond(res, 413, { error: "Media is empty or exceeds the server size limit." }); }
   const ext = extension(String(req.headers["content-type"] || "").split(";")[0], data, audio);
   if (!ext) return respond(res, 415, { error: "Use a JPEG, PNG or WebP image, or MP3, WAV or M4A audio file." });
+  // A render could have been approved while the request body was streaming.
+  const latest = JSON.parse(readFileSync(target.record, "utf8")) as { version?: number; production?: unknown };
+  if (latest.production || Number(req.headers["x-flow-draft-version"]) !== (latest.version || 1))
+    return respond(res, 409, { error: "Draft changed or production was approved while media uploaded." });
   const stem = target.prefix + (audio ? "audio" : "image-" + kind.split("/")[1]);
   const existing = readdirSync(target.dir).filter((name) => name.includes("-media-") && /\.(?:jpg|png|webp|mp3|wav|m4a)$/.test(name));
   const used = existing.filter((name) => !name.startsWith(stem + "."))
