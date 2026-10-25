@@ -2,9 +2,10 @@ import { randomUUID, createHash } from "node:crypto";
 import { spawn } from "node:child_process";
 import { createReadStream, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { tmpdir } from "node:os";
 import { briefSchema, creativeSchema } from "./studio-contract";
+import { savedMediaAt } from "./studio-media";
 
 const root = process.env.FLOW_STUDIO_USAGE_DIR || "/var/lib/flow-studio";
 const runsRoot = join(root, "workflow-runs");
@@ -47,23 +48,51 @@ function wrap(text: string): string {
   if (line) lines.push(line);
   return lines.slice(0, 8).join("\n");
 }
-async function render(path: string, output: string, data: RecordData) {
+async function audioDuration(path: string): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const child = spawn("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", path], { stdio: ["ignore", "pipe", "ignore"] });
+    let output = "";
+    const timer = setTimeout(() => { child.kill("SIGKILL"); reject(new Error("audio probe timeout")); }, 15_000);
+    child.stdout.on("data", (chunk) => { output += chunk.toString().slice(0, 100); });
+    child.once("error", (error) => { clearTimeout(timer); reject(error); });
+    child.once("close", (code) => {
+      clearTimeout(timer);
+      const duration = Number(output.trim());
+      code === 0 && Number.isFinite(duration) && duration > 0 ? resolve(duration) : reject(new Error("invalid audio"));
+    });
+  });
+}
+export async function renderStudioVideo(path: string, output: string, data: RecordData) {
   const brief = briefSchema.parse(data.brief);
   const creative = creativeSchema.parse(data.creative);
+  const id = data.executionId;
+  const media = savedMediaAt(dirname(path), id);
   const work = join(tmpdir(), "flow-render-" + randomUUID());
   mkdirSync(work, { mode: 0o700 });
   const duration = brief.duration;
+  const sceneDuration = duration / creative.scenes.length;
   const colors = { ember: "171310", ocean: "0e1920", orchid: "181322" };
-  const filters = creative.scenes.map((scene, index) => {
-    const textPath = join(work, "scene" + index + ".txt");
-    writeFileSync(textPath, wrap(scene.text), { mode: 0o600 });
-    const start = (index * duration / creative.scenes.length).toFixed(3);
-    const end = ((index + 1) * duration / creative.scenes.length).toFixed(3);
-    return "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:textfile=" + textPath + ":fontcolor=white:fontsize=28:line_spacing=12:x=(w-text_w)/2:y=(h-text_h)/2:enable='between(t," + start + "," + end + ")'";
-  }).join(",");
+  const inputs: string[] = [];
+  const filters: string[] = [];
+  const labels: string[] = [];
   try {
+    if (media.audio && await audioDuration(media.audio) > duration + 0.5)
+      throw new Error("Audio is longer than the approved video. Choose shorter audio.");
+    for (let index = 0; index < creative.scenes.length; index++) {
+      const image = media.images.length ? media.images[index % media.images.length] : null;
+      if (image) inputs.push("-loop", "1", "-framerate", "25", "-t", String(sceneDuration), "-i", image);
+      else inputs.push("-f", "lavfi", "-t", String(sceneDuration), "-i", "color=c=#" + colors[brief.look] + ":s=360x640:r=25");
+      const textPath = join(work, "scene" + index + ".txt");
+      writeFileSync(textPath, wrap(creative.scenes[index].text), { mode: 0o600 });
+      const scale = image ? "scale=360:640:force_original_aspect_ratio=increase,crop=360:640," : "";
+      filters.push("[" + index + ":v]" + scale + "setsar=1,format=yuv420p,trim=duration=" + sceneDuration + ",setpts=PTS-STARTPTS,drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:textfile=" + textPath + ":fontcolor=white:fontsize=28:line_spacing=12:x=(w-text_w)/2:y=(h-text_h)/2[v" + index + "]");
+      labels.push("[v" + index + "]");
+    }
+    filters.push(labels.join("") + "concat=n=" + labels.length + ":v=1:a=0[v]");
+    if (media.audio) inputs.push("-i", media.audio);
+    const args = ["-nostdin", "-hide_banner", "-loglevel", "error", ...inputs, "-filter_complex", filters.join(";"), "-map", "[v]", ...(media.audio ? ["-map", String(labels.length) + ":a:0", "-af", "apad", "-c:a", "aac", "-b:a", "128k"] : ["-an"]), "-t", String(duration), "-r", "25", "-c:v", "libx264", "-preset", "ultrafast", "-crf", "26", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-y", output + ".tmp.mp4"];
     await new Promise<void>((resolve, reject) => {
-      const child = spawn("ffmpeg", ["-nostdin", "-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i", "color=c=#" + colors[brief.look] + ":s=360x640:r=25", "-t", String(duration), "-vf", filters, "-an", "-c:v", "libx264", "-preset", "ultrafast", "-crf", "26", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-y", output + ".tmp.mp4"], { stdio: "ignore" });
+      const child = spawn("ffmpeg", args, { stdio: "ignore" });
       const timer = setTimeout(() => { child.kill("SIGKILL"); reject(new Error("render timeout")); }, 180_000);
       child.once("error", (error) => { clearTimeout(timer); reject(error); });
       child.once("close", (code) => { clearTimeout(timer); code === 0 ? resolve() : reject(new Error("renderer failed")); });
@@ -97,7 +126,7 @@ function tick() {
           }
           production.status = "running"; production.startedAt = new Date().toISOString(); save(path, data);
           try {
-            await render(path, join(dir, id + ".mp4"), data);
+            await renderStudioVideo(path, join(dir, id + ".mp4"), data);
             production.status = "completed"; production.completedAt = new Date().toISOString();
           } catch (error) {
             console.error("Studio server render failed", error instanceof Error ? error.message : "unknown");
@@ -145,6 +174,13 @@ export async function handleStudioAction(req: IncomingMessage, res: ServerRespon
   if (data.production) return respond(res, 409, { error: "This draft already has a production action." });
   if (!briefSchema.safeParse(data.brief).success || !creativeSchema.safeParse(data.creative).success)
     return respond(res, 400, { error: "Complete the draft before production." });
+  const audio = savedMediaAt(target.dir, id).audio;
+  if (audio) {
+    try {
+      if (await audioDuration(audio) > (data.brief as { duration: number }).duration + 0.5)
+        return respond(res, 400, { error: "Audio exceeds the video duration. Attach a shorter file before approval." });
+    } catch { return respond(res, 400, { error: "The attached audio could not be decoded." }); }
+  }
   const scheduled = input.scheduledAt ? Date.parse(input.scheduledAt) : NaN;
   if (input.scheduledAt && (!Number.isFinite(scheduled) || scheduled < Date.now() + 60_000 || scheduled > Date.now() + 30 * 86400_000))
     return respond(res, 400, { error: "Schedule production between one minute and 30 days from now." });
