@@ -4,6 +4,7 @@ import { mkdirSync, readFileSync, readdirSync, renameSync, statSync, unlinkSync,
 import { join } from "node:path";
 import { handleStudioAction, removeStudioVideo, startStudioScheduler } from "./studio-actions";
 import { listToolArchives, saveToolArchive, deleteToolArchive } from "./tool-archive";
+import { handleStudioMedia, removeMedia } from "./studio-media";
 import { importX509, jwtVerify, type KeyLike } from "jose";
 import OpenAI from "openai";
 import { briefSchema, creativeSchema, buildCreativePrompt, unsupportedCreativeClaims, repairUnsupportedCreativeClaims } from "./studio-contract";
@@ -92,28 +93,30 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   if (origin) res.setHeader("Access-Control-Allow-Origin", origin);
   res.setHeader("Vary", "Origin");
   if (req.method === "OPTIONS") {
-    res.writeHead(204, { "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS", "Access-Control-Allow-Headers": "Authorization, Content-Type", "Access-Control-Max-Age": "600" });
+    res.writeHead(204, { "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS", "Access-Control-Allow-Headers": "Authorization, Content-Type, X-Flow-Draft-Version", "Access-Control-Max-Age": "600" });
     res.end();
     return;
   }
   if (req.url === "/healthz" && req.method === "GET") return json(res, 200, { ok: true });
   if (req.url === "/api/studio/status" && req.method === "GET")
-    return json(res, 200, { configured: Boolean(model && apiKey), capabilities: { creative: model && apiKey ? "ai" : false, video: "local", workflow: "local", productionJobs: false, serverRender: true, renderScheduling: true, narration: false, visuals: false, footage: false, publishing: false } });
+    return json(res, 200, { configured: Boolean(model && apiKey), capabilities: { creative: model && apiKey ? "ai" : false, video: "local", workflow: "local", productionJobs: false, serverRender: true, renderScheduling: true, narration: false, visuals: false, footage: false, publishing: false, serverMedia: true } });
+  const mediaMatch = /^\/api\/studio\/workflows\/([0-9a-f-]{36})\/media(?:\/(audio|images\/[0-7]))?$/.exec(req.url || "");
   const actionMatch = /^\/api\/studio\/workflows\/([0-9a-f-]{36})\/(render|video)$/.exec(req.url || "");
   const toolList = req.url === "/api/studio/tools";
   const toolItem = /^\/api\/studio\/tools\/([0-9a-f-]{36})$/.exec(req.url || "");
   const workflowRun = req.url === "/api/studio/workflows/execute";
   const workflowList = req.url === "/api/studio/workflows";
   const workflowResult = /^\/api\/studio\/workflows\/([0-9a-f-]{36})$/.exec(req.url || "");
-  if (req.url !== "/api/studio/create" && !workflowRun && !workflowResult && !workflowList && !actionMatch && !toolList && !toolItem)
+  if (req.url !== "/api/studio/create" && !workflowRun && !workflowResult && !workflowList && !actionMatch && !toolList && !toolItem && !mediaMatch)
     return json(res, 404, { error: "Studio action not found." });
-  if (toolItem ? req.method !== "DELETE" : toolList ? req.method !== "GET" && req.method !== "POST" : actionMatch ? (actionMatch[2] === "render" ? req.method !== "POST" : req.method !== "GET") : workflowResult ? req.method !== "GET" && req.method !== "PUT" && req.method !== "DELETE" : workflowList ? req.method !== "GET" : req.method !== "POST")
+  if (mediaMatch ? (mediaMatch[2] ? req.method !== "PUT" : req.method !== "DELETE") : toolItem ? req.method !== "DELETE" : toolList ? req.method !== "GET" && req.method !== "POST" : actionMatch ? (actionMatch[2] === "render" ? req.method !== "POST" : req.method !== "GET") : workflowResult ? req.method !== "GET" && req.method !== "PUT" && req.method !== "DELETE" : workflowList ? req.method !== "GET" : req.method !== "POST")
     return json(res, 405, { error: "Method not allowed." });
   const token = /^Bearer (.+)$/.exec(req.headers.authorization || "")?.[1];
   if (!token) return json(res, 401, { error: "Sign in to use connected Studio actions." });
   let uid: string;
   try { uid = await verifyFirebaseToken(token); }
   catch { return json(res, 401, { error: "Your session expired. Sign in again." }); }
+  if (mediaMatch) return handleStudioMedia(req, res, uid, mediaMatch[1], mediaMatch[2]);
   if (toolList) {
     if (req.method === "GET") return json(res, 200, { runs: listToolArchives(usageDir, uid) });
     let input: unknown;
@@ -155,6 +158,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
         if (existing.production?.status === "running") return json(res, 409, { error: "Video is rendering. Delete it after production finishes." });
         unlinkSync(path);
         removeStudioVideo(uid, workflowResult[1]);
+        removeMedia(uid, workflowResult[1]);
         return json(res, 200, { deleted: true });
       }
       const record = JSON.parse(readFileSync(path, "utf8"));
