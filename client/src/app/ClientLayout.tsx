@@ -15,9 +15,18 @@ export default function ClientLayout({
     pathname.startsWith("/auth/") ||
     pathname === "/login" ||
     pathname === "/signup";
+  const workflowEntry = pathname === "/workflows" || pathname === "/dashboard/workflows";
+  const calendarEntry = pathname === "/scheduler" || pathname === "/dashboard/scheduler";
+  const contentEntry = pathname === "/content-studio" || pathname === "/dashboard/content-studio";
   return (
     <AuthProvider>
-      {authenticationPage ? children : <FlowStudio />}
+      {authenticationPage ? children : (
+        <FlowStudio
+          key={pathname}
+          initialKind={contentEntry ? "content" : workflowEntry || calendarEntry ? "workflow" : "video"}
+          initialPluginId={calendarEntry ? "content-calendar" : workflowEntry ? "brief-check" : undefined}
+        />
+      )}
     </AuthProvider>
   );
 }
