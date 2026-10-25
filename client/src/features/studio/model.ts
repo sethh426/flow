@@ -325,6 +325,49 @@ export async function saveWorkflowEdits(project: Project, token: string): Promis
   return z.object({ version: z.number().int().positive() }).parse(body).version;
 }
 
+export const serverProductionSchema = z.object({
+  status: z.enum(["scheduled", "queued", "running", "completed", "failed"]),
+  approvedAt: z.string(),
+  scheduledAt: z.string().nullable(),
+  completedAt: z.string().optional(),
+  failure: z.string().optional(),
+  version: z.number().int().positive(),
+});
+export type ServerProduction = z.infer<typeof serverProductionSchema>;
+
+export async function getServerProduction(executionId: string, token: string): Promise<ServerProduction | null> {
+  const response = await fetch(studioApiUrl(`/api/studio/workflows/${executionId}`), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error("Could not load server production.");
+  const body: unknown = await response.json();
+  return z.object({ production: serverProductionSchema.optional() }).parse(body).production || null;
+}
+
+export async function approveServerRender(project: Project, token: string, scheduledAt?: string): Promise<ServerProduction> {
+  if (!project.executionId) throw new Error("Save an AI draft to your account first.");
+  const response = await fetch(studioApiUrl(`/api/studio/workflows/${project.executionId}/render`), {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ approved: true, expectedVersion: project.cloudVersion || 1, ...(scheduledAt ? { scheduledAt } : {}) }),
+  });
+  const body: unknown = await response.json();
+  if (!response.ok) {
+    const failure = z.object({ error: z.string() }).safeParse(body);
+    throw new Error(failure.success ? failure.data.error : "Could not approve server video production.");
+  }
+  return z.object({ production: serverProductionSchema }).parse(body).production;
+}
+
+export async function downloadServerVideo(executionId: string, token: string): Promise<void> {
+  const response = await fetch(studioApiUrl(`/api/studio/workflows/${executionId}/video`), {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok || !response.headers.get("content-type")?.includes("video/mp4"))
+    throw new Error("Server video is not ready.");
+  downloadFile(await response.blob(), `flow-${executionId.slice(0, 8)}.mp4`);
+}
+
 export async function deleteWorkflowRun(executionId: string, token: string): Promise<void> {
   const response = await fetch(studioApiUrl(`/api/studio/workflows/${executionId}`), {
     method: "DELETE",
