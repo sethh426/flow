@@ -2,12 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { downloadFile } from "../studio/model";
+import { useAuth } from "@/contexts/AuthContext";
+import { deleteArchivedTool, listArchivedTools, saveArchivedTool, type ArchivedToolRun } from "./archive";
 import { manifest, plugins, revisionArtifacts, runPlugin, type RevisionTask, type Run } from "./engine";
 import styles from "./plugins.module.css";
 
 const STORAGE = "flow.plugins.installed.v1";
 
 export default function PluginCatalog({ initialPluginId }: { initialPluginId?: string }) {
+  const { user } = useAuth();
+  const [archives, setArchives] = useState<ArchivedToolRun[]>([]);
+  const [accountBusy, setAccountBusy] = useState(false);
+  const [savedId, setSavedId] = useState<string | null>(null);
   const [selected, setSelected] = useState(plugins.find((item) => item.id === initialPluginId)?.id || plugins[0].id);
   const [values, setValues] = useState<Record<string, string>>({});
   const [installed, setInstalled] = useState<string[]>([]);
@@ -27,7 +33,43 @@ export default function PluginCatalog({ initialPluginId }: { initialPluginId?: s
     } catch { setNotice("Saved workflow choices could not be loaded. The tools are still available."); }
   }, []);
 
-  function clearResult() { setResult(null); setReviewTasks(null); setReviewed(false); }
+  useEffect(() => {
+    if (!user) { setArchives([]); setSavedId(null); return; }
+    let active = true;
+    void user.getIdToken().then(listArchivedTools)
+      .then((items) => { if (active) setArchives(items); })
+      .catch(() => { if (active) setError("Could not load saved workflow files. Try opening the catalog again."); });
+    return () => { active = false; };
+  }, [user]);
+
+  async function saveToAccount() {
+    if (!user || !result || accountBusy || savedId) return;
+    setAccountBusy(true); setError("");
+    try {
+      const item = await saveArchivedTool(await user.getIdToken(), result, plugin.name);
+      setArchives((items) => [item, ...items]); setSavedId(item.id);
+      setNotice("Files saved to your Flow account. You can restore them on another device.");
+    } catch (failure) { setError(failure instanceof Error ? failure.message : "Could not save these files."); }
+    finally { setAccountBusy(false); }
+  }
+  async function removeFromAccount(id: string) {
+    if (!user || accountBusy) return;
+    setAccountBusy(true); setError("");
+    try {
+      await deleteArchivedTool(await user.getIdToken(), id);
+      setArchives((items) => items.filter((item) => item.id !== id));
+      if (savedId === id) setSavedId(null);
+      setNotice("Saved files removed from your account.");
+    } catch (failure) { setError(failure instanceof Error ? failure.message : "Could not remove saved files."); }
+    finally { setAccountBusy(false); }
+  }
+  function restore(item: ArchivedToolRun) {
+    setSelected(item.pluginId); setValues({});
+    setResult({ pluginId: item.pluginId, version: item.version, artifacts: item.artifacts, stages: ["Restored from your Flow account"] });
+    setReviewTasks(null); setReviewed(true); setSavedId(item.id);
+    setError(""); setNotice("Saved files restored. Run the workflow again to make new files.");
+  }
+  function clearResult() { setResult(null); setReviewTasks(null); setReviewed(false); setSavedId(null); }
   function choose(id: string) {
     setSelected(id); setValues({}); clearResult(); setError(""); setNotice("");
   }
@@ -53,7 +95,15 @@ export default function PluginCatalog({ initialPluginId }: { initialPluginId?: s
 
   return <div className={styles.catalog}>
     <p>Ten free workflows that turn your inputs into useful files. Choose one, run it, and download the result.</p>
-    <p className={styles.note}>These tools run on this device. They do not send data to a provider or perform external actions.</p>
+    <p className={styles.note}>These tools run on this device. Saving finished files to your Flow account is optional; running a tool never uploads its inputs.</p>
+    {user ? <section className={styles.connected} aria-label="Saved workflow files">
+      <h4>Saved to your Flow account</h4>
+      {archives.length ? <ul className={styles.archiveList}>{archives.map((item) => <li key={item.id}>
+        <span><strong>{item.title}</strong><small>{new Date(item.createdAt).toLocaleString()} · {item.artifacts.length} file(s)</small></span>
+        <button type="button" onClick={() => restore(item)}>Restore</button>
+        <button type="button" disabled={accountBusy} onClick={() => void removeFromAccount(item.id)} aria-label={`Delete saved ${item.title}`}>Delete</button>
+      </li>)}</ul> : <p className={styles.note}>No saved workflow files yet.</p>}
+    </section> : <p className={styles.note}>Sign in from the account button to save finished files across devices.</p>}
     <label className={styles.search}>Find a workflow
       <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Captions, revisions, links…" />
     </label>
@@ -109,6 +159,7 @@ export default function PluginCatalog({ initialPluginId }: { initialPluginId?: s
         </section>}
         {result && (!reviewTasks || reviewed) && <section aria-label="Workflow results" className={styles.results}>
           <h4>Your files are ready</h4>
+          {user && <button type="button" disabled={accountBusy || Boolean(savedId)} onClick={() => void saveToAccount()}>{savedId ? "Saved to account" : accountBusy ? "Saving…" : "Save files to my account"}</button>}
           <ol>{result.stages.map((stage) => <li key={stage}>{stage}</li>)}</ol>
           {result.artifacts.map((artifact) => <div key={artifact.name}>
             <button type="button" onClick={() => downloadFile(new Blob([artifact.content], { type: artifact.type }), artifact.name)}>Download {artifact.name}</button>
