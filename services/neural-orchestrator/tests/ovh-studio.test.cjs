@@ -77,6 +77,9 @@ test("OVH service reports only configured capabilities and rejects untrusted req
     assert.equal((await fetch(`${base}/api/studio/create`, { method: "POST" })).status, 401);
     assert.equal((await fetch(`${base}/api/studio/workflows/execute`, { method: "POST" })).status, 401);
     assert.equal((await fetch(`${base}/api/studio/workflows`)).status, 401);
+    assert.equal((await fetch(`${base}/api/studio/tools`)).status, 401);
+    assert.equal((await fetch(`${base}/api/studio/tools`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" })).status, 401);
+    assert.equal((await fetch(`${base}/api/studio/tools/00000000-0000-4000-8000-000000000000`, { method: "DELETE" })).status, 401);
     assert.equal((await fetch(`${base}/api/studio/workflows/00000000-0000-4000-8000-000000000000`)).status, 401);
     assert.equal((await fetch(`${base}/api/studio/workflows/00000000-0000-4000-8000-000000000000`, { method: "DELETE" })).status, 401);
     assert.equal((await fetch(`${base}/api/studio/workflows/00000000-0000-4000-8000-000000000000`, { method: "PUT" })).status, 401);
@@ -115,4 +118,22 @@ test("Firebase token verification enforces signature, project, issuer, and subje
     global.fetch = previousFetch;
     rmSync(directory, { recursive: true, force: true });
   }
+});
+
+const { listToolArchives, saveToolArchive, deleteToolArchive } = require("../dist/tool-archive");
+test("tool archives enforce schema, account isolation, bounded output and deletion", () => {
+  const root = mkdtempSync(join(tmpdir(), "flow-tools-"));
+  try {
+    const input = { pluginId: "content-calendar", version: "1.0.0", title: "Content Calendar Export", artifacts: [{ name: "content-calendar.csv", type: "text/csv;charset=utf-8", content: "Date,Channel\\n2026-11-01,Instagram" }] };
+    assert.equal(saveToolArchive(root, "alice", { ...input, pluginId: "untrusted" }), null);
+    assert.equal(saveToolArchive(root, "alice", { ...input, artifacts: [{ ...input.artifacts[0], content: "X".repeat(16000) }] }), null);
+    const item = saveToolArchive(root, "alice", input);
+    assert.ok(item?.id);
+    assert.equal(listToolArchives(root, "alice").length, 1);
+    assert.deepEqual(listToolArchives(root, "bob"), []);
+    assert.equal(deleteToolArchive(root, "bob", item.id), false);
+    assert.equal(listToolArchives(root, "alice").length, 1);
+    assert.equal(deleteToolArchive(root, "alice", item.id), true);
+    assert.deepEqual(listToolArchives(root, "alice"), []);
+  } finally { rmSync(root, { recursive: true, force: true }); }
 });
