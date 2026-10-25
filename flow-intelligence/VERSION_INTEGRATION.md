@@ -15,7 +15,7 @@
 - Both `affiliateflow-abzfy` and `flowearlyadopters` Hosting releases completed on October 25.
 - Ten local workflow example runs and six validation cases passed; the catalog browser test passed after aligning its initial-state assumption with the live expanded Studio.
 - A phone-sized live Chromium run downloaded a revision CSV from `uniflow.live` without page errors or horizontal overflow and found the early adopter link.
-- The legacy URL mapping has passed TypeScript and lint; its static build and route browser check are the next release gate.
+- The legacy URL mapping passed TypeScript, lint, static build, focused browser routing tests, and a live phone-sized browser check of workflow, scheduler and content URLs after Hosting release.
 
 ## Next integration slice
 
