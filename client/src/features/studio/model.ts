@@ -329,7 +329,6 @@ export const serverProductionSchema = z.object({
   status: z.enum(["scheduled", "queued", "running", "completed", "failed"]),
   approvedAt: z.string(),
   stage: z.enum(["waiting", "checking_media", "encoding", "verifying", "ready", "failed"]).optional(),
-  progress: z.number().min(0).max(100).optional(),
   scheduledAt: z.string().nullable(),
   completedAt: z.string().optional(),
   failure: z.string().optional(),

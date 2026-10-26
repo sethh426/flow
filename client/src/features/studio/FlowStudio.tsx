@@ -1262,11 +1262,11 @@ export default function FlowStudio({ initialKind = "video", initialPluginId }: {
                             <>
                               <p role="status">{
                                 serverProduction.status === "failed" ? "Production failed" :
-                                serverProduction.status === "completed" ? "Video verified and ready to download · 100%" :
-                                serverProduction.stage === "verifying" ? "Checking the rendered video · 90%" :
-                                serverProduction.stage === "encoding" ? "Rendering the video · 50%" :
-                                serverProduction.stage === "checking_media" ? "Checking media and draft · 20%" :
-                                serverProduction.status === "scheduled" ? "Production scheduled · 10%" : "Production queued · 10%"
+                                serverProduction.status === "completed" ? "Video verified and ready to download" :
+                                serverProduction.stage === "verifying" ? "Checking the rendered video" :
+                                serverProduction.stage === "encoding" ? "Rendering the video" :
+                                serverProduction.stage === "checking_media" ? "Checking media and draft" :
+                                serverProduction.status === "scheduled" ? "Production scheduled" : "Production queued"
                               }{serverProduction.scheduledAt ? " · " + new Date(serverProduction.scheduledAt).toLocaleString() : ""}</p>
                               {serverProduction.failure && <p role="alert">{serverProduction.failure}</p>}
                               {serverProduction.status === "completed" && (
