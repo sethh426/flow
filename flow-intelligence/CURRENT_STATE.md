@@ -484,3 +484,7 @@ Actual generated motion footage is under review:
 - Veo native audio is intentionally muted in the final composition while Flow's narration/uploaded audio remains authoritative.
 
 Truth boundary: a live Vertex Veo call is not proven by CI. Operation persistence sharply reduces duplicate-start risk after the start response is stored, but no claim is made that the upstream start endpoint itself provides an idempotency key.
+
+## October 26: truthful server production progress
+
+The server render now records waiting, media checks, encoding, and output verification stages in the owner-scoped workflow record. A run reaches 100% only after ffprobe verifies a nonempty H.264 720 × 1280 MP4 with the approved duration and AAC audio when user audio is supplied. After a restart, an existing output is checked before a running task can be marked complete; invalid output is removed and rendered again. Failures remain failed and never report completion. The floating Studio displays these stages and the actual 720 × 1280 format. Recovery integrity CI runs a real FFmpeg render plus corrupt, wrong-duration, and missing-audio rejection checks. This concerns creation and video production, not automated TikTok trend analysis or posting; publishing still requires a separate authenticated provider connection and explicit approval.

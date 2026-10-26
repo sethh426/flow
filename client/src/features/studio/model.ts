@@ -328,6 +328,7 @@ export async function saveWorkflowEdits(project: Project, token: string): Promis
 export const serverProductionSchema = z.object({
   status: z.enum(["scheduled", "queued", "running", "completed", "failed"]),
   approvedAt: z.string(),
+  stage: z.enum(["waiting", "checking_media", "encoding", "verifying", "ready", "failed"]).optional(),
   scheduledAt: z.string().nullable(),
   completedAt: z.string().optional(),
   failure: z.string().optional(),
