@@ -1,4 +1,8 @@
-# Current State — 2026-10-25
+# Current State — 2026-10-26
+
+## Server portrait quality update — 2026-10-26
+
+The authenticated OVH renderer now targets 720 × 1280 at 25 fps with larger on-screen text and CRF 23. The production Docker image rendered a 15-second silent sample at 720 × 1280, then a user-image plus WAV sample at 720 × 1280 with H.264 and AAC streams. Backend compilation and 22 Studio contract tests passed. The sidecar was redeployed; `uniflow.live`, Studio status and IntoTheBattle returned HTTP 200, and unsigned render returned 401. This verifies rendering and service health, not a human quality rating or a fresh signed-in browser job at the new resolution. The local browser exporter can still produce 1080 × 1920.
 
 ## Authenticated media in server production — 2026-10-25
 
