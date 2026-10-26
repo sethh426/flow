@@ -81,16 +81,16 @@ export async function renderStudioVideo(path: string, output: string, data: Reco
     for (let index = 0; index < creative.scenes.length; index++) {
       const image = media.images.length ? media.images[index % media.images.length] : null;
       if (image) inputs.push("-loop", "1", "-framerate", "25", "-t", String(sceneDuration), "-i", image);
-      else inputs.push("-f", "lavfi", "-t", String(sceneDuration), "-i", "color=c=#" + colors[brief.look] + ":s=360x640:r=25");
+      else inputs.push("-f", "lavfi", "-t", String(sceneDuration), "-i", "color=c=#" + colors[brief.look] + ":s=720x1280:r=25");
       const textPath = join(work, "scene" + index + ".txt");
       writeFileSync(textPath, wrap(creative.scenes[index].text), { mode: 0o600 });
-      const scale = image ? "scale=360:640:force_original_aspect_ratio=increase,crop=360:640," : "";
-      filters.push("[" + index + ":v]" + scale + "setsar=1,format=yuv420p,trim=duration=" + sceneDuration + ",setpts=PTS-STARTPTS,drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:textfile=" + textPath + ":fontcolor=white:fontsize=28:line_spacing=12:x=(w-text_w)/2:y=(h-text_h)/2[v" + index + "]");
+      const scale = image ? "scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280," : "";
+      filters.push("[" + index + ":v]" + scale + "setsar=1,format=yuv420p,trim=duration=" + sceneDuration + ",setpts=PTS-STARTPTS,drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:textfile=" + textPath + ":fontcolor=white:fontsize=56:line_spacing=24:x=(w-text_w)/2:y=(h-text_h)/2[v" + index + "]");
       labels.push("[v" + index + "]");
     }
     filters.push(labels.join("") + "concat=n=" + labels.length + ":v=1:a=0[v]");
     if (media.audio) inputs.push("-i", media.audio);
-    const args = ["-nostdin", "-hide_banner", "-loglevel", "error", ...inputs, "-filter_complex", filters.join(";"), "-map", "[v]", ...(media.audio ? ["-map", String(labels.length) + ":a:0", "-af", "apad", "-c:a", "aac", "-b:a", "128k"] : ["-an"]), "-t", String(duration), "-r", "25", "-c:v", "libx264", "-preset", "ultrafast", "-crf", "26", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-y", output + ".tmp.mp4"];
+    const args = ["-nostdin", "-hide_banner", "-loglevel", "error", ...inputs, "-filter_complex", filters.join(";"), "-map", "[v]", ...(media.audio ? ["-map", String(labels.length) + ":a:0", "-af", "apad", "-c:a", "aac", "-b:a", "128k"] : ["-an"]), "-t", String(duration), "-r", "25", "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-y", output + ".tmp.mp4"];
     await new Promise<void>((resolve, reject) => {
       const child = spawn("ffmpeg", args, { stdio: "ignore" });
       const timer = setTimeout(() => { child.kill("SIGKILL"); reject(new Error("render timeout")); }, 180_000);
