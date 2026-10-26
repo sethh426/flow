@@ -1257,10 +1257,17 @@ export default function FlowStudio({ initialKind = "video", initialPluginId }: {
                         <span><Film size={16} /></span>
                         <div>
                           <strong>Server video production</strong>
-                          <p>Approve this saved draft for a 360 × 640 MP4 with scene titles. Attached images and audio are securely copied to your account for this render; without them the video uses a quiet color background. AI narration is not connected.</p>
+                          <p>Approve this saved draft for a 720 × 1280 MP4 with scene titles. Attached images and audio are securely copied to your account for this render; without them the video uses a quiet color background. AI narration is not connected.</p>
                           {serverProduction ? (
                             <>
-                              <p role="status">Status: {serverProduction.status}{serverProduction.scheduledAt ? ` · ${new Date(serverProduction.scheduledAt).toLocaleString()}` : ""}</p>
+                              <p role="status">{
+                                serverProduction.status === "failed" ? "Production failed" :
+                                serverProduction.status === "completed" ? "Video verified and ready to download · 100%" :
+                                serverProduction.stage === "verifying" ? "Checking the rendered video · 90%" :
+                                serverProduction.stage === "encoding" ? "Rendering the video · 50%" :
+                                serverProduction.stage === "checking_media" ? "Checking media and draft · 20%" :
+                                serverProduction.status === "scheduled" ? "Production scheduled · 10%" : "Production queued · 10%"
+                              }{serverProduction.scheduledAt ? " · " + new Date(serverProduction.scheduledAt).toLocaleString() : ""}</p>
                               {serverProduction.failure && <p role="alert">{serverProduction.failure}</p>}
                               {serverProduction.status === "completed" && (
                                 <button className={styles.secondaryButton} disabled={busy} onClick={() => {

@@ -10,7 +10,7 @@ import { savedMediaAt } from "./studio-media";
 const root = process.env.FLOW_STUDIO_USAGE_DIR || "/var/lib/flow-studio";
 const runsRoot = join(root, "workflow-runs");
 const idPattern = /^[0-9a-f-]{36}$/;
-type Production = { status: "scheduled" | "queued" | "running" | "completed" | "failed"; approvedAt: string; scheduledAt: string | null; startedAt?: string; completedAt?: string; failure?: string; version: number };
+type Production = { status: "scheduled" | "queued" | "running" | "completed" | "failed"; stage?: "waiting" | "checking_media" | "encoding" | "verifying" | "ready" | "failed"; progress?: number; approvedAt: string; scheduledAt: string | null; startedAt?: string; completedAt?: string; failure?: string; version: number };
 type RecordData = { executionId: string; version: number; brief: unknown; creative: unknown; production?: Production };
 let active = false;
 
@@ -62,7 +62,26 @@ async function audioDuration(path: string): Promise<number> {
     });
   });
 }
-export async function renderStudioVideo(path: string, output: string, data: RecordData) {
+export async function verifyStudioVideo(path: string, duration: number, requireAudio: boolean): Promise<void> {
+  if (!existsSync(path) || statSync(path).size < 1024) throw new Error("Video output is missing or empty.");
+  const probe = await new Promise<string>((resolve, reject) => {
+    const child = spawn("ffprobe", ["-v", "error", "-show_entries", "format=duration:stream=codec_type,codec_name,width,height", "-of", "json", path], { stdio: ["ignore", "pipe", "ignore"] });
+    let output = "";
+    const timer = setTimeout(() => { child.kill("SIGKILL"); reject(new Error("video probe timeout")); }, 15_000);
+    child.stdout.on("data", (chunk) => { output += chunk.toString(); if (output.length > 32_000) child.kill("SIGKILL"); });
+    child.once("error", (error) => { clearTimeout(timer); reject(error); });
+    child.once("close", (code) => { clearTimeout(timer); code === 0 ? resolve(output) : reject(new Error("video probe failed")); });
+  });
+  let parsed: { format?: { duration?: string }; streams?: Array<{ codec_type?: string; codec_name?: string; width?: number; height?: number }> };
+  try { parsed = JSON.parse(probe); } catch { throw new Error("video probe returned invalid metadata"); }
+  const video = parsed.streams?.find((stream) => stream.codec_type === "video");
+  const seconds = Number(parsed.format?.duration);
+  if (video?.codec_name !== "h264" || video.width !== 720 || video.height !== 1280 ||
+      !Number.isFinite(seconds) || Math.abs(seconds - duration) > 1 ||
+      requireAudio && !parsed.streams?.some((stream) => stream.codec_type === "audio" && stream.codec_name === "aac"))
+    throw new Error("Video output did not match the approved format.");
+}
+export async function renderStudioVideo(path: string, output: string, data: RecordData, onStage?: (stage: "encoding" | "verifying", progress: number) => void) {
   const brief = briefSchema.parse(data.brief);
   const creative = creativeSchema.parse(data.creative);
   const id = data.executionId;
@@ -90,6 +109,7 @@ export async function renderStudioVideo(path: string, output: string, data: Reco
     }
     filters.push(labels.join("") + "concat=n=" + labels.length + ":v=1:a=0[v]");
     if (media.audio) inputs.push("-i", media.audio);
+    onStage?.("encoding", 50);
     const args = ["-nostdin", "-hide_banner", "-loglevel", "error", ...inputs, "-filter_complex", filters.join(";"), "-map", "[v]", ...(media.audio ? ["-map", String(labels.length) + ":a:0", "-af", "apad", "-c:a", "aac", "-b:a", "128k"] : ["-an"]), "-t", String(duration), "-r", "25", "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-y", output + ".tmp.mp4"];
     await new Promise<void>((resolve, reject) => {
       const child = spawn("ffmpeg", args, { stdio: "ignore" });
@@ -97,7 +117,8 @@ export async function renderStudioVideo(path: string, output: string, data: Reco
       child.once("error", (error) => { clearTimeout(timer); reject(error); });
       child.once("close", (code) => { clearTimeout(timer); code === 0 ? resolve() : reject(new Error("renderer failed")); });
     });
-    if (!statSync(output + ".tmp.mp4").size) throw new Error("empty render");
+    onStage?.("verifying", 90);
+    await verifyStudioVideo(output + ".tmp.mp4", duration, Boolean(media.audio));
     renameSync(output + ".tmp.mp4", output);
   } finally {
     rmSync(work, { recursive: true, force: true });
@@ -122,15 +143,27 @@ function tick() {
           if (!production || !["queued", "scheduled", "running"].includes(production.status)) continue;
           if (production.status === "scheduled" && Date.parse(production.scheduledAt || "") > Date.now()) continue;
           if (production.status === "running" && existsSync(join(dir, id + ".mp4"))) {
-            production.status = "completed"; production.completedAt = new Date().toISOString(); save(path, data); continue;
+            try {
+              await verifyStudioVideo(join(dir, id + ".mp4"), briefSchema.parse(data.brief).duration, Boolean(savedMediaAt(dir, id).audio));
+              production.status = "completed"; production.stage = "ready"; production.progress = 100;
+              production.completedAt = new Date().toISOString(); save(path, data); continue;
+            } catch {
+              rmSync(join(dir, id + ".mp4"), { force: true });
+            }
           }
-          production.status = "running"; production.startedAt = new Date().toISOString(); save(path, data);
+          production.status = "running"; production.stage = "checking_media"; production.progress = 20;
+          production.startedAt = new Date().toISOString(); save(path, data);
           try {
-            await renderStudioVideo(path, join(dir, id + ".mp4"), data);
-            production.status = "completed"; production.completedAt = new Date().toISOString();
+            await renderStudioVideo(path, join(dir, id + ".mp4"), data, (stage, progress) => {
+              production.stage = stage; production.progress = progress; save(path, data);
+            });
+            production.status = "completed"; production.stage = "ready"; production.progress = 100;
+            production.completedAt = new Date().toISOString();
           } catch (error) {
             console.error("Studio server render failed", error instanceof Error ? error.message : "unknown");
-            production.status = "failed"; production.failure = "Server video production failed. Try a new draft.";
+            production.status = "failed"; production.stage = "failed";
+            production.failure = error instanceof Error && error.message.startsWith("Audio is longer")
+              ? error.message : "Server video production failed. Try a new draft.";
           }
           save(path, data);
           return;
@@ -184,7 +217,7 @@ export async function handleStudioAction(req: IncomingMessage, res: ServerRespon
   const scheduled = input.scheduledAt ? Date.parse(input.scheduledAt) : NaN;
   if (input.scheduledAt && (!Number.isFinite(scheduled) || scheduled < Date.now() + 60_000 || scheduled > Date.now() + 30 * 86400_000))
     return respond(res, 400, { error: "Schedule production between one minute and 30 days from now." });
-  data.production = { status: input.scheduledAt ? "scheduled" : "queued", approvedAt: new Date().toISOString(), scheduledAt: input.scheduledAt ? new Date(scheduled).toISOString() : null, version: data.version || 1 };
+  data.production = { status: input.scheduledAt ? "scheduled" : "queued", stage: "waiting", progress: 10, approvedAt: new Date().toISOString(), scheduledAt: input.scheduledAt ? new Date(scheduled).toISOString() : null, version: data.version || 1 };
   save(target.record, data);
   if (!input.scheduledAt) tick();
   return respond(res, 202, { production: data.production });

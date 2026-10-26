@@ -175,3 +175,37 @@ test("tool archives enforce schema, account isolation, bounded output and deleti
     assert.deepEqual(listToolArchives(root, "alice"), []);
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
+test("server production only accepts a decodable 720p vertical MP4 with expected media", async () => {
+  const { renderStudioVideo, verifyStudioVideo } = require("../dist/studio-actions");
+  const dir = mkdtempSync(join(tmpdir(), "flow-video-check-"));
+  const id = randomUUID();
+  const record = join(dir, id + ".json");
+  const video = join(dir, id + ".mp4");
+  const brief = {
+    prompt: "Show a coffee mug", kind: "video", platform: "TikTok / Reels",
+    tone: "Warm & personal", duration: 15, look: "ember",
+    narrationMode: "script", visualMode: "local", footageMode: "local",
+  };
+  const creative = {
+    title: "Coffee mug", hook: "Coffee mug", alternateHooks: ["A mug", "Coffee time"],
+    caption: "A coffee mug.", hashtags: [],
+    scenes: [1, 2, 3].map((i) => ({
+      label: "Scene " + i, text: "Coffee mug " + i, narration: "", direction: "Show mug.",
+    })),
+    workflow: [1, 2, 3].map((i) => ({ title: "Step " + i, detail: "Review.", requiresApproval: false })),
+  };
+  try {
+    writeFileSync(record, JSON.stringify({ executionId: id, brief, creative }));
+    const stages = [];
+    await renderStudioVideo(record, video, { executionId: id, brief, creative }, (stage) => stages.push(stage));
+    assert.deepEqual(stages, ["encoding", "verifying"]);
+    await verifyStudioVideo(video, 15, false);
+    await assert.rejects(verifyStudioVideo(video, 15, true), /approved format/);
+    await assert.rejects(verifyStudioVideo(video, 30, false), /approved format/);
+    const corrupt = join(dir, "corrupt.mp4");
+    writeFileSync(corrupt, Buffer.alloc(4096));
+    await assert.rejects(verifyStudioVideo(corrupt, 15, false), /video probe failed/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
