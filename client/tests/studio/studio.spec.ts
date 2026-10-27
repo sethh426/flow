@@ -59,6 +59,28 @@ test("one floating workspace creates, edits, saves and restores real drafts", as
   expect(failures).toEqual([]);
 });
 
+test("opening another saved draft clears the previous draft's media", async ({ page }) => {
+  await page.goto("/");
+  await page.getByLabel("Describe what you want to create").fill("First product");
+  await page.getByRole("button", { name: "Create starter outline" }).click();
+  await page.getByRole("button", { name: "Flow, new creation" }).click();
+  await page.getByLabel("Describe what you want to create").fill("Second product");
+  await page.getByRole("button", { name: "Create starter outline" }).click();
+  const png = await page.evaluate(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 2; canvas.height = 2;
+    canvas.getContext("2d")!.fillRect(0, 0, 2, 2);
+    return canvas.toDataURL().split(",")[1];
+  });
+  await page.locator('input[type=file][accept="image/jpeg,image/png,image/webp"]').setInputFiles({
+    name: "second-product.png", mimeType: "image/png", buffer: Buffer.from(png, "base64"),
+  });
+  await expect(page.getByRole("button", { name: /1 images/ })).toBeVisible();
+  await page.getByRole("button", { name: "Open saved creations" }).click();
+  await page.getByRole("button", { name: /^First product/ }).click();
+  await expect(page.getByRole("button", { name: /Add your images/ })).toBeVisible();
+});
+
 test("local outline extracts the subject without echoing production instructions", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
