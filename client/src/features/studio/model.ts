@@ -347,6 +347,9 @@ export async function getServerProduction(executionId: string, token: string): P
 
 export async function syncServerMedia(project: Project, token: string, images: File[], audio: File | null): Promise<void> {
   if (!project.executionId) throw new Error("Save an AI draft to your account first.");
+  // A restored draft may already have owner-scoped media on the server. No local
+  // replacement selection must not erase those attachments during approval.
+  if (!images.length && !audio) return;
   if (images.length > 8 || images.some((file) => file.size > 5 * 1024 * 1024) ||
       audio && audio.size > 12 * 1024 * 1024)
     throw new Error("For server video, choose up to 8 images under 5 MB each and audio under 12 MB.");

@@ -114,6 +114,7 @@ export default function FlowStudio({ initialKind = "video", initialPluginId }: {
   const [rendering, setRendering] = useState(false);
   const [workflowStage, setWorkflowStage] = useState("");
   const [serverProduction, setServerProduction] = useState<ServerProduction | null>(null);
+  const [serverProductionState, setServerProductionState] = useState<"loading" | "ready" | "unavailable">("loading");
   const [scheduleAt, setScheduleAt] = useState("");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
@@ -281,6 +282,8 @@ export default function FlowStudio({ initialKind = "video", initialPluginId }: {
   }, []);
   const openProject = (next: Project) => {
     setWorkflowStage("");
+    setServerProduction(null);
+    setServerProductionState("loading");
     setProject(next);
     setBrief(next.brief);
     setTime(0);
@@ -388,32 +391,60 @@ export default function FlowStudio({ initialKind = "video", initialPluginId }: {
     }
   };
   useEffect(() => {
-    if (!user || !project?.executionId) { setServerProduction(null); return; }
+    if (!user || !project?.executionId) {
+      setServerProduction(null);
+      setServerProductionState("loading");
+      return;
+    }
     const executionId = project.executionId;
     let alive = true;
+    setServerProduction(null);
+    setServerProductionState("loading");
     const refresh = () => { void user.getIdToken().then((token) => getServerProduction(executionId, token))
-      .then((production) => { if (alive) setServerProduction(production); })
-      .catch(() => { if (alive) setServerProduction(null); }); };
+      .then((production) => {
+        if (!alive) return;
+        setServerProduction(production);
+        setServerProductionState("ready");
+      })
+      .catch(() => { if (alive) setServerProductionState("unavailable"); }); };
     refresh();
     const timer = setInterval(refresh, 5000);
     return () => { alive = false; clearInterval(timer); };
   }, [project?.executionId, user]);
 
   const startServerRender = async (scheduled: boolean) => {
-    if (!user || !project?.executionId) return;
+    if (!user || !project?.executionId || serverProductionState !== "ready" || serverProduction) return;
     setBusy(true); setError("");
     try {
       const token = await user.getIdToken();
       const saved = await loadWorkflowRun(project.executionId, token);
-      if (JSON.stringify(saved.creative) !== JSON.stringify(project.creative) || JSON.stringify(saved.brief) !== JSON.stringify(project.brief))
-        throw new Error("Save your latest edits to your account before approving production.");
-      await syncServerMedia(project, token, imageFiles, audio);
+      if (saved.cloudVersion !== (project.cloudVersion || 1))
+        throw new Error("This draft changed on another device. Reopen it before approving production.");
+      let approved = project;
+      if (JSON.stringify(saved.creative) !== JSON.stringify(project.creative) || JSON.stringify(saved.brief) !== JSON.stringify(project.brief)) {
+        const version = await saveWorkflowEdits(project, token);
+        approved = { ...project, cloudVersion: version };
+        persist(approved);
+        setProject((current) => current?.id === project.id ? approved : current);
+      }
+      await syncServerMedia(approved, token, imageFiles, audio);
       const when = scheduled ? new Date(scheduleAt).toISOString() : undefined;
-      const production = await approveServerRender(project, token, when);
+      const production = await approveServerRender(approved, token, when);
       setServerProduction(production);
+      setServerProductionState("ready");
       setNotice(scheduled ? "Server video production scheduled." : "Server video production queued.");
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : "Could not start server production.");
+    } finally { setBusy(false); }
+  };
+
+  const downloadApprovedVideo = async () => {
+    if (!user || !project?.executionId || serverProduction?.status !== "completed" || busy) return;
+    setBusy(true); setError("");
+    try {
+      await downloadServerVideo(project.executionId, await user.getIdToken());
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : "Download failed.");
     } finally { setBusy(false); }
   };
 
@@ -639,6 +670,8 @@ export default function FlowStudio({ initialKind = "video", initialPluginId }: {
   const reset = () => {
     setWorkflowStage("");
     setProject(null);
+    setServerProduction(null);
+    setServerProductionState("loading");
     setBrief(initialBrief);
     setPlaying(false);
     setTime(0);
@@ -1270,11 +1303,11 @@ export default function FlowStudio({ initialKind = "video", initialPluginId }: {
                               }{serverProduction.scheduledAt ? " · " + new Date(serverProduction.scheduledAt).toLocaleString() : ""}</p>
                               {serverProduction.failure && <p role="alert">{serverProduction.failure}</p>}
                               {serverProduction.status === "completed" && (
-                                <button className={styles.secondaryButton} disabled={busy} onClick={() => {
-                                  void (async () => { try { await downloadServerVideo(project.executionId!, await user!.getIdToken()); } catch (failure) { setError(failure instanceof Error ? failure.message : "Download failed."); } })();
-                                }}>Download server MP4</button>
+                                <button className={styles.secondaryButton} disabled={busy} onClick={() => void downloadApprovedVideo()}>Download server MP4</button>
                               )}
                             </>
+                          ) : serverProductionState !== "ready" ? (
+                            <p role="status">{serverProductionState === "loading" ? "Checking server production…" : "Server status unavailable. Flow will retry shortly."}</p>
                           ) : (
                             <>
                               <button className={styles.secondaryButton} disabled={!user || busy || rendering} onClick={() => void startServerRender(false)}>Approve and render now</button>
@@ -1299,10 +1332,34 @@ export default function FlowStudio({ initialKind = "video", initialPluginId }: {
                   edits become a real exported video.
                 </p>
               )}
+              {project.executionId && (
+                <p className={styles.productionSummary} role="status">
+                  {serverProductionState === "loading" ? "Checking server video…" :
+                    serverProductionState === "unavailable" ? "Server status unavailable. Flow will retry shortly." :
+                    serverProduction?.status === "completed" ? "Server video verified and ready." :
+                    serverProduction?.status === "failed" ? serverProduction.failure || "Server video failed. Create a new draft to try again." :
+                    serverProduction?.stage === "verifying" ? "Checking the server video…" :
+                    serverProduction?.stage === "encoding" ? "Rendering on the server…" :
+                    serverProduction?.stage === "checking_media" ? "Checking media on the server…" :
+                    serverProduction?.status === "scheduled" ? "Server video scheduled." :
+                    serverProduction ? "Server video queued." : "Ready for your approval. Flow will save edits and render on the server."}
+                </p>
+              )}
               <div className={styles.resultActions}>
+                {project.executionId && serverProductionState === "ready" && (
+                  serverProduction?.status === "completed" ? (
+                    <button className={styles.createButton} disabled={busy || rendering} onClick={() => void downloadApprovedVideo()}>
+                      <ArrowDownToLine size={17} /> Download server video
+                    </button>
+                  ) : !serverProduction ? (
+                    <button className={styles.createButton} disabled={busy || rendering} onClick={() => void startServerRender(false)}>
+                      <Film size={17} /> {busy ? "Preparing video…" : "Approve & make video"}
+                    </button>
+                  ) : null
+                )}
                 <button
-                  className={styles.createButton}
-                  disabled={rendering}
+                  className={project.executionId ? styles.secondaryButton : styles.createButton}
+                  disabled={rendering || busy}
                   onClick={() => void exportVideo()}
                 >
                   {rendering ? (
@@ -1312,7 +1369,7 @@ export default function FlowStudio({ initialKind = "video", initialPluginId }: {
                   )}
                   {rendering
                     ? `Rendering ${Math.round(progress * 100)}%`
-                    : "Export video"}
+                    : project.executionId ? "Export on this device" : "Export video"}
                 </button>
                 <button
                   className={styles.secondaryButton}
