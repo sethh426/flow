@@ -280,10 +280,16 @@ export default function FlowStudio({ initialKind = "video", initialPluginId }: {
         "This draft is open, but device storage is full. Download the creative pack to keep a copy.",
       );
   }, []);
-  const openProject = (next: Project) => {
+  const openProject = (next: Project, preserveComposerMedia = false) => {
     setWorkflowStage("");
     setServerProduction(null);
     setServerProductionState("loading");
+    if (!preserveComposerMedia) {
+      setImages([]);
+      setImageNames([]);
+      setImageFiles([]);
+      setAudio(null);
+    }
     setProject(next);
     setBrief(next.brief);
     setTime(0);
@@ -333,7 +339,7 @@ export default function FlowStudio({ initialKind = "video", initialPluginId }: {
         executionId: "executionId" in result ? result.executionId : undefined,
         cloudVersion: "version" in result ? result.version : undefined,
       };
-      openProject(next);
+      openProject(next, true);
       persist(next);
       if (result.groundingEdits)
         setNotice("Flow built the public-facing copy from your brief and used AI for scene planning. Review the draft before sharing.");
@@ -346,7 +352,7 @@ export default function FlowStudio({ initialKind = "video", initialPluginId }: {
           brief: { ...brief },
           creative: starterCreative(brief),
         };
-        openProject(next);
+        openProject(next, true);
         persist(next);
         setNotice("AI could not make a grounded draft. Flow made an editable outline from your brief instead.");
       } else if (failure instanceof Error && failure.name !== "AbortError") {
@@ -679,6 +685,7 @@ export default function FlowStudio({ initialKind = "video", initialPluginId }: {
     setError("");
     setImages([]);
     setImageNames([]);
+    setImageFiles([]);
     setAudio(null);
   };
   const jumpToScene = (index: number) => {
