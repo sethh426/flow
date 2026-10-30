@@ -1,6 +1,6 @@
 # Open-source engineering-agent rollout (experimental)
 
-Status: **evaluation only**. No third-party tool is installed or connected by this change.
+Status: **evaluation only**. This PR does not install or connect a runtime by itself.
 
 ## Haimaker + OpenHands trial (2026-10-30)
 
@@ -43,11 +43,17 @@ Source checks (2026-10-30):
   under that provider's retention and privacy terms. Review the selected
   model's terms before sending private source or secrets.
 
-Current truth: the connected engineering machine has an OpenHands installation
-and an active uncommitted controller worktree. Its task list shows successful
-and failed local trials. Haimaker account approval, model call, integration
-with that controller, and a Haimaker-backed coding PR remain unverified.
-Do not edit the active OpenHands worktree from this evaluation branch.
+Current truth (2026-10-30): the connected engineering machine has an OpenHands
+installation and an active uncommitted controller worktree. Its task list shows
+successful and failed local trials. Haimaker device approval succeeded, and an
+authenticated z-ai/glm-5.3 chat request returned HTTP 200 with the exact test
+reply (22 total tokens). The key is stored outside Git with mode 0600. This
+verifies the gateway credential, not OpenHands compatibility or a coding task.
+Docker, Podman, and bubblewrap are unavailable on the connected machine. A Git
+worktree separates edits but is not a security boundary: do not run an
+unattended coding agent on that host with production credentials accessible.
+Integration with the existing controller and a Haimaker-backed coding PR remain
+unverified. Do not edit the active OpenHands worktree from this evaluation branch.
 
 ## Why
 Flow already has an orchestrator, studio code, tests and multiple active branches. Adding competing orchestrators without measuring a concrete bottleneck would increase complexity. The immediate production blocker is a verified, authenticated end-to-end backend execution and release, not the number of agents.
