@@ -40,7 +40,15 @@ test('trial helper only creates an isolated worktree from a clean repository roo
   assert.equal(result.status, 2);
   assert.equal(existsSync(child), false);
 
-  result = run(root, process.execPath, [join(root, 'scripts/agents/prepare-isolated-trial.mjs'), 'sample']);
+  result = run(root, process.execPath, [join(root, 'scripts/agents/prepare-isolated-trial.mjs'), 'sample', '--expected-head', '0'.repeat(40)]);
+  assert.equal(result.status, 1);
+  assert.equal(existsSync(child), false);
+
+  result = run(root, process.execPath, [join(root, 'scripts/agents/prepare-isolated-trial.mjs'), 'sample', '--expected-head', 'invalid']);
+  assert.equal(result.status, 2);
+  assert.equal(existsSync(child), false);
+
+  result = run(root, process.execPath, [join(root, 'scripts/agents/prepare-isolated-trial.mjs'), 'sample', '--expected-head', base]);
   assert.equal(result.status, 0, result.stderr);
   const report = JSON.parse(result.stdout);
   assert.equal(report.branch, 'trial/agent-sample');
