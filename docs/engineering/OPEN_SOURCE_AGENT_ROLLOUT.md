@@ -2,9 +2,9 @@
 
 Status: **evaluation only**. No third-party tool is installed or connected by this change.
 
-## Haimaker + OpenCode trial (2026-10-30)
+## Haimaker + OpenHands trial (2026-10-30)
 
-Haimaker is a model gateway, not a coding agent or Flow's runtime. OpenCode is
+Haimaker is a model gateway, not a coding agent or Flow's runtime. OpenHands is
 the candidate coding agent for a first controlled trial. This setup does not
 change Flow's production model provider or grant autonomous deployment.
 
@@ -13,9 +13,10 @@ change Flow's production model provider or grant autonomous deployment.
    first-issue'. The second command creates a separate worktree and
    'trial/agent-first-issue' from the current commit. Never point a trial at
    the live deployment checkout.
-2. On the isolated worker, install OpenCode from its official distribution and
-   connect Haimaker using its documented '@haimaker/connect --opencode' flow.
-   Use a dedicated Haimaker key stored outside Git as 'HAIMAKER_API_KEY';
+2. On the isolated worker, use the existing OpenHands installation and
+   configure its OpenAI-compatible model settings with LLM_BASE_URL,
+   LLM_MODEL and LLM_API_KEY. Test the selected model ID against Haimaker
+   before dispatching a task. Use a dedicated Haimaker key stored outside Git;
    do not paste it into a prompt or commit agent auth/config files. The
    documented endpoint is 'https://api.haimaker.ai/v1'.
 3. Choose a specific model ID from the current Haimaker catalog and record it
@@ -35,15 +36,18 @@ change Flow's production model provider or grant autonomous deployment.
 Source checks (2026-10-30):
 - Haimaker gateway, device login, free-window limits and 402 behavior:
   https://haimaker.ai/free/ and https://haimaker.ai/connect/
-- OpenCode installation and custom provider configuration:
-  https://opencode.ai/v2/docs and https://opencode.ai/v2/docs/providers
+- OpenHands model configuration:
+  https://docs.openhands.dev/openhands/usage/run-openhands/github-action
 - Haimaker terms: https://haimaker.ai/terms-and-conditions/
   Third-party model requests transmit code/context to the upstream provider
   under that provider's retention and privacy terms. Review the selected
   model's terms before sending private source or secrets.
 
-Current truth: no Haimaker key, account approval, OpenCode installation,
-model call, OVH worker run, or coding-agent PR has been verified here.
+Current truth: the connected engineering machine has an OpenHands installation
+and an active uncommitted controller worktree. Its task list shows successful
+and failed local trials. Haimaker account approval, model call, integration
+with that controller, and a Haimaker-backed coding PR remain unverified.
+Do not edit the active OpenHands worktree from this evaluation branch.
 
 ## Why
 Flow already has an orchestrator, studio code, tests and multiple active branches. Adding competing orchestrators without measuring a concrete bottleneck would increase complexity. The immediate production blocker is a verified, authenticated end-to-end backend execution and release, not the number of agents.
@@ -52,7 +56,7 @@ Flow already has an orchestrator, studio code, tests and multiple active branche
 Run `node scripts/agents/open-source-preflight.mjs` in the intended **isolated** worker environment. This reports availability of Git, Docker, Python, Node and FFmpeg plus the project instruction files. It performs no network calls, installs, model requests, or deployments. `--require-baseline` exits nonzero when the minimum project instructions or Git are absent.
 
 ## Gate 1: single-agent controlled trial
-- Candidate: OpenCode with Haimaker for the first controlled trial; evaluate OpenHands or Aider separately only after this trial.
+- Candidate: existing OpenHands controller with Haimaker for the first controlled trial; evaluate Aider or OpenCode separately only after this trial.
 - Isolate the worker with a dedicated branch, read-only credentials where possible, no production secrets, and bounded compute/model budget.
 - Give the agent one existing failing test or one narrowly scoped feature.
 - Require a PR, reproducible tests, changed-file review, and evidence of a passing test in a clean checkout.
