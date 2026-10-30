@@ -52,7 +52,7 @@ Flow already has an orchestrator, studio code, tests and multiple active branche
 Run `node scripts/agents/open-source-preflight.mjs` in the intended **isolated** worker environment. This reports availability of Git, Docker, Python, Node and FFmpeg plus the project instruction files. It performs no network calls, installs, model requests, or deployments. `--require-baseline` exits nonzero when the minimum project instructions or Git are absent.
 
 ## Gate 1: single-agent controlled trial
-- Candidate: OpenHands **or** Aider, not both simultaneously.
+- Candidate: OpenCode with Haimaker for the first controlled trial; evaluate OpenHands or Aider separately only after this trial.
 - Isolate the worker with a dedicated branch, read-only credentials where possible, no production secrets, and bounded compute/model budget.
 - Give the agent one existing failing test or one narrowly scoped feature.
 - Require a PR, reproducible tests, changed-file review, and evidence of a passing test in a clean checkout.
@@ -74,6 +74,8 @@ Only after passing the single-agent trial, evaluate LangGraph for supervisory co
 Current OVH capacity, installed runtimes, agent licenses/versions, model pricing, repository permissions and production endpoint health have not been verified by this document.
 
 ## Sources to verify before installation
+- OpenCode: https://opencode.ai/v2/docs
+- Haimaker: https://haimaker.ai/connect/
 - OpenHands: https://github.com/OpenHands/OpenHands
 - Aider: https://github.com/Aider-AI/aider
 - LangGraph: https://github.com/langchain-ai/langgraph
