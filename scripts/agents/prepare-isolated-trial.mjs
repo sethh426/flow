@@ -11,6 +11,11 @@ if (!name || !/^[a-z][a-z0-9-]{1,48}$/.test(name)) {
   process.exit(2);
 }
 const git = (args) => spawnSync('git', args, { cwd: root, encoding: 'utf8' });
+const topLevel = git(['rev-parse', '--show-toplevel']);
+if (topLevel.status !== 0 || resolve(topLevel.stdout.trim()) !== root) {
+  console.error('The helper must live at the Git repository root. No worktree was created.');
+  process.exit(1);
+}
 const status = git(['status', '--porcelain']);
 if (status.status !== 0 || status.stdout.trim()) {
   console.error('Start from a clean checkout. No worktree was created.');
