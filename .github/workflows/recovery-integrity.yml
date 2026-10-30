@@ -41,6 +41,11 @@ jobs:
           node --check functions/index.js
           node --check services/mcp-integration/index.js
 
+      - name: Verify isolated agent trial guardrails
+        run: |
+          node scripts/agents/open-source-preflight.mjs --require-baseline
+          node --test scripts/agents/prepare-isolated-trial.test.mjs
+
       - name: Install and check Trend Finder
         run: |
           npm ci --ignore-scripts --prefix services/trend-finder
