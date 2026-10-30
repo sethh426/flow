@@ -13,6 +13,9 @@ change Flow's production model provider or grant autonomous deployment.
    first-issue'. The second command creates a separate worktree and
    'trial/agent-first-issue' from the current commit. Never point a trial at
    the live deployment checkout.
+   For a planned task, record the reviewed commit SHA and pass
+   '--expected-head <40-character SHA>' after the trial name. The helper
+   refuses a changed checkout and creates the worktree from that exact SHA.
 2. On the isolated worker, use the existing OpenHands installation and
    configure its OpenAI-compatible model settings with LLM_BASE_URL,
    LLM_MODEL and LLM_API_KEY. Test the selected model ID against Haimaker
@@ -52,8 +55,19 @@ verifies the gateway credential, not OpenHands compatibility or a coding task.
 Docker, Podman, and bubblewrap are unavailable on the connected machine. A Git
 worktree separates edits but is not a security boundary: do not run an
 unattended coding agent on that host with production credentials accessible.
-Integration with the existing controller and a Haimaker-backed coding PR remain
-unverified. Do not edit the active OpenHands worktree from this evaluation branch.
+Integration with the existing controller and an autonomous Haimaker-backed
+OpenHands coding run remain unverified. Do not edit the active OpenHands
+worktree from this evaluation branch.
+
+## First bounded model coding call — 2026-10-30
+
+Haimaker GLM-5.3 received only the public source of
+'scripts/agents/prepare-isolated-trial.mjs' and proposed an optional
+'--expected-head' guard (533 prompt, 683 completion tokens). A reviewer
+corrected the proposal's variable ordering and pinned worktree creation to
+the verified SHA. The fixture test covers matching, mismatching and malformed
+SHA inputs. This was a constrained code proposal reviewed and tested locally;
+OpenHands was not given shell access, and no autonomous agent was deployed.
 
 ## Why
 Flow already has an orchestrator, studio code, tests and multiple active branches. Adding competing orchestrators without measuring a concrete bottleneck would increase complexity. The immediate production blocker is a verified, authenticated end-to-end backend execution and release, not the number of agents.
