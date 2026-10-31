@@ -80,6 +80,19 @@ export async function verifyStudioVideo(path: string, duration: number, requireA
       !Number.isFinite(seconds) || Math.abs(seconds - duration) > 1 ||
       requireAudio && !parsed.streams?.some((stream) => stream.codec_type === "audio" && stream.codec_name === "aac"))
     throw new Error("Video output did not match the approved format.");
+  // A fast-start MP4 can retain a valid header and duration even when its media
+  // data is truncated. Decode the entire output before publishing it as ready.
+  await new Promise<void>((resolve, reject) => {
+    const child = spawn("ffmpeg", ["-nostdin", "-v", "error", "-xerror", "-i", path,
+      "-map", "0:v:0", ...(requireAudio ? ["-map", "0:a:0"] : []), "-f", "null", "-"],
+    { stdio: "ignore" });
+    const timer = setTimeout(() => { child.kill("SIGKILL"); reject(new Error("video decode timeout")); }, 180_000);
+    child.once("error", (error) => { clearTimeout(timer); reject(error); });
+    child.once("close", (code) => {
+      clearTimeout(timer);
+      code === 0 ? resolve() : reject(new Error("Video output could not be decoded completely."));
+    });
+  });
 }
 export async function renderStudioVideo(path: string, output: string, data: RecordData, onStage?: (stage: "encoding" | "verifying") => void) {
   const brief = briefSchema.parse(data.brief);
