@@ -344,6 +344,20 @@
 .createButton:active:not(:disabled) {
   transform: translateY(0);
 }
+.starterChoice {
+  display: block;
+  margin: 0 auto 14px;
+  padding: 4px 12px;
+  background: none;
+  border: 0;
+  color: #c1ad9c;
+  font-size: 11px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.starterChoice:hover:not(:disabled) {
+  color: #f5c69f;
+}
 .suggestions {
   display: flex;
   justify-content: center;
@@ -1288,4 +1302,16 @@
   .world button {
     transition: none;
   }
+}
+.workflowStep > div { min-width: 0; flex: 1; }
+.workflowStep label { display: block; margin: 12px 0 8px; color: var(--muted); font-size: 11px; }
+.workflowStep input[type="datetime-local"] { display: block; width: 100%; max-width: 290px; margin-top: 7px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #221d1b; color: var(--ink); color-scheme: dark; font: inherit; }
+.workflowStep button { margin: 6px 8px 6px 0; }
+
+
+.productionSummary {
+  margin: 18px 0 0;
+  color: #d5c7bb;
+  font-size: 11px;
+  line-height: 1.5;
 }

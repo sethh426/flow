@@ -18,6 +18,55 @@
   object-fit: cover;
   pointer-events: none;
 }
+.invitation {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 16px);
+  width: 224px;
+  padding: 14px 16px;
+  border: 1px solid rgba(217, 211, 255, .28);
+  border-radius: 18px;
+  background: rgba(28, 25, 45, .96);
+  color: #f9f7ff;
+  box-shadow: 0 15px 42px rgba(0, 0, 0, .38);
+  text-align: left;
+  line-height: 1.35;
+  cursor: pointer;
+  animation: none;
+}
+.invitation strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+.invitation span {
+  display: block;
+  margin-top: 4px;
+  color: #d9d5e8;
+  font-size: 13px;
+  font-weight: 400;
+}
+.invitation::after {
+  content: "";
+  position: absolute;
+  right: 28px;
+  bottom: -7px;
+  width: 12px;
+  height: 12px;
+  transform: rotate(45deg);
+  border-right: 1px solid rgba(217, 211, 255, .28);
+  border-bottom: 1px solid rgba(217, 211, 255, .28);
+  background: rgba(28, 25, 45, .96);
+}
+.invitationLeft { right: auto; left: 0; }
+.invitationLeft::after { right: auto; left: 28px; }
+.invitationBelow { bottom: auto; top: calc(100% + 16px); }
+.invitationBelow::after {
+  top: -7px;
+  bottom: auto;
+  transform: rotate(225deg);
+}
 .avatar:hover { border-color: #d6b5ff; }
 .avatar:active { cursor: grabbing; }
 .avatar:focus-visible { outline: 3px solid #d6b5ff; outline-offset: 6px; }

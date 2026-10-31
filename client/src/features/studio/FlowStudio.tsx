@@ -26,10 +26,22 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import FlowAssistant from "@/features/workflow/FlowAssistant";
+import PluginCatalog from "@/features/plugins/PluginCatalog";
 import {
   creativeSchema,
   downloadFile,
+  deleteWorkflowRun,
+  listWorkflowRuns,
+  loadWorkflowRun,
+  saveWorkflowEdits,
+  getServerProduction,
+  approveServerRender,
+  syncServerMedia,
+  downloadServerVideo,
+  type ServerProduction,
+  type SavedWorkflowRun,
   generateCreative,
+  UngroundedCreativeError,
   createProductionJob,
   getProductionJob,
   waitForProductionPreparation,
@@ -52,6 +64,7 @@ import {
 } from "./model";
 import { drawFrame, loadImages, renderVideo } from "./video";
 import { createBundle } from "./bundle";
+import { studioApiUrl } from "./api-url";
 import styles from "./studio.module.css";
 
 const kinds: { id: CreationKind; label: string; icon: typeof Film }[] = [
@@ -75,30 +88,40 @@ const suggestions = [
   "Tell a better story",
   "Turn an idea into a campaign",
 ];
-type Dialog = "settings" | "history" | "account" | null;
+type Dialog = "settings" | "history" | "account" | "plugins" | null;
 type Tab = "story" | "copy" | "workflow";
 
-export default function FlowStudio() {
-  const [expanded, setExpanded] = useState(false);
+export default function FlowStudio({ initialKind = "video", initialPluginId }: {
+  initialKind?: CreationKind;
+  initialPluginId?: string;
+}) {
+  const [expanded, setExpanded] = useState(true);
   const [service, setService] = useState<"checking" | "configured" | "unavailable">("checking");
   const [narrationAvailable, setNarrationAvailable] = useState(false);
   const [visualsAvailable, setVisualsAvailable] = useState(false);
   const [footageAvailable, setFootageAvailable] = useState(false);
+  const [productionAvailable, setProductionAvailable] = useState(false);
   const [connectionAttempt, setConnectionAttempt] = useState(0);
   const { user, loginWithGoogle, login, signup, logout, configured: isFirebaseConfigured, loading: authLoading, retryConnection } = useAuth();
-  const [brief, setBrief] = useState<Brief>(initialBrief);
+  const [brief, setBrief] = useState<Brief>({ ...initialBrief, kind: initialKind });
   const [project, setProject] = useState<Project | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [dialog, setDialog] = useState<Dialog>(null);
+  const [remoteRuns, setRemoteRuns] = useState<SavedWorkflowRun[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [dialog, setDialog] = useState<Dialog>(initialPluginId ? "plugins" : null);
   const [tab, setTab] = useState<Tab>("story");
   const [busy, setBusy] = useState(false);
   const [rendering, setRendering] = useState(false);
   const [workflowStage, setWorkflowStage] = useState("");
+  const [serverProduction, setServerProduction] = useState<ServerProduction | null>(null);
+  const [serverProductionState, setServerProductionState] = useState<"loading" | "ready" | "unavailable">("loading");
+  const [scheduleAt, setScheduleAt] = useState("");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [images, setImages] = useState<HTMLImageElement[]>([]);
   const [imageNames, setImageNames] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [audio, setAudio] = useState<File | null>(null);
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState(0);
@@ -129,9 +152,10 @@ export default function FlowStudio() {
     setNarrationAvailable(false);
     setVisualsAvailable(false);
     setFootageAvailable(false);
+    setProductionAvailable(false);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
-    void fetch("/api/studio/status", { signal: controller.signal })
+    void fetch(studioApiUrl("/api/studio/status"), { signal: controller.signal })
       .then(async (response) => {
         if (!response.ok || !response.headers.get("content-type")?.includes("application/json"))
           return false;
@@ -139,12 +163,13 @@ export default function FlowStudio() {
         if (typeof body !== "object" || body === null) return false;
         const status = body as {
           configured?: boolean;
-          capabilities?: { narration?: unknown; visuals?: unknown; footage?: unknown };
+          capabilities?: { narration?: unknown; visuals?: unknown; footage?: unknown; productionJobs?: unknown };
         };
         if (active && !controller.signal.aborted) {
           setNarrationAvailable(status.capabilities?.narration === "ai");
           setVisualsAvailable(status.capabilities?.visuals === "ai");
           setFootageAvailable(status.capabilities?.footage === "ai");
+          setProductionAvailable(status.capabilities?.productionJobs === true);
         }
         return status.configured === true;
       })
@@ -170,6 +195,16 @@ export default function FlowStudio() {
     setProjects(saved);
     projectsRef.current = saved;
   }, []);
+  useEffect(() => {
+    if (dialog !== "history" || !user) { setRemoteRuns([]); return; }
+    let active = true;
+    setHistoryLoading(true);
+    void user.getIdToken().then(listWorkflowRuns)
+      .then((runs) => { if (active) setRemoteRuns(runs); })
+      .catch(() => { if (active) setError("Could not load account drafts. Device drafts are still available."); })
+      .finally(() => { if (active) setHistoryLoading(false); });
+    return () => { active = false; };
+  }, [dialog, user]);
   useEffect(() => () => abortRef.current?.abort(), []);
   useEffect(() => {
     const element = dialogElement.current;
@@ -192,7 +227,7 @@ export default function FlowStudio() {
     drawFrame(canvas.current, project, time, { images });
   }, [project, time, images]);
   useEffect(() => {
-    if (!project?.productionJobId || !user || rendering) return;
+    if (!project?.productionJobId || !user || !productionAvailable || rendering) return;
     let active = true;
     void user.getIdToken()
       .then((token) => getProductionJob(project.productionJobId!, token))
@@ -218,7 +253,7 @@ export default function FlowStudio() {
         if (active) setWorkflowStage("");
       });
     return () => { active = false; };
-  }, [project?.productionJobId, user, rendering]);
+  }, [project?.productionJobId, user, productionAvailable, rendering]);
   useEffect(() => {
     if (!playing || !project) return;
     let frame = 0;
@@ -245,8 +280,16 @@ export default function FlowStudio() {
         "This draft is open, but device storage is full. Download the creative pack to keep a copy.",
       );
   }, []);
-  const openProject = (next: Project) => {
+  const openProject = (next: Project, preserveComposerMedia = false) => {
     setWorkflowStage("");
+    setServerProduction(null);
+    setServerProductionState("loading");
+    if (!preserveComposerMedia) {
+      setImages([]);
+      setImageNames([]);
+      setImageFiles([]);
+      setAudio(null);
+    }
     setProject(next);
     setBrief(next.brief);
     setTime(0);
@@ -268,7 +311,7 @@ export default function FlowStudio() {
     setProject(updated);
     persist(updated);
   };
-  const create = async () => {
+  const create = async (starterOnly = false) => {
     if (busy || rendering || brief.prompt.trim().length < 3) {
       textarea.current?.focus();
       return;
@@ -279,26 +322,42 @@ export default function FlowStudio() {
     const controller = new AbortController();
     abortRef.current = controller;
     try {
-      const connected = Boolean(user && useAI);
-      const creative = connected
+      const connected = Boolean(user && useAI && service === "configured" && !starterOnly);
+      const result = connected
         ? await generateCreative(
             brief,
             await user!.getIdToken(),
             controller.signal,
           )
-        : starterCreative(brief);
+        : { creative: starterCreative(brief), groundingEdits: false };
       const next: Project = {
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
         source: connected ? "ai" : "starter",
         brief: { ...brief },
-        creative,
+        creative: result.creative,
+        executionId: "executionId" in result ? result.executionId : undefined,
+        cloudVersion: "version" in result ? result.version : undefined,
       };
-      openProject(next);
+      openProject(next, true);
       persist(next);
+      if (result.groundingEdits)
+        setNotice("Flow built the public-facing copy from your brief and used AI for scene planning. Review the draft before sharing.");
     } catch (failure) {
-      if (failure instanceof Error && failure.name !== "AbortError")
+      if (failure instanceof UngroundedCreativeError && !controller.signal.aborted) {
+        const next: Project = {
+          id: crypto.randomUUID(),
+          createdAt: new Date().toISOString(),
+          source: "starter",
+          brief: { ...brief },
+          creative: starterCreative(brief),
+        };
+        openProject(next, true);
+        persist(next);
+        setNotice("AI could not make a grounded draft. Flow made an editable outline from your brief instead.");
+      } else if (failure instanceof Error && failure.name !== "AbortError") {
         setError(failure.message);
+      }
     } finally {
       setBusy(false);
       abortRef.current = null;
@@ -337,6 +396,64 @@ export default function FlowStudio() {
       abortRef.current = null;
     }
   };
+  useEffect(() => {
+    if (!user || !project?.executionId) {
+      setServerProduction(null);
+      setServerProductionState("loading");
+      return;
+    }
+    const executionId = project.executionId;
+    let alive = true;
+    setServerProduction(null);
+    setServerProductionState("loading");
+    const refresh = () => { void user.getIdToken().then((token) => getServerProduction(executionId, token))
+      .then((production) => {
+        if (!alive) return;
+        setServerProduction(production);
+        setServerProductionState("ready");
+      })
+      .catch(() => { if (alive) setServerProductionState("unavailable"); }); };
+    refresh();
+    const timer = setInterval(refresh, 5000);
+    return () => { alive = false; clearInterval(timer); };
+  }, [project?.executionId, user]);
+
+  const startServerRender = async (scheduled: boolean) => {
+    if (!user || !project?.executionId || serverProductionState !== "ready" || serverProduction) return;
+    setBusy(true); setError("");
+    try {
+      const token = await user.getIdToken();
+      const saved = await loadWorkflowRun(project.executionId, token);
+      if (saved.cloudVersion !== (project.cloudVersion || 1))
+        throw new Error("This draft changed on another device. Reopen it before approving production.");
+      let approved = project;
+      if (JSON.stringify(saved.creative) !== JSON.stringify(project.creative) || JSON.stringify(saved.brief) !== JSON.stringify(project.brief)) {
+        const version = await saveWorkflowEdits(project, token);
+        approved = { ...project, cloudVersion: version };
+        persist(approved);
+        setProject((current) => current?.id === project.id ? approved : current);
+      }
+      await syncServerMedia(approved, token, imageFiles, audio);
+      const when = scheduled ? new Date(scheduleAt).toISOString() : undefined;
+      const production = await approveServerRender(approved, token, when);
+      setServerProduction(production);
+      setServerProductionState("ready");
+      setNotice(scheduled ? "Server video production scheduled." : "Server video production queued.");
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : "Could not start server production.");
+    } finally { setBusy(false); }
+  };
+
+  const downloadApprovedVideo = async () => {
+    if (!user || !project?.executionId || serverProduction?.status !== "completed" || busy) return;
+    setBusy(true); setError("");
+    try {
+      await downloadServerVideo(project.executionId, await user.getIdToken());
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : "Download failed.");
+    } finally { setBusy(false); }
+  };
+
   const runLocalWorkflow = async () => {
     if (!project || rendering || busy) return;
     if (!creativeSchema.safeParse(project.creative).success) {
@@ -357,7 +474,7 @@ export default function FlowStudio() {
     let generatedFootage: File | null = null;
     let renderImages = images;
     try {
-      if (user) {
+      if (user && productionAvailable) {
         try {
           token = await user.getIdToken();
           jobId = crypto.randomUUID();
@@ -418,7 +535,7 @@ export default function FlowStudio() {
             setWorkflowStage("Loading AI narration");
             generatedNarration = await fetchProductionNarration(jobId, token, controller.signal);
           }
-        } catch {
+        } catch (failure) {
           if (jobId && token) {
             try {
               await cancelProductionJob(jobId, token);
@@ -426,9 +543,7 @@ export default function FlowStudio() {
               // The saved job id lets Flow recover the authoritative state later.
             }
           }
-          token = null;
-          jobId = null;
-          setNotice("Server preparation is unavailable. Flow is continuing with a local-only run.");
+          throw failure;
         }
       }
 
@@ -501,6 +616,7 @@ export default function FlowStudio() {
       const next: Project = { ...parsed.data, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
       setImages([]);
       setImageNames([]);
+      setImageFiles([]);
       setAudio(null);
       openProject(next);
       persist(next);
@@ -527,6 +643,7 @@ export default function FlowStudio() {
     try {
       setImages(await loadImages(selected));
       setImageNames(selected.map((file) => file.name));
+      setImageFiles(selected);
       setNotice("Images added. Your preview now uses them.");
     } catch (failure) {
       setError(
@@ -559,6 +676,8 @@ export default function FlowStudio() {
   const reset = () => {
     setWorkflowStage("");
     setProject(null);
+    setServerProduction(null);
+    setServerProductionState("loading");
     setBrief(initialBrief);
     setPlaying(false);
     setTime(0);
@@ -566,6 +685,7 @@ export default function FlowStudio() {
     setError("");
     setImages([]);
     setImageNames([]);
+    setImageFiles([]);
     setAudio(null);
   };
   const jumpToScene = (index: number) => {
@@ -578,7 +698,12 @@ export default function FlowStudio() {
     setPlaying(false);
   };
   const activeScene = project?.creative.scenes[sceneIndex];
-  const connected = Boolean(user && useAI);
+  const connected = Boolean(user && useAI && service === "configured");
+  const requestCreation = () => {
+    if (busy || rendering || service === "checking" || brief.prompt.trim().length < 3) return;
+    if (!user && useAI && service === "configured") setDialog("account");
+    else void create();
+  };
 
   return (
     <main className={styles.world}>
@@ -652,6 +777,15 @@ export default function FlowStudio() {
             </button>
             <button
               className={styles.iconButton}
+              onClick={() => setDialog("plugins")}
+              disabled={busy || rendering}
+              aria-label="Open free workflows"
+              title="Ten free workflows"
+            >
+              <Workflow size={18} />
+            </button>
+            <button
+              className={styles.iconButton}
               onClick={() => setDialog("settings")}
               disabled={busy || rendering}
               aria-label="Open creative settings"
@@ -710,7 +844,7 @@ export default function FlowStudio() {
             </div>
             <span className={styles.sourceBadge}>
               <span />{" "}
-              {project.source === "ai" ? "AI creative" : "Starter draft"}
+              {project.source === "ai" ? "AI-assisted draft" : "Editable outline"}
             </span>
           </div>
         )}
@@ -755,7 +889,7 @@ export default function FlowStudio() {
               onKeyDown={(event) => {
                 if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
                   event.preventDefault();
-                  void create();
+                  requestCreation();
                 }
               }}
             />
@@ -788,18 +922,35 @@ export default function FlowStudio() {
               </div>
               <button
                 className={styles.createButton}
-                onClick={() => void create()}
-                disabled={busy || brief.prompt.trim().length < 3}
+                onClick={requestCreation}
+                disabled={busy || service === "checking" || brief.prompt.trim().length < 3}
               >
                 {busy ? (
                   <LoaderCircle className={styles.spin} size={17} />
                 ) : (
                   <Sparkles size={17} />
                 )}
-                {busy ? "Creating your draft…" : "Create with Flow"}
+                {busy
+                  ? "Creating your draft…"
+                  : service === "checking"
+                    ? "Checking AI connection…"
+                    : !user && useAI && service === "configured"
+                      ? "Sign in for AI draft"
+                      : connected
+                        ? "Create with AI"
+                        : "Create starter outline"}
                 {!busy && <ArrowRight size={17} />}
               </button>
             </div>
+            {service !== "checking" && (user || service === "configured") && (
+              <button
+                className={styles.starterChoice}
+                disabled={busy || brief.prompt.trim().length < 3}
+                onClick={() => void create(true)}
+              >
+                {user ? "Make an editable outline instead" : "Make an editable outline without signing in"}
+              </button>
+            )}
           </div>
         )}
         {!project && (
@@ -829,7 +980,7 @@ export default function FlowStudio() {
             <div className={styles.quietFooter}>
               <span>
                 <span className={styles.statusDot} />
-                {connected ? "AI studio" : "Starter mode"}
+                {connected ? "AI studio" : !user && useAI && service === "configured" ? "AI available with sign-in" : "Outline mode"}
                 <button
                   onClick={() => setDialog("settings")}
                   aria-label="Change creation mode"
@@ -843,8 +994,9 @@ export default function FlowStudio() {
             </div>
             {!connected && (
               <p className={styles.modeNote}>
-                Starter mode creates editable drafts on this device. Connect
-                your account for AI creation.
+                {service === "unavailable"
+                  ? "AI is unavailable right now. You can still make and export an editable outline."
+                  : "Outlines are editable starting points. Sign in for original AI scenes, script, and copy."}
               </p>
             )}
             {busy && (
@@ -1091,6 +1243,26 @@ export default function FlowStudio() {
                 )}
                 {tab === "workflow" && (
                   <div className={styles.workflowList}>
+                    {project.executionId && (
+                      <>
+                        <p className={styles.workflowIntro}>Save edits to make this draft available on your other devices.</p>
+                        <button className={styles.secondaryButton} disabled={!user || busy || rendering} onClick={() => {
+                          void (async () => {
+                            if (!user) return;
+                            setBusy(true); setError("");
+                            try {
+                              const version = await saveWorkflowEdits(project, await user.getIdToken());
+                              const latest = projectsRef.current.find((item) => item.id === project.id) || project;
+                              persist({ ...latest, cloudVersion: version });
+                              setProject((current) => current?.id === project.id ? { ...current, cloudVersion: version } : current);
+                              setNotice("Edits saved to your account.");
+                            } catch (failure) {
+                              setError(failure instanceof Error ? failure.message : "Could not save edits.");
+                            } finally { setBusy(false); }
+                          })();
+                        }}>Save edits to account</button>
+                      </>
+                    )}
                     <button
                       className={styles.createButton}
                       disabled={busy || rendering}
@@ -1098,6 +1270,7 @@ export default function FlowStudio() {
                     >
                       <Workflow size={16} /> Run local workflow
                     </button>
+                    {error && <p className={styles.error} role="alert">{error}</p>}
                     <p className={styles.workflowIntro}>
                       Validates this draft, renders your video, and downloads a
                       ZIP with the video, caption, voiceover script and creative pack.
@@ -1119,8 +1292,43 @@ export default function FlowStudio() {
                         </div>
                       </div>
                     ))}
+                    {project.executionId && (
+                      <div className={styles.workflowStep}>
+                        <span><Film size={16} /></span>
+                        <div>
+                          <strong>Server video production</strong>
+                          <p>Approve this saved draft for a 720 × 1280 MP4 with scene titles. Attached images and audio are securely copied to your account for this render; without them the video uses a quiet color background. AI narration is not connected.</p>
+                          {serverProduction ? (
+                            <>
+                              <p role="status">{
+                                serverProduction.status === "failed" ? "Production failed" :
+                                serverProduction.status === "completed" ? "Video verified and ready to download" :
+                                serverProduction.stage === "verifying" ? "Checking the rendered video" :
+                                serverProduction.stage === "encoding" ? "Rendering the video" :
+                                serverProduction.stage === "checking_media" ? "Checking media and draft" :
+                                serverProduction.status === "scheduled" ? "Production scheduled" : "Production queued"
+                              }{serverProduction.scheduledAt ? " · " + new Date(serverProduction.scheduledAt).toLocaleString() : ""}</p>
+                              {serverProduction.failure && <p role="alert">{serverProduction.failure}</p>}
+                              {serverProduction.status === "completed" && (
+                                <button className={styles.secondaryButton} disabled={busy} onClick={() => void downloadApprovedVideo()}>Download server MP4</button>
+                              )}
+                            </>
+                          ) : serverProductionState !== "ready" ? (
+                            <p role="status">{serverProductionState === "loading" ? "Checking server production…" : "Server status unavailable. Flow will retry shortly."}</p>
+                          ) : (
+                            <>
+                              <button className={styles.secondaryButton} disabled={!user || busy || rendering} onClick={() => void startServerRender(false)}>Approve and render now</button>
+                              <label>Schedule server render
+                                <input type="datetime-local" value={scheduleAt} onChange={(event) => setScheduleAt(event.target.value)} />
+                              </label>
+                              <button className={styles.secondaryButton} disabled={!user || busy || !scheduleAt || rendering} onClick={() => void startServerRender(true)}>Approve and schedule</button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    )}
                     <span className={styles.planBadge}>
-                      Plan only · No external actions have run
+                      Publishing is not connected · No posts have been sent
                     </span>
                   </div>
                 )}
@@ -1131,10 +1339,34 @@ export default function FlowStudio() {
                   edits become a real exported video.
                 </p>
               )}
+              {project.executionId && (
+                <p className={styles.productionSummary} role="status">
+                  {serverProductionState === "loading" ? "Checking server video…" :
+                    serverProductionState === "unavailable" ? "Server status unavailable. Flow will retry shortly." :
+                    serverProduction?.status === "completed" ? "Server video verified and ready." :
+                    serverProduction?.status === "failed" ? serverProduction.failure || "Server video failed. Create a new draft to try again." :
+                    serverProduction?.stage === "verifying" ? "Checking the server video…" :
+                    serverProduction?.stage === "encoding" ? "Rendering on the server…" :
+                    serverProduction?.stage === "checking_media" ? "Checking media on the server…" :
+                    serverProduction?.status === "scheduled" ? "Server video scheduled." :
+                    serverProduction ? "Server video queued." : "Ready for your approval. Flow will save edits and render on the server."}
+                </p>
+              )}
               <div className={styles.resultActions}>
+                {project.executionId && serverProductionState === "ready" && (
+                  serverProduction?.status === "completed" ? (
+                    <button className={styles.createButton} disabled={busy || rendering} onClick={() => void downloadApprovedVideo()}>
+                      <ArrowDownToLine size={17} /> Download server video
+                    </button>
+                  ) : !serverProduction ? (
+                    <button className={styles.createButton} disabled={busy || rendering} onClick={() => void startServerRender(false)}>
+                      <Film size={17} /> {busy ? "Preparing video…" : "Approve & make video"}
+                    </button>
+                  ) : null
+                )}
                 <button
-                  className={styles.createButton}
-                  disabled={rendering}
+                  className={project.executionId ? styles.secondaryButton : styles.createButton}
+                  disabled={rendering || busy}
                   onClick={() => void exportVideo()}
                 >
                   {rendering ? (
@@ -1144,7 +1376,7 @@ export default function FlowStudio() {
                   )}
                   {rendering
                     ? `Rendering ${Math.round(progress * 100)}%`
-                    : "Export video"}
+                    : project.executionId ? "Export on this device" : "Export video"}
                 </button>
                 <button
                   className={styles.secondaryButton}
@@ -1188,7 +1420,7 @@ export default function FlowStudio() {
           </div>
         )}
 
-        {error && (
+        {error && (!project || tab !== "workflow") && (
           <div className={styles.error} role="alert">
             <span>{error}</span>
             <button onClick={() => setError("")} aria-label="Dismiss error">
@@ -1243,6 +1475,7 @@ export default function FlowStudio() {
       <dialog
         ref={dialogElement}
         className={styles.dialog}
+        style={dialog === "plugins" ? { width: "min(960px, calc(100vw - 24px))", maxWidth: "960px" } : undefined}
         onCancel={(event) => {
           event.preventDefault();
           setDialog(null);
@@ -1256,8 +1489,10 @@ export default function FlowStudio() {
             <div>
               <p className={styles.eyebrow}>JUST WHAT YOU NEED</p>
               <h2>
-                {dialog === "settings"
-                  ? "Make it yours."
+                {dialog === "plugins"
+                  ? "Free workflows."
+                  : dialog === "settings"
+                    ? "Make it yours."
                   : dialog === "history"
                     ? "Your creations."
                     : "Your Flow account."}
@@ -1271,6 +1506,7 @@ export default function FlowStudio() {
               <X size={19} />
             </button>
           </div>
+          {dialog === "plugins" && <PluginCatalog initialPluginId={initialPluginId} />}
           {dialog === "settings" && (
             <div className={styles.settings}>
               <label>
@@ -1484,6 +1720,7 @@ export default function FlowStudio() {
                     onClick={() => {
                       setImages([]);
                       setImageNames([]);
+      setImageFiles([]);
                       setAudio(null);
                     }}
                   >
@@ -1500,7 +1737,7 @@ export default function FlowStudio() {
           )}
           {dialog === "history" && (
             <div className={styles.historyList}>
-              {projects.length ? (
+              {projects.length || remoteRuns.length || historyLoading ? (
                 projects.map((item) => (
                   <div className={styles.historyItem} key={item.id}>
                     <button
@@ -1509,6 +1746,7 @@ export default function FlowStudio() {
                         openProject(item);
                         setImages([]);
                         setImageNames([]);
+      setImageFiles([]);
                         setAudio(null);
                         setDialog(null);
                       }}
@@ -1528,15 +1766,24 @@ export default function FlowStudio() {
                       className={styles.iconButton}
                       aria-label={`Delete ${item.creative.title}`}
                       onClick={() => {
-                        const saved = projectsRef.current.filter(
-                          (saved) => saved.id !== item.id,
-                        );
+                        void (async () => {
+                          try {
+                            if (item.executionId) {
+                              if (!user) throw new Error("Sign in to delete this saved AI run.");
+                              await deleteWorkflowRun(item.executionId, await user.getIdToken());
+                              setRemoteRuns((runs) => runs.filter((run) => run.executionId !== item.executionId));
+                            }
+                            const saved = projectsRef.current.filter(
+                              (saved) => saved.id !== item.id,
+                            );
                         projectsRef.current = saved;
                         setProjects(saved);
-                        if (!saveProjects(saved))
-                          setError(
-                            "Could not save this change to device storage.",
-                          );
+                            if (!saveProjects(saved))
+                              setError("Could not save this change to device storage.");
+                          } catch (failure) {
+                            setError(failure instanceof Error ? failure.message : "Could not delete this run.");
+                          }
+                        })();
                       }}
                     >
                       <X size={14} />
@@ -1548,6 +1795,44 @@ export default function FlowStudio() {
                   <History size={30} />
                   <h3>Your next idea starts here.</h3>
                   <p>Create something and it will be saved on this device.</p>
+                </div>
+              )}
+              {user && (
+                <div>
+                  <p className={styles.label}>SAVED AI DRAFTS</p>
+                  {historyLoading && <p role="status">Loading account drafts…</p>}
+                  {remoteRuns.filter((run) => !projects.some((item) => item.executionId === run.executionId)).map((run) => (
+                    <div className={styles.historyItem} key={run.executionId}>
+                      <button disabled={busy || rendering} onClick={() => {
+                        void (async () => {
+                          setBusy(true);
+                          try {
+                            const restored = await loadWorkflowRun(run.executionId, await user.getIdToken());
+                            openProject(restored);
+                            persist(restored);
+                            setImages([]); setImageNames([]); setImageFiles([]); setAudio(null);
+                            setDialog(null);
+                          } catch (failure) {
+                            setError(failure instanceof Error ? failure.message : "Could not restore this draft.");
+                          } finally { setBusy(false); }
+                        })();
+                      }}>
+                        <Film size={18} />
+                        <span><strong>{run.title}</strong><small>{new Date(run.createdAt).toLocaleDateString()} · AI · {run.duration}s · Original draft</small></span>
+                        <ArrowRight size={15} />
+                      </button>
+                      <button className={styles.iconButton} aria-label={`Delete saved ${run.title}`} onClick={() => {
+                        void (async () => {
+                          try {
+                            await deleteWorkflowRun(run.executionId, await user.getIdToken());
+                            setRemoteRuns((runs) => runs.filter((item) => item.executionId !== run.executionId));
+                          } catch (failure) {
+                            setError(failure instanceof Error ? failure.message : "Could not delete this draft.");
+                          }
+                        })();
+                      }}><X size={14} /></button>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

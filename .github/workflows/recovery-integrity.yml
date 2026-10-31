@@ -74,5 +74,8 @@ jobs:
           cd client
           npx playwright install --with-deps chromium
 
+      - name: Verify server production output
+        run: npm run test:ovh --prefix services/neural-orchestrator
+
       - name: Verify studio creation and real video export
         run: npm run studio:test --prefix client
