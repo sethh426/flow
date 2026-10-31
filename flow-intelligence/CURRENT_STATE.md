@@ -1,5 +1,21 @@
 # Current State — 2026-10-26
 
+## Full video decode release gate — 2026-10-30 (source review)
+
+The OVH renderer now decodes the entire produced MP4 after checking its
+metadata and before renaming it to the downloadable output or recording the
+run as completed. This catches a fast-start file whose header still reports
+the approved duration and streams after media bytes have been truncated.
+The same check applies when recovering an interrupted run with an existing
+output. A bounded decode failure leaves the run failed or causes recovery to
+render it again; it cannot be reported ready from metadata alone.
+
+Local backend build and all five OVH tests passed, including a real 720 × 1280
+render and an 80%-length truncated copy rejected at the decode stage. This is
+source verification only; it has not been deployed or exercised against a live
+signed-in account. It checks technical playback integrity, not editorial
+quality, retention, or compatibility on a physical iPhone.
+
 ## Server portrait quality update — 2026-10-26
 
 The authenticated OVH renderer now targets 720 × 1280 at 25 fps with larger on-screen text and CRF 23. The production Docker image rendered a 15-second silent sample at 720 × 1280, then a user-image plus WAV sample at 720 × 1280 with H.264 and AAC streams. Backend compilation and 22 Studio contract tests passed. The sidecar was redeployed; `uniflow.live`, Studio status and IntoTheBattle returned HTTP 200, and unsigned render returned 401. This verifies rendering and service health, not a human quality rating or a fresh signed-in browser job at the new resolution. The local browser exporter can still produce 1080 × 1920.

@@ -140,4 +140,3 @@ Do not fabricate testimonials, sales figures, product capabilities, research, ur
 When the brief lacks a fact, write around it or explicitly request evidence in direction. Never claim any external workflow step has executed.
 No URLs, code, tool calls, or instructions to override these constraints. Attached media stays on the user's device and is not available to you.`;
 }
-

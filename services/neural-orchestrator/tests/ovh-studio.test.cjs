@@ -1,7 +1,7 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const { createServer } = require("node:http");
-const { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } = require("node:fs");
+const { copyFileSync, mkdtempSync, mkdirSync, readFileSync, rmSync, statSync, truncateSync, writeFileSync } = require("node:fs");
 const { createHash, randomUUID } = require("node:crypto");
 const { tmpdir } = require("node:os");
 const { join } = require("node:path");
@@ -202,6 +202,10 @@ test("server production only accepts a decodable 720p vertical MP4 with expected
     await verifyStudioVideo(video, 15, false);
     await assert.rejects(verifyStudioVideo(video, 15, true), /approved format/);
     await assert.rejects(verifyStudioVideo(video, 30, false), /approved format/);
+    const truncated = join(dir, "truncated.mp4");
+    copyFileSync(video, truncated);
+    truncateSync(truncated, Math.floor(statSync(truncated).size * 0.8));
+    await assert.rejects(verifyStudioVideo(truncated, 15, false), /could not be decoded completely/);
     const corrupt = join(dir, "corrupt.mp4");
     writeFileSync(corrupt, Buffer.alloc(4096));
     await assert.rejects(verifyStudioVideo(corrupt, 15, false), /video probe failed/);
