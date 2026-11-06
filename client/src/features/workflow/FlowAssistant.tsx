@@ -137,6 +137,15 @@ export default function FlowAssistant({
       }}
     >
       <Image src="/flow-avatar.png" alt="" width={80} height={80} draggable={false} />
+      {!expanded && (
+        <span
+          className={`${styles.invitation} ${point && point.x < 144 ? styles.invitationLeft : ""} ${point && point.y < 150 ? styles.invitationBelow : ""}`}
+          aria-hidden="true"
+        >
+          <strong>Start with an idea</strong>
+          <span>Tap Flow to make a video, post, or plan.</span>
+        </span>
+      )}
       {working && <span className={styles.activity} aria-hidden="true" />}
     </button>
   );

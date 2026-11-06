@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { execFileSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
 import AxeBuilder from "@axe-core/playwright";
 
 test("one floating workspace creates, edits, saves and restores real drafts", async ({
@@ -8,21 +9,21 @@ test("one floating workspace creates, edits, saves and restores real drafts", as
   const failures: string[] = [];
   page.on("pageerror", (error) => failures.push(error.message));
   await page.goto("/");
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Big ideas. One little button." }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Create with Flow" }),
+    page.getByRole("button", { name: "Create starter outline" }),
   ).toBeDisabled();
   await page
     .getByLabel("Describe what you want to create")
     .fill("A handmade ceramic coffee mug");
-  await page.getByRole("button", { name: "Create with Flow" }).click();
+  await page.getByRole("button", { name: "Create starter outline" }).click();
   await expect(
     page.getByRole("heading", { name: "Your idea, in motion." }),
   ).toBeVisible();
-  await expect(page.getByText("Starter draft", { exact: true })).toBeVisible();
+  await expect(page.getByText("Editable outline", { exact: true })).toBeVisible();
   await page.getByLabel("ON-SCREEN TEXT").fill("Make mornings meaningful.");
   await page.getByRole("button", { name: "Play preview" }).click();
   await expect(
@@ -43,7 +44,7 @@ test("one floating workspace creates, edits, saves and restores real drafts", as
   expect(saved.creative.scenes[0].text).toBe("Make mornings meaningful.");
   expect(saved.creative.caption).toBe("Small moments. Handmade details.");
   await page.reload();
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   await page.getByRole("button", { name: "Open saved creations" }).click();
   await page
     .getByRole("button", { name: /^A handmade ceramic coffee mug/ })
@@ -53,9 +54,59 @@ test("one floating workspace creates, edits, saves and restores real drafts", as
   );
   await page.getByRole("tab", { name: "Workflow", exact: true }).click();
   await expect(
-    page.getByText("Plan only · No external actions have run"),
+    page.getByText("Publishing is not connected · No posts have been sent"),
   ).toBeVisible();
   expect(failures).toEqual([]);
+});
+
+test("opening another saved draft clears the previous draft's media", async ({ page }) => {
+  await page.goto("/");
+  await page.getByLabel("Describe what you want to create").fill("First product");
+  await page.getByRole("button", { name: "Create starter outline" }).click();
+  await page.getByRole("button", { name: "Flow, new creation" }).click();
+  await page.getByLabel("Describe what you want to create").fill("Second product");
+  await page.getByRole("button", { name: "Create starter outline" }).click();
+  const png = await page.evaluate(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 2; canvas.height = 2;
+    canvas.getContext("2d")!.fillRect(0, 0, 2, 2);
+    return canvas.toDataURL().split(",")[1];
+  });
+  await page.locator('input[type=file][accept="image/jpeg,image/png,image/webp"]').setInputFiles({
+    name: "second-product.png", mimeType: "image/png", buffer: Buffer.from(png, "base64"),
+  });
+  await expect(page.getByRole("button", { name: /1 images/ })).toBeVisible();
+  await page.getByRole("button", { name: "Open saved creations" }).click();
+  await page.getByRole("button", { name: /^First product/ }).click();
+  await expect(page.getByRole("button", { name: /Add your images/ })).toBeVisible();
+});
+
+test("local outline extracts the subject without echoing production instructions", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
+  await page.getByLabel("Describe what you want to create").fill(
+    "Make a 15-second video that helps an Indianapolis home-cleaning business explain its easy online booking. Friendly and specific, no invented claims.",
+  );
+  await page.getByRole("button", { name: "Create starter outline" }).click();
+  await expect(page.getByRole("heading", { name: "Easy online booking", exact: true })).toBeVisible();
+  await expect(page.getByText("Editable outline", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("ON-SCREEN TEXT")).not.toHaveValue(/Friendly and specific|no invented claims/);
+});
+
+test("local outline carries supplied facts into scenes and post copy without inventing process", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
+  await page.getByLabel("Describe what you want to create").fill(
+    "Create a 15-second video for an Indianapolis home-cleaning service. Online booking is available. The service covers Indianapolis. Use only verified facts. Do not mention prices.",
+  );
+  await page.getByRole("button", { name: "Create starter outline" }).click();
+  await page.getByRole("tabpanel").getByRole("button", { name: /From your brief/ }).click();
+  await expect(page.getByLabel("ON-SCREEN TEXT")).toHaveValue("Online booking is available.");
+  await page.getByRole("tabpanel").getByRole("button", { name: /Another detail/ }).click();
+  await expect(page.getByLabel("ON-SCREEN TEXT")).toHaveValue("The service covers Indianapolis.");
+  await page.getByRole("tab", { name: "Post copy" }).click();
+  await expect(page.getByLabel("YOUR CAPTION")).toHaveValue(/Online booking is available\. The service covers Indianapolis\./);
+  await expect(page.getByLabel("YOUR CAPTION")).not.toHaveValue(/Do not mention prices|Use only verified facts/);
 });
 
 test("mobile composer and settings remain usable without navigation clutter", async ({
@@ -63,7 +114,7 @@ test("mobile composer and settings remain usable without navigation clutter", as
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/dashboard/");
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Big ideas. One little button." }),
   ).toBeVisible();
@@ -82,7 +133,7 @@ test("mobile composer and settings remain usable without navigation clutter", as
   await page
     .getByLabel("Describe what you want to create")
     .fill("A thoughtful product launch");
-  await page.getByRole("button", { name: "Create with Flow" }).click();
+  await page.getByRole("button", { name: "Create starter outline" }).click();
   await expect(page.getByRole("tab", { name: "Post copy" })).toHaveAttribute(
     "aria-selected",
     "true",
@@ -95,11 +146,30 @@ test("mobile composer and settings remain usable without navigation clutter", as
   ).toBe(true);
 });
 
+test("workflow reports unavailable video export next to its action", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, "MediaRecorder", { configurable: true, value: undefined });
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
+  await page.getByRole("button", { name: "Workflow", exact: true }).click();
+  await page.getByLabel("Describe what you want to create").fill("A local product launch");
+  await page.getByRole("button", { name: "Create starter outline" }).click();
+  await page.getByRole("button", { name: "Run local workflow", exact: true }).click();
+  const alert = page.getByRole("tabpanel").getByRole("alert");
+  await expect(alert).toContainText("Video export is unavailable in this browser");
+  const action = (await page.getByRole("button", { name: "Run local workflow", exact: true }).boundingBox())!;
+  const message = (await alert.boundingBox())!;
+  expect(message.y).toBeGreaterThan(action.y);
+  expect(message.y - action.y).toBeLessThan(180);
+});
+
 test("exports a playable 1080 by 1920 video with uploaded images and audio", async ({
   page,
 }, testInfo) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   const png = await page.evaluate(() => {
     const canvas = document.createElement("canvas");
     canvas.width = 100;
@@ -147,7 +217,7 @@ test("exports a playable 1080 by 1920 video with uploaded images and audio", asy
   await page
     .getByLabel("Describe what you want to create")
     .fill("Ceramic coffee mug");
-  await page.getByRole("button", { name: "Create with Flow" }).click();
+  await page.getByRole("button", { name: "Create starter outline" }).click();
   const download = page.waitForEvent("download", { timeout: 40_000 });
   await page.getByRole("button", { name: "Export video", exact: true }).click();
   const exported = await download;
@@ -183,11 +253,11 @@ test("canceling a video export stops work without downloading a partial video", 
   let downloads = 0;
   page.on("download", () => downloads++);
   await page.goto("/");
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   await page
     .getByLabel("Describe what you want to create")
     .fill("An elegant launch");
-  await page.getByRole("button", { name: "Create with Flow" }).click();
+  await page.getByRole("button", { name: "Create starter outline" }).click();
   await page.getByRole("button", { name: "Export video", exact: true }).click();
   await page.getByRole("button", { name: "Cancel export" }).click();
   await expect(
@@ -200,7 +270,7 @@ test("the composer has no serious accessibility violations", async ({
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   const scan = await new AxeBuilder({ page }).analyze();
   expect(
     scan.violations.filter(
@@ -209,11 +279,14 @@ test("the composer has no serious accessibility violations", async ({
   ).toEqual([]);
 });
 
-test("only Flow is visible at idle; dragging, keyboard opening, and minimizing preserve the draft", async ({ page }) => {
+test("workspace opens on first load; the avatar can minimize, move, and reopen it", async ({ page }) => {
   await page.goto("/");
+  const studio = page.getByRole("region", { name: "Flow creation studio" });
+  await expect(studio).toBeVisible();
+  await expect(page.getByLabel("Describe what you want to create")).toBeVisible();
+  await page.getByRole("button", { name: "Close creation studio" }).click();
   const avatar = page.getByRole("button", { name: "Open Flow", exact: true });
-  await expect(page.getByRole("region", { name: "Flow creation studio" })).not.toBeVisible();
-  await expect(page.getByRole("button")).toHaveCount(1);
+  await expect(studio).not.toBeVisible();
   const bounds = (await avatar.boundingBox())!;
   await page.mouse.move(bounds.x + 40, bounds.y + 40);
   await page.mouse.down();
@@ -223,6 +296,8 @@ test("only Flow is visible at idle; dragging, keyboard opening, and minimizing p
   const moved = (await avatar.boundingBox())!;
   expect(moved.x).toBeLessThan(bounds.x - 80);
   await page.reload();
+  await expect(studio).toBeVisible();
+  await page.getByRole("button", { name: "Close creation studio" }).click();
   expect((await avatar.boundingBox())!.x).toBeCloseTo(moved.x, 0);
   await avatar.focus();
   await page.keyboard.press("Enter");
@@ -240,9 +315,9 @@ test("only Flow is visible at idle; dragging, keyboard opening, and minimizing p
 
 test("creative packs can be imported and invalid files do not replace a draft", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   await page.getByLabel("Describe what you want to create").fill("A reusable content campaign");
-  await page.getByRole("button", { name: "Create with Flow" }).click();
+  await page.getByRole("button", { name: "Create starter outline" }).click();
   const download = page.waitForEvent("download");
   await page.getByRole("button", { name: "Creative pack", exact: true }).click();
   const file = await download;
@@ -267,7 +342,7 @@ test("Hosting runtime configuration enables account controls without build-time 
     body: JSON.stringify({ configured: true }),
   }));
   await page.goto("/");
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   await page.getByRole("button", { name: "Open account", exact: true }).click();
   await expect(page.getByText("Account connection configured.", { exact: false })).toBeVisible();
   await expect(page.getByRole("button", { name: "Continue with Google", exact: true })).toBeEnabled();
@@ -276,13 +351,18 @@ test("Hosting runtime configuration enables account controls without build-time 
 });
 
 test("malformed Hosting configuration and disconnected AI leave local creation usable", async ({ page }) => {
+  const envFile = ".env.production.local";
+  test.skip(
+    existsSync(envFile) && /^NEXT_PUBLIC_FIREBASE_API_KEY=.+/m.test(readFileSync(envFile, "utf8")),
+    "This case requires a client export without embedded Firebase configuration.",
+  );
   let recover = false;
   await page.route("**/__/firebase/init.json", (route) => route.fulfill({
     contentType: "application/json",
     body: JSON.stringify(recover ? { apiKey: "public-test-config", authDomain: "runtime-test.firebaseapp.com", projectId: "runtime-test", appId: "runtime-test-app" } : { projectId: "incomplete" }),
   }));
   await page.goto("/");
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   await page.getByRole("button", { name: "Open account", exact: true }).click();
   await expect(page.getByText("Account connection unavailable in this build.", { exact: false })).toBeVisible();
   await expect(page.getByRole("button", { name: "Continue with Google", exact: true })).toBeDisabled();
@@ -290,17 +370,19 @@ test("malformed Hosting configuration and disconnected AI leave local creation u
   await page.getByRole("button", { name: "Retry connections", exact: true }).click();
   await expect(page.getByRole("button", { name: "Continue with Google", exact: true })).toBeEnabled();
   await page.getByRole("button", { name: "Back to creating", exact: false }).click();
+  await expect(page.getByRole("button", { name: "Create starter outline" })).toBeDisabled();
   await page.getByLabel("Describe what you want to create").fill("A locally useful draft");
-  await page.getByRole("button", { name: "Create with Flow", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Create starter outline" })).toBeEnabled();
+  await page.getByLabel("Describe what you want to create").press("Control+Enter");
   await expect(page.getByRole("heading", { name: "A locally useful draft", exact: true })).toBeVisible();
 });
 
 test("local workflow renders and packages verified files into a valid ZIP", async ({ page }, testInfo) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Open Flow", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Flow creation studio" })).toBeVisible();
   await page.getByRole("button", { name: "Workflow", exact: true }).click();
   await page.getByLabel("Describe what you want to create").fill("A local product launch");
-  await page.getByRole("button", { name: "Create with Flow" }).click();
+  await page.getByRole("button", { name: "Create starter outline" }).click();
   const download = page.waitForEvent("download");
   await page.getByRole("button", { name: "Run local workflow", exact: true }).click();
   const archive = await download;

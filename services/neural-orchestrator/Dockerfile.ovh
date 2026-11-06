@@ -1,0 +1,19 @@
+FROM node:20-bookworm-slim AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY tsconfig.json ./
+COPY src ./src
+RUN npm run build && npm prune --omit=dev
+
+FROM node:20-bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg fonts-dejavu-core && rm -rf /var/lib/apt/lists/*
+ENV NODE_ENV=production PORT=8787 FLOW_STUDIO_USAGE_DIR=/var/lib/flow-studio
+WORKDIR /app
+COPY --from=build /app/package.json /app/package-lock.json ./
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+RUN mkdir /var/lib/flow-studio && chown -R node:node /var/lib/flow-studio
+USER node
+EXPOSE 8787
+CMD ["node", "dist/ovh-studio.js"]
