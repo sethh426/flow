@@ -1,0 +1,35 @@
+.catalog { color: #e9e6f1; font-size: 14px; line-height: 1.6; }
+.catalog p { margin: 0 0 14px; }
+.note { color: #b5afc4; font-size: 12px; }
+.layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 22px; }
+.search, .field { display: grid; gap: 7px; margin-bottom: 16px; }
+.catalog input, .catalog textarea, .catalog select { width: 100%; box-sizing: border-box; border: 1px solid #625970; background: #17141f; color: #f5f1fa; padding: 10px 12px; border-radius: 10px; font: inherit; }
+.catalog textarea { resize: vertical; }
+.catalog button { border: 1px solid #625970; background: #282132; color: #f5f1fa; padding: 9px 12px; border-radius: 10px; cursor: pointer; font: inherit; }
+.catalog button:focus-visible, .catalog input:focus-visible, .catalog textarea:focus-visible, .catalog select:focus-visible, .catalog summary:focus-visible { outline: 2px solid #e4bdff; outline-offset: 3px; }
+.catalog button:disabled { opacity: .55; cursor: not-allowed; }
+.connected { border-top: 1px solid #625970; padding-top: 14px; }
+.connected h4 { margin: 0 0 8px; }
+.list { display: flex; flex-direction: column; gap: 8px; }
+.list button { text-align: left; }
+.list button[aria-pressed=true] { background: #443454; border-color: #d0a6ed; }
+.list span { display: block; font-size: 11px; color: #c9bfd5; }
+.detail { min-width: 0; }
+.detail h3 { font-size: 23px; margin: 0 0 8px; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.catalog .primary { background: #dec2f5; color: #20152c; border-color: #dec2f5; }
+.error { color: #ffb6b6; }
+.results { border-top: 1px solid #625970; margin-top: 18px; padding-top: 12px; }
+.results pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #17141f; padding: 12px; max-height: 260px; overflow: auto; }
+.results details { margin: 10px 0 18px; }
+.task { border: 1px solid #625970; border-radius: 10px; padding: 12px; margin: 12px 0; }
+.task h5 { font-size: 15px; margin: 0 0 8px; }
+.taskFields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
+@media (max-width: 650px) { .layout { grid-template-columns: minmax(0, 1fr); } .list { max-height: 200px; overflow-y: auto; } }
+@media (max-width: 650px) { .taskFields { grid-template-columns: 1fr; } }
+
+.archiveList { list-style: none; padding: 0; margin: 8px 0 18px; display: grid; gap: 8px; max-height: 220px; overflow: auto; }
+.archiveList li { display: flex; align-items: center; gap: 8px; border: 1px solid #625970; border-radius: 10px; padding: 8px; }
+.archiveList li span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.archiveList small { display: block; color: #b5afc4; }
+@media (max-width: 650px) { .archiveList li { flex-wrap: wrap; } .archiveList li span { flex-basis: 100%; } }
